@@ -1,3 +1,5 @@
+#include 'TOTVS.ch'
+
 /*
 +===========================================+
 | Programa: Atribuições a variaveis         |
@@ -39,6 +41,5 @@ User Function nomeFunction(param_name)
     cMensagem += "[" + ValType(nNumerico)  + "] Numérico"
     cMensagem += "[" + ValType(oObjeto)    + "] Objeto"
     cMensagem += "[" + ValType(uUndefined) + "] Undefined"
-    //+----------------------------------------------------------
 
 Return()
