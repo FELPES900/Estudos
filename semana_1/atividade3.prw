@@ -1,5 +1,4 @@
-#include 'TOTVS.ch'
-
+#include "protheus.ch"
 /*
 +===========================================+
 | Programa: Atribuições a variaveis         |
