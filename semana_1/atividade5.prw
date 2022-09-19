@@ -1,4 +1,4 @@
-#include "protheus.ch"
+#include "totvs.ch"
 
 /*
 +===========================================+
@@ -8,7 +8,7 @@
 +===========================================+
 */
 
-user function nomeFunction()
+user function ativid5()
     Local cRetorno := ""
 
     cRetorno := FWInputBox("Linguagem de programação usada no Protheus?", "")

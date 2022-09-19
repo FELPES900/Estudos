@@ -1,4 +1,4 @@
-#include "protheus.ch"
+#include "totvs.ch"
 /*
 +===========================================+
 | Programa: Atribuições a variaveis         |
@@ -6,7 +6,7 @@
 | Data : 14 de setembro de 2022             |
 +===========================================+
 */
-User Function nomeFunction(param_name)
+User Function ativid3()
 
     // Tipo Array
     Local aArray := {}
@@ -40,5 +40,8 @@ User Function nomeFunction(param_name)
     cMensagem += "[" + ValType(nNumerico)  + "] Numérico"
     cMensagem += "[" + ValType(oObjeto)    + "] Objeto"
     cMensagem += "[" + ValType(uUndefined) + "] Undefined"
+
+    // quando estiver debugando quando jogar a variavel cMensagem
+    // mostrara os tipos de variaveis nos encontramos
 
 Return()

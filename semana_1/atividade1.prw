@@ -1,10 +1,10 @@
-#include "protheus.ch"
+#include "totvs.ch"
 
 /*
 Autor: Felipe Fraga de Assis
 Data: 14 de setembro de 2022
 */
-User Function nomeFunction()
+User Function ativid1()
 
 // Programa para cálculo do total 
     local nCnt

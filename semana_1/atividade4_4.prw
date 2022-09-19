@@ -1,4 +1,4 @@
-#include "protheus.ch"
+#include "totvs.ch"
 
 /*
 +===========================================+
@@ -12,24 +12,24 @@
 // o codigo a enxerga, mas os arquivos que estiverem la
 // tambem, consigirao a enxergar tambem
 
-User Function Pai()
+User Function Pai_4()
     PUBLIC nVar := 0
     nVar += 10
     conOut("Pai")
     conOut(nVar)
-    Filho()
+    Filho_4()
 
     nVar := 0
 Return
 
-Static Function Filho()
+Static Function Filho_4()
     nVar += 10
     conOut("Filho")
     conOut(nVar)
-    Neto()
+    Neto_4()
 Return
 
-Static Function Neto()
+Static Function Neto_4()
     nVar += 10
     conOut("Neto")
     conOut(nVar)

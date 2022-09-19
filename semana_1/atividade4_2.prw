@@ -1,4 +1,4 @@
-#include 'TOTVS.ch'
+#include "totvs.ch"
 
 /*
 +===========================================+
@@ -12,8 +12,8 @@
 // ou seja mesmo ela sendo declarada fora da function principla
 // o codigo em si consiguira enchegar a variavel senao nao a enxergara
 
-User Function Pai()
-    Filho()
+User Function Pai_2()
+    Filho_2()
     If Type("cNome") == "C"
         conOut(cNome)
     Else
@@ -21,14 +21,14 @@ User Function Pai()
     EndIf
 Return
 
-Static Function Filho()
+Static Function Filho_2()
     Private cNome := "Paulo"
-    Neto()
+    Neto_2()
     conOut("Filho")
     conOut(cNome)
 Return
 
-Static Function Neto()
+Static Function Neto_2()
     conOut("Neto")
     If Type("cNome") == "C"
         conOut(cNome)

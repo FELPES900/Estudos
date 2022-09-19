@@ -1,4 +1,4 @@
-#include "protheus.ch"
+#include "totvs.ch"
 
 /*
 +===========================================+
@@ -16,23 +16,23 @@
 
 Static nVar := 0
 
-User Function Pai()
+User Function Pai_3()
     nVar += 10
     conOut("Pai")
     conOut(nVar)
-    Filho()
+    Filho_3()
 
     nVar := 0
 Return
 
-Static Function Filho()
+Static Function Filho_3()
     nVar += 10
     conOut("Filho")
     conOut(nVar)
-    Neto()
+    Neto_3()
 Return
 
-Static Function Neto()
+Static Function Neto_3()
     nVar += 10
     conOut("Neto")
     conOut(nVar)

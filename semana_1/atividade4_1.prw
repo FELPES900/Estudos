@@ -1,4 +1,4 @@
-#include "protheus.ch"
+#include "totvs.ch"
 
 /*
 +===========================================+
@@ -11,12 +11,12 @@
 // A variavel do tipo Local so funciona na "User function" que foi declarada
 // então ela so e visivel somente nesse codigo
 
-User Function Pai()
+User Function Pai_1()
     Local cVarNome := "Paulo"
     conOut(cVarNome)
-    Filho()
+    Filho_1()
 Return
-Static Function Filho()
+Static Function Filho_1()
     Local cVarNome := "Henrique"
     conOut(cVarNome)
 Return
