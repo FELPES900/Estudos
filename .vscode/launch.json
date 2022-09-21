@@ -36,7 +36,10 @@
 		},
 		{
 			"label": "u_ativid5"
+		},
+		{
+			"label": "u_ativid6"
 		}
 	],
-	"lastProgramExecuted": "u_ativid5"
+	"lastProgramExecuted": "u_ativid6"
 }
