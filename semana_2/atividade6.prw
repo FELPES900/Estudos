@@ -37,7 +37,7 @@ user function ativid6()
 		MsgAlert("Acima do peso")
 	endif
 
-	nSexo  := FWInputBox("Qual o seu sexo: 1 - Homem // 2 - Mulher", "")
+	nSexo  := FWInputBox("Qual o seu sexo: 1 - Homem // 2 - Mulher // 3 - Outros", "")
 	nIdade := FWInputBox("Qual a sua idade", "")
 
 	nSexo  := VAL(nSexo)
