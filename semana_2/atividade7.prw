@@ -55,6 +55,8 @@ user function ativid7()
 			MsgAlert("Seu BT foi de: " + CValToChar(nBt))
 		endif
 
+		nAltura   := nPeso := nIdade := nSexo := nImc := nBt := 0
+
 	end
 
 return()
