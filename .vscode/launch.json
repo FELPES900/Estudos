@@ -42,7 +42,10 @@
 		},
 		{
 			"label": "u_ativid7"
+		},
+		{
+			"label": "u_Sudoku"
 		}
 	],
-	"lastProgramExecuted": "u_ativid7"
+	"lastProgramExecuted": "u_Sudoku"
 }
