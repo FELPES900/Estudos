@@ -45,7 +45,13 @@
 		},
 		{
 			"label": "u_Sudoku"
+		},
+		{
+			"label": "u_ativid9"
+		},
+		{
+			"label": "MPSDU"
 		}
 	],
-	"lastProgramExecuted": "u_Sudoku"
+	"lastProgramExecuted": "u_ativid9"
 }
