@@ -19,3 +19,5 @@ III - Semana_3_4_5_6
             que ciramos na semana_4 e como a opção de visualizar os dados de cada cliente.
 
         Semana_6 -> Não finalizada ainda.
+
+            I - Prazo final 23/10/2022
