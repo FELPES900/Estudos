@@ -51,7 +51,10 @@
 		},
 		{
 			"label": "MPSDU"
+		},
+		{
+			"label": "sigaadv"
 		}
 	],
-	"lastProgramExecuted": "u_ativid9"
+	"lastProgramExecuted": "sigaadv"
 }

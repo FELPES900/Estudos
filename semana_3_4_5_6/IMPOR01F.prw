@@ -1,7 +1,7 @@
 #INCLUDE "TOTVS.CH"
 #INCLUDE "TBICONN.CH"
 
-/*/{Protheus.doc} ativid9
+/*/{Protheus.doc} IMPOR01F
 Importação da tabela
 @type function
 @version 33  
@@ -9,11 +9,11 @@ Importação da tabela
 @since 08/10/2022
 /*/
 
-User function ativid9()
+User function IMPOR01F()
 
 	local oFile
-	// local cGet := cGetFile("*.csv","Escolha o arquivo",,"C:/",.F.,,.F.)
-	local cGet := "C:\Users\felip\Downloads\MOCK_DATA.csv"
+	local cGet := cGetFile("*.csv","Escolha o arquivo",,"C:/",.F.,,.F.)
+	// local cGet := "C:\Users\felip\Downloads\MOCK_DATA.csv"
 	local nI := 0
 	local a
 	local aArray := {}
@@ -38,12 +38,17 @@ User function ativid9()
 
 			// Verificação para ver qual a posição de cada campo caso seja alterado a posição deles,
 			// Para quando for importar nao ocorrer nenhum erro de posição
-			PREPARE ENVIRONMENT EMPRESA "99" FILIAL "01"
+
+			if !isblind() //Para ser executado pelo usuario
+				PREPARE ENVIRONMENT EMPRESA "99" FILIAL "01"
+			endif
 
 			DbSelectArea("SZ1") // selecionando qual a tabela nos iremos usar
 			nColGender := AScan(aArray[1], {|a| a =='gender'})
 			for nI := 2 to Len(aArray)
 
+				// aqui vamos fazer uma tradução aos campos do tipo genero caso nao
+				// esteja na lingua portuguesa
 				if (nColGender == 6)
 
 					if (aArray[nI][nColGender] = "Female")
@@ -79,7 +84,10 @@ User function ativid9()
 
 		// Fecha o arquivo e finaliza o processamento
 		oFile:Close()
-		RESET ENVIRONMENT
+
+		if !isblind()
+			RESET ENVIRONMENT
+		endif
 	EndIf
 
 Return(nil)
