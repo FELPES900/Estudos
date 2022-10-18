@@ -15,7 +15,7 @@ III - Semana_3_4_5_6
 
         -- No Prazo --
         Semana_4 : Criamos uma user function com o nome IMPOR01F que usamos para pegar dados de
-            uma planilha em EXCEL para enserir na tabela que criamos na semana_1.
+            uma planilha em EXCEL para enserir na tabela que criamos na semana_3.
 
         -- No Prazo --
         Semana_5 : Criamos um MVC simples com o nome CRMA01FF para nos podemos usar a user function
