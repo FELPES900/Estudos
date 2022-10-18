@@ -11,16 +11,16 @@
 
 User Function CRMR01FF()
 
-	Local oReport
+	Local oRelato
 	Private cPerg := PadR('CRMR01FF',10)
 	//Retorna um alias para ser utilizado no record set definido em PadR()
 	Private cAlias := GetNextAlias()
 	Private oSection1
 
-	oReport := ReportDef()
+	oRelato := ReportDef()
 
 	// Tela de impressão do relatório
-	oReport:PrintDialog()
+	oRelato:PrintDialog()
 
 Return
 
@@ -62,7 +62,7 @@ Static Function ReportDef()
 		TRCell():New(oSection1, 'Z1_PAIS'  , cAlias)
 	ENDIF
 
-Return
+Return oReport
 
 /*/{Protheus.doc} ReportPrint
     Consulta SQL
@@ -80,7 +80,7 @@ static function ReportPrint()
                 SELECT
                     Z1_FILIAL,
                     Z1_IDCLI,
-                    Z1_EMAIL,
+                    CONVERT(varchar(5000),Z1_EMAIL) Z1_EMAIL,
                     Z1_PRNOME,
                     Z1_UTNOME,
                     Z1_PAIS,
