@@ -100,7 +100,7 @@ static function ReportPrint()
                 SELECT
                     Z1_FILIAL,
                     COUNT(Z1_IDCLI) Z1_IDCLI,
-                    Z1_PAIS,
+                    Z1_PAIS
                 FROM
                     %Table:SZ1% SZ1
                 WHERE Z1_FILIAL BETWEEN %Exp:MV_PAR01% AND %Exp:MV_PAR02%
