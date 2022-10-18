@@ -18,6 +18,5 @@ III - Semana_3_4_5_6
         Semana_5 : Criamos um MVC simples com o nome CRMA01FF para nos podemos usar a user function
             que ciramos na semana_4 e como a opção de visualizar os dados de cada cliente.
 
-        Semana_6 -> Não finalizada ainda.
-
-            I - Prazo final 23/10/2022
+        Semana_6 -> Relatorio simples para imprimir todos os clientes de forma como foi salva no 
+            bando de dados senão imprimir o total de clientes por país
