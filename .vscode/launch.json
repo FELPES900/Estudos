@@ -9,7 +9,8 @@
 			"cwb": "${workspaceFolder}",
 			"smartclientBin": "C:/TOTVS/Protheus/Protheus/bin/smartclient/smartclient.exe",
 			"isMultiSession": true,
-			"enableTableSync": true
+			"enableTableSync": true,
+			"enableMultiThread": true
 		}
 	],
 	"lastPrograms": [
@@ -60,7 +61,10 @@
 		},
 		{
 			"label": "u_CRMR01FF"
+		},
+		{
+			"label": "xxxxxxxxxxxxxxxxxxxxx"
 		}
 	],
-	"lastProgramExecuted": "u_IMPOR01F"
+	"lastProgramExecuted": "xxxxxxxxxxxxxxxxxxxxx"
 }
