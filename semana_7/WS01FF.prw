@@ -7,6 +7,7 @@ WSRESTFUL FILIAIS DESCRIPTION "A Classe WS para testes" FORMAT APPLICATION_JSON 
 	WSDATA ID AS STRING
 
 	WSMETHOD GET DESCRIPTION "Consulta de um unico cliente" WSSYNTAX "/filiais/{id}" PATH "/{id}"
+	// Passando o PATH como um parametro que quando for inserido a rota precisa ser informado o valor
 
 END WSRESTFUL
 
@@ -23,7 +24,7 @@ WSMETHOD GET PATHPARAM ID WSSERVICE FILIAIS
 	oJson := JsonObject():New()          // Monta Objeto JSON de retorno
 	cError  := oJson:FromJson(cJson)
 
-	if Empty(Self:id) // Aqui vereficamos se foi passado os ID na route
+	if Empty(Self:id) // Aqui vereficamos se foi passado os ID na routecaso nao ele retorna uma menssagem de erro
 		SetRestFault(404,"Cliente Não Existe ou ID incorreto")
 		lRet := .T.
 	else
@@ -36,12 +37,12 @@ WSMETHOD GET PATHPARAM ID WSSERVICE FILIAIS
 				Z1_IDCLI,
 				Z1_PRNOME,
 				Z1_UTNOME,
-				CONVERT(varchar(5000), Z1_EMAIL) Z1_EMAIL,
+				CONVERT(varchar(5000), Z1_EMAIL) Z1_EMAIL, // aqui nos descripitografamos o email
 				Z1_GENERO,
 				Z1_PAIS,
 				Z1_IPREDE
 			FROM
-				%Table:SZ1%
+				%Table:SZ1% // chamando a tabela SZ1990
 			WHERE
 				Z1_IDCLI = %Exp:cColId%
 				// Vendo qual cliente que será mostrado
