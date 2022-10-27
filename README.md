@@ -24,3 +24,25 @@ III - Semana_3_4_5_6
         -- No Prazo --
         Semana_6 -> Relatorio simples para imprimir todos os clientes de forma como foi salva no 
             bando de dados senão imprimir o total de clientes por país
+
+IV - Semana_7
+
+        I - Aprender oque é: -> Somente Estudar
+            1 - QueryParam -> São os paramentros que passaresmos case sejam necessarios para o objetivo
+            
+            2 - HeaderParam -> Usamos para especificar qual o tipo de retorno ou consulta que será efetuada
+
+            3 - Oauth
+                I : Maneira de acesso regular a API que -> Concede uma autorização, após isso quando foi permitido o acesso
+                    o usuario/cliente nao precisa está permitindo o acesso que o aplicativo realize chamadas à API
+
+                II : Atualização automática de tokens expirados ->  Com isso quando o token expirado ele vai ser substituido
+                    por um novo mas quando você fizer a chamada da API novamente e entao será substituido pelo novo
+                
+                III : Autorização com a senha do usuário -> Quando o usuario nao conseguir acessar a conta ou esquecer a senha
+                    ele vai descripitografar sua token relacionada e gerar uma nova quando for inserido um novo usuario
+
+            4 - Basic Autentication
+            
+            5 - metodos assíncrono async/await (StartJob)
+                I - Executa uma rotina em uma segunda thread sem interface.
