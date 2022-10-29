@@ -15,59 +15,20 @@
 	],
 	"lastPrograms": [
 		{
-			"label": "u_ativid1"
+			"label": "xxx"
 		},
 		{
-			"label": "u_Pai_1"
+			"label": "sigamdi"
 		},
 		{
-			"label": "u_ativid2"
+			"label": "U_teste123"
 		},
 		{
-			"label": "u_ativid3"
+			"label": "U_CRMA02FF"
 		},
 		{
-			"label": "u_Pai_2"
-		},
-		{
-			"label": "u_Pai_3"
-		},
-		{
-			"label": "u_Pai_4"
-		},
-		{
-			"label": "u_ativid5"
-		},
-		{
-			"label": "u_ativid6"
-		},
-		{
-			"label": "u_ativid7"
-		},
-		{
-			"label": "u_Sudoku"
-		},
-		{
-			"label": "u_ativid9"
-		},
-		{
-			"label": "MPSDU"
-		},
-		{
-			"label": "sigaadv"
-		},
-		{
-			"label": "u_IMPOR01F"
-		},
-		{
-			"label": "u_CRMR01FF"
-		},
-		{
-			"label": "xxxxxxxxxxxxxxxxxxxxx"
-		},
-		{
-			"label": "u_xxxxxxxxxxxxxxxxxxxxx"
+			"label": "SIGAADV"
 		}
 	],
-	"lastProgramExecuted": "u_xxxxxxxxxxxxxxxxxxxxx"
+	"lastProgramExecuted": "U_CRMA02FF"
 }
