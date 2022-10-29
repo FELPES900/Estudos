@@ -16,7 +16,9 @@ Function U_CRMA02FF()
 	local cGet    := ""
 	local cJson  := ""
 	local cLinAtu := ""
-	Local aParam := {}
+	Local aHeader := {}
+	Local cIpLocal := 'http://192.168.1.6:8081/rest'
+	Local cPathRest := '/postcli/insert/clientes'
 
 	if SELECT("SX2") == 0 //Para ser executado pelo usuario
 		PREPARE ENVIRONMENT EMPRESA "99" FILIAL "01"
@@ -45,13 +47,13 @@ Function U_CRMA02FF()
 
 	Endif
 
-	AAdd(aParam, "Accept: application/json")
-	aAdd(aParam,"Accept-Encoding: UTF-8")
-	aAdd(aParam, "Content-Type: application/json; charset=UTF-8")
-	oRest := FWRest():New("http://localhost:8081/rest/")
-	oRest:setPath("postcli/insert/clientes")
+	AAdd(aHeader, "Accept: application/json")
+	aAdd(aHeader,"Accept-Encoding: UTF-8")
+	aAdd(aHeader, "Content-Type: application/json; charset=UTF-8")
+	oRest := FWRest():New(cIpLocal)
+	oRest:setPath(cPathRest)
 	oRest:SetPostParams(cJson)
-	if (oRest:POST(aParam))
+	if (oRest:POST(aHeader))
 		FWLogMsg("INFO", /*cTransactionId*/, ProcName(), /*cCategory*/, /*cStep*/, /*cMsgId*/, "Sucesso ao integrar: "+oRest:GetResult() , /*nMensure*/, /*nElapseTime*/, /*aMessage*/)
 	else
 		FWLogMsg("ERROR", /*cTransactionId*/, ProcName(), /*cCategory*/, /*cStep*/, /*cMsgId*/,"Não foi possivel integrar: "+oRest:GetResult() ,/*nMensure*/, /*nElapseTime*/, /*aMessage*/)
