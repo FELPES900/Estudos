@@ -1,7 +1,7 @@
 #INCLUDE"TOTVS.CH"
 #INCLUDE"TBICONN.CH"
 
-/*/{Protheus.doc} CRMA02FF
+/*/{Protheus.doc} U_CRMA02FF
     Retorna uma lista
     @type function
     @version 33
