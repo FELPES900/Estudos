@@ -46,3 +46,13 @@ IV - Semana_7
             
             5 - metodos assíncrono async/await (StartJob)
                 I - Executa uma rotina em uma segunda thread sem interface.
+
+V - Semana_8
+
+        I - REST API GET de arquivos( *.PDF e *.IMG )
+
+        II - Pegar no minimo 10 arquivos e jogar dentro de uma pasta criada na protheus_data
+
+        III - Primeira API litar um json todos os arquivos dentro da pasta
+
+        IV - Segunda API retorna um arquivo no response passando na URL o nome do arquivo

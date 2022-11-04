@@ -31,7 +31,10 @@
 		},
 		{
 			"label": "APSDU"
+		},
+		{
+			"label": "U_adir"
 		}
 	],
-	"lastProgramExecuted": "APSDU"
+	"lastProgramExecuted": "xxx"
 }
