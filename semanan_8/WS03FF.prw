@@ -27,7 +27,7 @@ WSMETHOD GET WSRECEIVE WSSERVICE GETARQUIVO
 	Local cTipVali := "pdf|doc|docx|txt|csv|xls|xlsx|png|jpg|jpeg|tiff|gif|mp3|mp4|wmv|webm|prw" as Character
 	jParams := oRest:getQueryRequest()
 	IIF(EMPTY(jParams['tipoArquivo']), jParams['tipoArquivo']:="*",Nil)
-	if (jParams['tipoArquivo'] $ cTipVali .or. !EMPTY(jParams))
+	if (jParams['tipoArquivo'] $ cTipVali .or. jParams['tipoArquivo'] == "*")
 		ADir( cRoute + "\*." + jParams['tipoArquivo'], @aFiles)
 		oJson := JsonObject():New()          // Monta Objeto JSON de retorno
 		nCount := Len(aFiles)
