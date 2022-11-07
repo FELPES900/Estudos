@@ -11,12 +11,14 @@ API que retorna o nome dos arquivos da routa C:\TOTVS\Protheus\protheus_data\tem
 */
 WSRESTFUL GETARQUIVO DESCRIPTION "A Classe WS para testes" FORMAT APPLICATION_JSON
 
-	WSMETHOD GET DESCRIPTION "Consulta retronando todos os arquivos dentro da pastas semana_8" WSSYNTAX "/arquivos/visulizar"
+	WSMETHOD GET DESCRIPTION "Consulta retronando todos os arquivos dentro da pastas semana_8" WSSYNTAX "/arquivos/visulizar" PATH "/{arquivo}"
 
 END WSRESTFUL
 
 WSMETHOD GET WSRECEIVE WSSERVICE GETARQUIVO
-
+	
+	// 
+	Local nSecond := Seconds()
 	local lRet     := .T.                                                                        as Logical
 	local aArquivo := {}                                                                         as Array
 	Local nX       := 0                                                                          as Numeric
@@ -26,6 +28,7 @@ WSMETHOD GET WSRECEIVE WSSERVICE GETARQUIVO
 	local jParams  := JsonObject():New()                                                         as Object
 	Local cTipVali := "pdf|doc|docx|txt|csv|xls|xlsx|png|jpg|jpeg|tiff|gif|mp3|mp4|wmv|webm|prw" as Character
 	jParams := oRest:getQueryRequest()
+	// ::arquivo
 	IIF(EMPTY(jParams['tipoArquivo']), jParams['tipoArquivo']:="*",Nil)
 	if (jParams['tipoArquivo'] $ cTipVali .or. jParams['tipoArquivo'] == "*")
 		ADir( cRoute + "\*." + jParams['tipoArquivo'], @aFiles)
@@ -35,6 +38,7 @@ WSMETHOD GET WSRECEIVE WSSERVICE GETARQUIVO
 			for nX := 1 to nCount
 				Aadd(aArquivo, aFiles[nX])
 			next nX
+			Aadd(aArquivo, Seconds() - nSecond)
 			oJson:set(aArquivo)
 			::SetResponse(oJson:toJson())
 		else
