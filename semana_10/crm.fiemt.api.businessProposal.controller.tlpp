@@ -1,0 +1,80 @@
+#INCLUDE 'TOTVS.CH'
+#INCLUDE 'TLPP-CORE.TH'
+#INCLUDE 'TLPP-REST.TH'
+
+NameSpace crm.fiemt.api.proposal
+Using NameSpace crm.fiemt.util
+
+/*/{Protheus.doc} u_PostBunisessProposal
+inclusao da proposta de negocio
+@type function
+@version 12.1.33
+@author Vitor
+@since 10/08/2022
+@return variant, sem retorno
+/*/
+@POST('/api/v2/bunisessProposalFIEMT')
+Function u_PostBunisessProposal()
+	Local isOK       := .T.
+	Local request    := JsonObject():New()
+	Local response   := JsonObject():New()
+	Local cJsonError := request:FromJson(oRest:GetBodyRequest())
+	Private Inclui   := .T.
+	Private Altera   := .F.
+
+	//Caso o Json esteja invalido, ja retorna erro
+	If ValType(cJsonError) == "C"
+		oRest:SetFault("Invalid JSON")
+		Return
+	EndIf
+	//Caso o Json esteja valido, prossegue com a execucao
+	isOK := u_IncludeFina600(request,@response)
+	If isOk
+		u_setResponse(200,response)
+	else
+		u_setResponse(400,response)
+	EndIf
+Return
+
+/*/{Protheus.doc} u_PutBunisessProposal
+alteracao da proposta de negocio
+@type function
+@version 12.1.33
+@author Vitor
+@since 10/08/2022
+@return variant, sem retorno
+/*/
+@PUT('/api/v2/bunisessProposalFIEMT')
+Function u_PutBunisessProposal()
+
+	Local jHeader                                                as Object
+	Local isOK       := .T.                                      as Logical
+	Local request    := JsonObject():New()                       as Object
+	Local response   := JsonObject():New()                       as Object
+	Local cJsonError := request:FromJson(oRest:GetBodyRequest()) as Character
+	Private Inclui   := .F.                                      as Logical
+	Private Altera   := .T.                                      as Logical
+
+	//Caso o Json esteja invalido, ja retorna erro
+	If ValType(cJsonError) == "C"
+		oRest:SetFault("Invalid JSON")
+		Return
+	EndIf
+	//Caso o Json esteja valido, prossegue com a execucao
+
+	jHeader := 	oRest:GetHeaderRequest()
+
+	// Verifica se foi passado na Header o recklock senao segui a rotina padrao
+	if !Empty(jHeader['recklock'] == "true")
+		isOk := u_ReckLockFina600(request,@response)
+	else
+		isOK := u_ChangeFina600(request,@response)
+	endif
+
+	If isOk
+		u_setResponse(200,response)
+	else
+		u_setResponse(400,response)
+	EndIf
+Return
+

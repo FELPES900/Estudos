@@ -58,7 +58,7 @@ WSMETHOD POST WSSERVICE POSTCLI
 					Conout("Cliente incluído com sucesso!")
 				EndIf
 			endif
-		next nX
+		next
 	else
 		lRet := .F.
 	endif

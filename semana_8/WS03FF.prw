@@ -37,7 +37,7 @@ WSMETHOD GET WSRECEIVE WSSERVICE GETARQUIVO
 		if (nCount <> 0)
 			for nX := 1 to nCount
 				Aadd(aArquivo, aFiles[nX])
-			next nX
+			next
 			Aadd(aArquivo, Seconds() - nSecond)
 			oJson:set(aArquivo)
 			::SetResponse(oJson:toJson())

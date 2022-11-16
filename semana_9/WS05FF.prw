@@ -16,13 +16,12 @@ WSMETHOD GET WSRECEIVE WSSERVICE GETVISION
 	Local cAlias  := GetNextAlias() as Character
 	Local nLoop   := 0              as Numeric
 	Local aTDP    := {}             as Array // Tabela de Preço
-	Local cCodigo := "" as Character
+	Local cCodigo := ""             as Character
 
 	::SetContentType("application/json")
 	oJson   := JsonObject():New()
 	cError  := oJson:FromJson(cJson)
 	cCodigo := ::aURLParms[3]
-	
 	if Empty(cError)
 		if(cCodigo <> Nil)
 			BeginSQL Alias cAlias
@@ -37,14 +36,13 @@ WSMETHOD GET WSRECEIVE WSSERVICE GETVISION
                     AND DA1_CODTAB = DA0_CODTAB
                 WHERE
                     DA1_CODPRO = %exp:cCodigo%
-                    AND DA0.D_E_L_E_T_ = ''
+                    AND %notdel%
                     AND DA1.D_E_L_E_T_ = ''
                     AND DA0_ATIVO = '1'
 			ENDSQL
 			while !(cAlias)->(Eof())
 				nLoop++
 				aAdd(aTDP,JsonObject():New())
-
 				aTDP[nloop]["Descrição"]      := AllTrim((cAlias)->DA0_DESCRI)
 				aTDP[nloop]["Cod. Tabela"]    := AllTrim((cAlias)->DA0_CODTAB)
 				aTDP[nloop]["Preço de venda"] := (cAlias)->DA1_PRCVEN
@@ -59,5 +57,4 @@ WSMETHOD GET WSRECEIVE WSSERVICE GETVISION
 	oJson['Tabela de Preços'] := aTDP
 	::SetResponse(oJson:toJson()) // retorno de um objeto JSON
 	RestArea(aArea)
-
 Return lRet

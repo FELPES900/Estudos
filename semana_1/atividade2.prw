@@ -13,7 +13,7 @@ Local nFator := 5 // Número para o cálculo
 // Cálculo o valor fatorial
 For nCnt := nFator To 1 Step -1
 nResultado *= nCnt
-Next nCnt
+Next
 // Exibe o resultado na tela, através da função alert
 MsgAlert("O fatorial de " + cValToChar(nFator) + "é" + cValToChar(nResultado))
 // Termina o programa

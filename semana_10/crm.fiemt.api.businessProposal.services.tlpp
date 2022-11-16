@@ -1,0 +1,288 @@
+#INCLUDE 'TOTVS.CH'
+#INCLUDE 'TLPP-CORE.TH'
+#INCLUDE 'FWMVCDEF.CH'
+
+NameSpace crm.fiemt.api.proposal
+Using NameSpace crm.fiemt.util
+
+/*/{Protheus.doc} u_IncludeFina600
+Serviço de inclusao da proposta comercial
+@type function
+@version 12.1.33
+@author Vitor
+@since 06/10/2022
+@param request, json, json da requisicao
+@param response, json, retorno da requisicao
+@return logical, se gravou ou não
+/*/
+Function u_IncludeFina600(request as Json, response as Json) as logical
+	Local isOK             := .T.
+	Local nOperation       := 3
+	Local nItens           := 0
+	Local nHeader          := 0
+	Local nProdutos        := 0
+	Local nPropsHeader     := 1
+	Local nPropsProdutos   := 1
+	Local aADYMaster       := {}
+	Local aADZProduto      := {}
+	Local aItemProduto     := {}
+	Local aLogErro         := {}
+	Local aProdutoJson     := {}
+	Local cFilialbkp       := cFilAnt
+	Local aADYMasterTable  := FWSX3Util():GetAllFields( "ADY" , .F. )
+	Local aADZProdutoTable := FWSX3Util():GetAllFields( "ADZ" , .F. )
+	Local aHeaderJson      := request[ 'ADY_FIELD' ]:GetNames()
+	Private aValorTabPrice := {}
+	Private lMsErroAuto    := .F.
+	Private lMsHelpAuto    := .T.
+	Private lAutoErrNoFile := .T.
+
+	//Se a filial for diferente da filial do json, troca a filial
+	If cFilialbkp != request[ 'ADY_FIELD' ][ 'ADY_FILIAL' ]
+		cFilAnt := request[ 'ADY_FIELD' ][ 'ADY_FILIAL' ]
+	EndIf
+	//----------------------------------------------
+	// Cabeçalho da Proposta Comercial
+	//----------------------------------------------
+	ASort(aHeaderJson)
+	ASort(aADYMasterTable)
+	For nHeader := 1 To Len(aADYMasterTable)
+		If (AllTrim(aHeaderJson[nPropsHeader]) == AllTrim(aADYMasterTable[nHeader]))
+			If FWSX3Util():GetFieldType(aADYMasterTable[nHeader]) == "C"
+				aAdd(aADYMaster,{aHeaderJson[nPropsHeader],PadR(request['ADY_FIELD'][aHeaderJson[nPropsHeader]],TamSX3(aHeaderJson[nPropsHeader])[1]),Nil})
+			Elseif FWSX3Util():GetFieldType(aADYMasterTable[nHeader]) == "N"
+				aAdd(aADYMaster,{aHeaderJson[nPropsHeader],Val(request['ADY_FIELD'][aHeaderJson[nPropsHeader]]),Nil})
+			Elseif FWSX3Util():GetFieldType(aADYMasterTable[nHeader]) == "D"
+				aAdd(aADYMaster,{aHeaderJson[nPropsHeader],SToD(request['ADY_FIELD'][aHeaderJson[nPropsHeader]]),Nil})
+			ElseIf FWSX3Util():GetFieldType(aADYMasterTable[nHeader]) == "M"
+				If Len(aHeaderJson) != nPropsHeader; nPropsHeader++; Else; Exit; EndIf
+					Loop
+				EndIf
+				If Len(aHeaderJson) != nPropsHeader; nPropsHeader++; Else; Exit; EndIf
+				EndIf
+			Next
+			aADYMaster := FWVetByDic(aADYMaster,"ADY")
+			//-----------------------------------------------
+			// Itens da Proposta Comercial - Folder Produtos
+			//-----------------------------------------------
+			ASort(aADZProdutoTable)
+			For nItens := 1 To Len(request[ 'ADZ_GRID' ])
+				aProdutoJson := request['ADZ_GRID'][nItens]:GetNames()
+				aSort(aProdutoJson)
+				aAdd(aValorTabPrice,{request['ADZ_GRID'][nItens]['ADZ_PRCTAB']})
+				For nProdutos := 1 To Len(aADZProdutoTable)
+					If (AllTrim(aProdutoJson[nPropsProdutos]) == AllTrim(aADZProdutoTable[nProdutos]))
+						If FWSX3Util():GetFieldType(aADZProdutoTable[nProdutos]) == "C"
+							aAdd(aItemProduto,{aProdutoJson[nPropsProdutos],PadR(request['ADZ_GRID'][nItens][aProdutoJson[nPropsProdutos]],TamSX3(aProdutoJson[nPropsProdutos])[1]),Nil})
+						Elseif FWSX3Util():GetFieldType(aADZProdutoTable[nProdutos]) == "N"
+							aAdd(aItemProduto,{aProdutoJson[nPropsProdutos],Val(request['ADZ_GRID'][nItens][aProdutoJson[nPropsProdutos]]),Nil})
+						Elseif FWSX3Util():GetFieldType(aADZProdutoTable[nProdutos]) == "D"
+							aAdd(aItemProduto,{aProdutoJson[nPropsProdutos],SToD(request['ADZ_GRID'][nItens][aProdutoJson[nPropsProdutos]]),Nil})
+						ElseIf FWSX3Util():GetFieldType(aADZProdutoTable[nProdutos]) == "M"
+							If Len(aProdutoJson) != nPropsProdutos; nPropsProdutos++; Else; Exit; EndIf
+								Loop
+							EndIf
+							If Len(aProdutoJson) != nPropsProdutos; nPropsProdutos++; Else; Exit; EndIf
+							EndIf
+						Next
+						aProdutoJson := {}
+						nPropsProdutos := 1
+						aItemProduto := FWVetByDic(aItemProduto,"ADZ")
+						aAdd(aADZProduto,aItemProduto)
+						aItemProduto := {}
+					Next
+
+					//-----------------------------------------------
+					// Grava Proposta Comercial
+					//-----------------------------------------------
+					FATA600( /*oMdlFt300*/, nOperation, aADYMaster, aADZProduto )
+
+					If lMsErroAuto
+						aLogErro := GetAutoGrLog()
+						response['status']       := EncodeUtf8("Error")
+						response['message']      := EncodeUtf8(VarInfo("", aLogErro))
+						response['proposta']     := EncodeUtf8(Repl("0",TamSX3("ADY_PROPOS")[1]))
+						isOk := .F.
+					Else
+						response['status']       := EncodeUtf8("Ok")
+						response['message']      := EncodeUtf8("Oportunidade cadastrada com sucesso")
+						response['proposta']     := EncodeUtf8(ADY->ADY_PROPOS)
+						isOk := .T.
+					EndIf
+
+					//Voltando a filial caso tenha sido alterada
+					If cFilialbkp != cFilAnt
+						cFilAnt := cFilialbkp
+					EndIf
+
+					Return isOK
+
+/*/{Protheus.doc} u_ChangeFina600
+Serviço de alteração da proposta comercial
+@type function
+@version 12.1.33
+@author Vitor
+@since 06/10/2022
+@param request, json, json da requisicao
+@param response, json, retorno da requisicao
+@return logical, se gravou ou não
+/*/
+Function u_ChangeFina600(request as Json, response as Json) as logical
+	Local isOK             := .T.
+	Local nOperation       := 4
+	Local nItens           := 0
+	Local nHeader          := 0
+	Local nProdutos        := 0
+	Local nPropsHeader     := 1
+	Local nPropsProdutos   := 1
+	Local aADYMaster       := {}
+	Local aADZProduto      := {}
+	Local aItemProduto     := {}
+	Local aLogErro         := {}
+	Local aProdutoJson     := {}
+	Local cFilialbkp       := cFilAnt
+	Local aADYMasterTable  := FWSX3Util():GetAllFields( "ADY" , .F. )
+	Local aADZProdutoTable := FWSX3Util():GetAllFields( "ADZ" , .F. )
+	Local aHeaderJson      := request[ 'ADY_FIELD' ]:GetNames()
+	Private aValorTabPrice := {}
+	Private lMsErroAuto    := .F.
+	Private lMsHelpAuto    := .T.
+	Private lAutoErrNoFile := .T.
+
+	//Se a filial for diferente da filial do json, troca a filial
+	If cFilialbkp != request[ 'ADY_FIELD' ][ 'ADY_FILIAL' ]
+		cFilAnt := request[ 'ADY_FIELD' ][ 'ADY_FILIAL' ]
+	EndIf
+	//----------------------------------------------
+	// Cabeçalho da Proposta Comercial
+	//----------------------------------------------
+	ASort(aHeaderJson)
+	ASort(aADYMasterTable)
+	For nHeader := 1 To Len(aADYMasterTable)
+		If (AllTrim(aHeaderJson[nPropsHeader]) == AllTrim(aADYMasterTable[nHeader]))
+			If FWSX3Util():GetFieldType(aADYMasterTable[nHeader]) == "C"
+				aAdd(aADYMaster,{aHeaderJson[nPropsHeader],PadR(request['ADY_FIELD'][aHeaderJson[nPropsHeader]],TamSX3(aHeaderJson[nPropsHeader])[1]),Nil})
+			Elseif FWSX3Util():GetFieldType(aADYMasterTable[nHeader]) == "N"
+				aAdd(aADYMaster,{aHeaderJson[nPropsHeader],Val(request['ADY_FIELD'][aHeaderJson[nPropsHeader]]),Nil})
+			Elseif FWSX3Util():GetFieldType(aADYMasterTable[nHeader]) == "D"
+				aAdd(aADYMaster,{aHeaderJson[nPropsHeader],SToD(request['ADY_FIELD'][aHeaderJson[nPropsHeader]]),Nil})
+			ElseIf FWSX3Util():GetFieldType(aADYMasterTable[nHeader]) == "M"
+				If Len(aHeaderJson) != nPropsHeader; nPropsHeader++; Else; Exit; EndIf
+					Loop
+				EndIf
+				If Len(aHeaderJson) != nPropsHeader; nPropsHeader++; Else; Exit; EndIf
+				EndIf
+			Next
+			aADYMaster := FWVetByDic(aADYMaster,"ADY")
+			//-----------------------------------------------
+			// Itens da Proposta Comercial - Folder Produtos
+			//-----------------------------------------------
+			ASort(aADZProdutoTable)
+			For nItens := 1 To Len(request[ 'ADZ_GRID' ])
+				aProdutoJson := request['ADZ_GRID'][nItens]:GetNames()
+				aSort(aProdutoJson)
+				aAdd(aValorTabPrice,{request['ADZ_GRID'][nItens]['ADZ_PRCTAB']})
+				For nProdutos := 1 To Len(aADZProdutoTable)
+					If (AllTrim(aProdutoJson[nPropsProdutos]) == AllTrim(aADZProdutoTable[nProdutos]))
+						If FWSX3Util():GetFieldType(aADZProdutoTable[nProdutos]) == "C"
+							aAdd(aItemProduto,{aProdutoJson[nPropsProdutos],PadR(request['ADZ_GRID'][nItens][aProdutoJson[nPropsProdutos]],TamSX3(aProdutoJson[nPropsProdutos])[1]),Nil})
+						Elseif FWSX3Util():GetFieldType(aADZProdutoTable[nProdutos]) == "N"
+							aAdd(aItemProduto,{aProdutoJson[nPropsProdutos],Val(request['ADZ_GRID'][nItens][aProdutoJson[nPropsProdutos]]),Nil})
+						Elseif FWSX3Util():GetFieldType(aADZProdutoTable[nProdutos]) == "D"
+							aAdd(aItemProduto,{aProdutoJson[nPropsProdutos],SToD(request['ADZ_GRID'][nItens][aProdutoJson[nPropsProdutos]]),Nil})
+						ElseIf FWSX3Util():GetFieldType(aADZProdutoTable[nProdutos]) == "M"
+							If Len(aProdutoJson) != nPropsProdutos; nPropsProdutos++; Else; Exit; EndIf
+								Loop
+							EndIf
+							If Len(aProdutoJson) != nPropsProdutos; nPropsProdutos++; Else; Exit; EndIf
+							EndIf
+						Next
+						aProdutoJson := {}
+						nPropsProdutos := 1
+						aItemProduto := FWVetByDic(aItemProduto,"ADZ")
+						aAdd(aADZProduto,aItemProduto)
+						aItemProduto := {}
+					Next
+
+					//-----------------------------------------------
+					// Grava Proposta Comercial
+					//-----------------------------------------------
+					FATA600( /*oMdlFt300*/, nOperation, aADYMaster, aADZProduto )
+
+					If lMsErroAuto
+						aLogErro := GetAutoGrLog()
+						response['STATUS']       := EncodeUtf8("Error")
+						response['MESSAGE']      := EncodeUtf8(VarInfo("", aLogErro))
+						response['PROPOSTA']     := EncodeUtf8(Repl("0",TamSX3("ADY_PROPOS")[1]))
+						isOk := .F.
+					Else
+						response['STATUS']       := EncodeUtf8("Ok")
+						response['MESSAGE']      := EncodeUtf8("Oportunidade alterada com sucesso")
+						response['PROPOSTA']     := EncodeUtf8(ADY->ADY_PROPOS)
+						response['REVISAO']      := EncodeUtf8(ADY->ADY_PREVIS)
+						isOk := .T.
+					EndIf
+
+					//Voltando a filial caso tenha sido alterada
+					If cFilialbkp != cFilAnt
+						cFilAnt := cFilialbkp
+					EndIf
+
+					Return isOK
+
+Function u_ReckLockFina600(request as Json, response as Json) as Logical
+
+	Local isOk      := .T. as Logical
+	Local nX        := 0   as Numeric
+
+	DbSelectArea("ADY")
+	DbSetOrder(1)
+	IF dbSeek(request["ADY_FIELD"][ 'ADY_FILIAL' ] + request["ADY_FIELD"][ 'ADY_PROPOS' ])
+		RecLock("ADY", .F.)
+		ADY->ADY_FILIAL := FWxFilial( 'ADY' )
+		ADY->ADY_OPORTU := Request["ADY_FIELD"]["ADY_OPORTU"]
+		ADY->ADY_PROPOS := Request["ADY_FIELD"]["ADY_PROPOS"]
+		ADY->ADY_PREVIS := Request["ADY_FIELD"]["ADY_PREVIS"]
+		ADY->ADY_REVISA := Request["ADY_FIELD"]["ADY_REVISA"]
+		ADY->ADY_DATA   := Request["ADY_FIELD"]["ADY_DATA" ]
+		ADY->ADY_ENTIDA := Request["ADY_FIELD"]["ADY_ENTIDA"]
+		ADY->ADY_CODIGO := Request["ADY_FIELD"]["ADY_CODIGO"]
+		ADY->ADY_LOJA   := Request["ADY_FIELD"]["ADY_LOJA" ]
+		ADY->ADY_TABELA := Request["ADY_FIELD"]["ADY_TABELA"]
+		ADY->ADY_CONDPG := Request["ADY_FIELD"]["ADY_CONDPG"]
+		ADY->ADY_VEND   := Request["ADY_FIELD"]["ADY_VEND" ]
+		ADY->ADY_CLIENT := Request["ADY_FIELD"]["ADY_CLIENT"]
+		ADY->ADY_LOJENT := Request["ADY_FIELD"]["ADY_LOJENT"]
+		ADY->ADY_STATUS := Request["ADY_FIELD"]["ADY_STATUS"]
+		MsUnlock()
+
+		DbSelectArea("ADZ")
+		DbSetOrder(1)
+		for nX          := 1 to Len(Request["ADZ_GRID"])
+			IF dbSeek(Request["ADZ_GRID"][nX]["ADZ_FILIAL"] + Request["ADZ_GRID"][nX]["ADZ_PROPOS"] + Request["ADZ_GRID"][nX]["ADZ_ITEM"])
+				RecLock("ADZ", .F.)
+				ADZ->ADZ_PRODUT := Request["ADZ_GRID"][nX]["ADZ_PRODUT"]
+				ADZ->ADZ_PROPOS := Request["ADZ_GRID"][nX]["ADZ_PROPOS"]
+				ADZ->ADZ_FILIAL := Request["ADZ_GRID"][nX]["ADZ_FILIAL"]
+				ADZ->ADZ_TES    := Request["ADZ_GRID"][nX]["ADZ_TES"]
+				ADZ->ADZ_QTDVEN := Request["ADZ_GRID"][nX]["ADZ_QTDVEN"]
+				ADZ->ADZ_CODAGR := Request["ADZ_GRID"][nX]["ADZ_CODAGR"]
+				ADZ->ADZ_CODNIV := Request["ADZ_GRID"][nX]["ADZ_CODNIV"]
+				ADZ->ADZ_CONDPG := Request["ADZ_GRID"][nX]["ADZ_CONDPG"]
+				ADZ->ADZ_UM     := Request["ADZ_GRID"][nX]["ADZ_UM"]
+				ADZ->ADZ_TABAGR := Request["ADZ_GRID"][nX]["ADZ_TABAGR"]
+				ADZ->ADZ_TOTAL  := Request["ADZ_GRID"][nX]["ADZ_TOTAL"]
+				ADZ->ADZ_PRCVEN := Request["ADZ_GRID"][nX]["ADZ_PRCVEN"]
+				ADZ->ADZ_VALDES := Request["ADZ_GRID"][nX]["ADZ_VALDES"]
+				ADZ->ADZ_DESCON := Request["ADZ_GRID"][nX]["ADZ_DESCON"]
+				ADZ->ADZ_ITEM   := Request["ADZ_GRID"][nX]["ADZ_ITEM"]
+				ADZ->ADZ_REVISA := Request["ADZ_GRID"][nX]["ADZ_REVISA"]
+				ADZ->ADZ_PRCTAB := Request["ADZ_GRID"][nX]["ADZ_PRCTAB"]
+				ADZ->ADZ_ORCAME := Request["ADZ_GRID"][nX]["ADZ_ORCAME"]
+				MsUnlock()
+
+			ENDIF
+		next
+	ENDIF
+
+Return isOk
