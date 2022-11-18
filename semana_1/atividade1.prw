@@ -12,7 +12,7 @@ User Function ativid1()
 
     for nCnt := 1 to 10
         nSoma := nSoma + 1
-    next nCnt
+    next
 
 
 Return

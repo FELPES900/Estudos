@@ -34,7 +34,10 @@
 		},
 		{
 			"label": "U_adir"
+		},
+		{
+			"label": "u_CALCULA"
 		}
 	],
-	"lastProgramExecuted": "xxx"
+	"lastProgramExecuted": "u_CALCULA"
 }
