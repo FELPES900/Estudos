@@ -37,6 +37,9 @@
 		},
 		{
 			"label": "u_CALCULA"
+		},
+		{
+			"label": "u_GENA01AA"
 		}
 	],
 	"lastProgramExecuted": "u_CALCULA"

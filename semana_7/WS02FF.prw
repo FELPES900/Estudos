@@ -9,7 +9,7 @@ END WSRESTFUL
 
 WSMETHOD POST WSSERVICE POSTCLI
 
-	Local cJson    := ::GetContent() as Character
+	Local cJson    := self:GetContent() as Character
 	local lRet     := .T.            as Logical
 	local oJson    := Nil            as Object
 	local cError   := ""             as Character
@@ -21,7 +21,7 @@ WSMETHOD POST WSSERVICE POSTCLI
 	Private lMSHelpAuto     := .T.
 	Private lAutoErrNoFile := .T.
 
-	::SetContentType("application/json") // Pega o conteudo JSON da transação Rest
+	self:SetContentType("application/json") // Pega o conteudo JSON da transação Rest
 	oJson := JsonObject():New()          // Monta Objeto JSON de retorno
 	cError  := oJson:FromJson(cJson)
 

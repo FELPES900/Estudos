@@ -12,7 +12,7 @@ END WSRESTFUL
 WSMETHOD GET WSSERVICE FILIAIS
 
 	Local cAlias   := GetNextAlias()                          as Character //Pega o próximo alias disponível
-	Local cJson    := ::GetContent()                          as Character // Pega a string do JSON
+	Local cJson    := self:GetContent()                          as Character // Pega a string do JSON
 	Local aClient  := {}                                      as Array
 	Local oJson    := Nil                                     as Object
 	Local lRet     := .T.                                     as Logical
@@ -20,7 +20,7 @@ WSMETHOD GET WSSERVICE FILIAIS
 	local nLoop    := 0                                       as Numeric
 	local cArquivo := "\temp\json.txt"                        as Character // Somente inseri os dados quando estiver na pasta protheus_data
 
-	::SetContentType("application/json") // Pega o conteudo JSON da transação Rest
+	self:SetContentType("application/json") // Pega o conteudo JSON da transação Rest
 	oJson := JsonObject():New()          // Monta Objeto JSON de retorno
 	cError  := oJson:FromJson(cJson)
 
@@ -63,6 +63,6 @@ WSMETHOD GET WSSERVICE FILIAIS
 		ConOut("Gravou")
 	EndIf
 	//oJson:set(aClient) // seta o valor ao objeto
-	::SetResponse(oJson:toJson()) // retorno de um objeto JSON
+	self:SetResponse(oJson:toJson()) // retorno de um objeto JSON
 
 Return lRet

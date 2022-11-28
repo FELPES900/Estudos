@@ -19,16 +19,16 @@ WSMETHOD GET WSRECEIVE WSSERVICE GETDOWNLOAD
 	Local cTipVali := "pdf|doc|txt|csv|xls|png|jpg|gif|mp3|mp4|wmv|prw" as Character
 	// Local aContTyp := {"application","audio","font","example","image","message","model","multipart","text","video"} as Array
 
-	cArquivo := ::aURLParms[3]
+	cArquivo := self:aURLParms[3]
 	cTipo := Right(cArquivo, 3)
 	oJson := JsonObject():New()
 	if (cTipo $ cTipVali)
 		oFile := FWFileReader():New(cRoute + "\" + cArquivo)
 		If (oFile:Open())
 			cFile := oFile:FullRead() // EFETUA A LEITURA DO ARQUIVO
-			::SetHeader('Content-Type', validaTIpo(cTipo))
-			::SetHeader("Content-Disposition", "attachment; filename=" + AllTrim(cArquivo))
-			::SetResponse(cFile)
+			self:SetHeader('Content-Type', validaTIpo(cTipo))
+			self:SetHeader("Content-Disposition", "attachment; filename=" + AllTrim(cArquivo))
+			self:SetResponse(cFile)
 			lRet := .T.
 		else
 			SetRestFault(002, "can't load file")

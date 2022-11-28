@@ -28,7 +28,7 @@ WSMETHOD GET WSRECEIVE WSSERVICE GETARQUIVO
 	local jParams  := JsonObject():New()                                                         as Object
 	Local cTipVali := "pdf|doc|docx|txt|csv|xls|xlsx|png|jpg|jpeg|tiff|gif|mp3|mp4|wmv|webm|prw" as Character
 	jParams := oRest:getQueryRequest()
-	// ::arquivo
+	// self:arquivo
 	IIF(EMPTY(jParams['tipoArquivo']), jParams['tipoArquivo']:="*",Nil)
 	if (jParams['tipoArquivo'] $ cTipVali .or. jParams['tipoArquivo'] == "*")
 		ADir( cRoute + "\*." + jParams['tipoArquivo'], @aFiles)
@@ -40,7 +40,7 @@ WSMETHOD GET WSRECEIVE WSSERVICE GETARQUIVO
 			next
 			Aadd(aArquivo, Seconds() - nSecond)
 			oJson:set(aArquivo)
-			::SetResponse(oJson:toJson())
+			self:SetResponse(oJson:toJson())
 		else
 			lRet := .F.
 			SetRestFault(404, EncodeUTF8("Nenhum aquivo nessa pasta"))

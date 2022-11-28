@@ -11,17 +11,17 @@ WSMETHOD GET WSRECEIVE WSSERVICE GETVISION
 
 	local lRet    := .T.            as Logical
 	local oJson   := Nil            as Object
-	Local cJson   := ::GetContent() as Character
+	Local cJson   := self:GetContent() as Character
 	Local aArea   := GetArea()      as Array
 	Local cAlias  := GetNextAlias() as Character
 	Local nLoop   := 0              as Numeric
 	Local aTDP    := {}             as Array // Tabela de Preço
 	Local cCodigo := ""             as Character
 
-	::SetContentType("application/json")
+	self:SetContentType("application/json")
 	oJson   := JsonObject():New()
 	cError  := oJson:FromJson(cJson)
-	cCodigo := ::aURLParms[3]
+	cCodigo := self:aURLParms[3]
 	if Empty(cError)
 		if(cCodigo <> Nil)
 			BeginSQL Alias cAlias
@@ -55,6 +55,6 @@ WSMETHOD GET WSRECEIVE WSSERVICE GETVISION
 		endif
 	endif
 	oJson['Tabela de Preços'] := aTDP
-	::SetResponse(oJson:toJson()) // retorno de um objeto JSON
+	self:SetResponse(oJson:toJson()) // retorno de um objeto JSON
 	RestArea(aArea)
 Return lRet
