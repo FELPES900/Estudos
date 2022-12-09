@@ -56,3 +56,30 @@ V - Semana_8
         III - Primeira API litar um json todos os arquivos dentro da pasta
 
         IV - Segunda API retorna um arquivo no response passando na URL o nome do arquivo
+
+VI - Semana_9
+
+        I - Aprendendo como a desenvolver um API REST GET
+
+        II - Retornando campos especificos da tabela de precos da DA1
+
+VII - Semana_10
+
+    I - Fazendo uma manutenção de uma API usando os tipos UPDATE(PUT)
+
+    II - Verificando se a query que foi passada for diferente a true se nao segui a rotina padrao
+
+VIII - Semana_11
+
+    I - Aprendendo a fazer o envio de email usando o ambiente de configuração usando o Email/Proxy
+
+    II - Tambem ja aprendendo a como usar Class e Methods no ADVPL
+
+IX - Semana_12
+
+    I - Aprendendo a usar Class, Method e DATA no protheus para usar futuramente em projetos
+        Obs: O objetivo foi criar uma calculadora usando todos methodos passados a cima
+
+X - Semana_13
+
+    --EM AGUARDO--

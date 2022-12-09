@@ -10,7 +10,7 @@ MVC simples
 /*/
 
 
-User Function CRMA01FF()
+Function U_CRMA01FF()
 
 	Local oBrowse
 
