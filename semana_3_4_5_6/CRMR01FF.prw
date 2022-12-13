@@ -91,7 +91,7 @@ static function ReportPrint()
                 WHERE Z1_FILIAL BETWEEN %Exp:MV_PAR01% AND %Exp:MV_PAR02%
                 AND   Z1_PAIS BETWEEN %Exp:MV_PAR03% AND %Exp:MV_PAR04%
                 AND SZ1.%NotDel%
-            
+
 		ENDSQL
 
 	ELSE
@@ -105,11 +105,11 @@ static function ReportPrint()
                     %Table:SZ1% SZ1
                 WHERE Z1_FILIAL BETWEEN %Exp:MV_PAR01% AND %Exp:MV_PAR02%
                 AND   Z1_PAIS BETWEEN %Exp:MV_PAR03% AND %Exp:MV_PAR04%
-                AND SZ1.%NotDel% 
+                AND SZ1.%NotDel%
                 GROUP BY Z1_FILIAL,
                         Z1_PAIS
                 ORDER BY Z1_PAIS
-            
+
 		ENDSQL
 
 	ENDIF

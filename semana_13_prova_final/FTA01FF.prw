@@ -139,10 +139,8 @@ Static Function GRVSaldo(oModelSZ4)
 			oSZ3Detail:SetValue("Z3_QSALDO",(SZ3->Z3_QSALDO - M->Z4_PEOSSAI))
 			oSZ3Detail:SetValue("Z3_QSAIDA",(SZ3->Z3_QSAIDA + M->Z4_PEOSSAI))
 		elseif(nOperation == 5)
-			// RecLock("SZ3", .F.)
-			// SZ3->Z3_QSALDO := (SZ3->Z3_QSALDO + M->Z4_PEOSSAI)
-			// SZ3->Z3_QSAIDA  := (SZ3->Z3_QSAIDA - M->Z4_PEOSSAI)
-			// MsUnlock()
+			oSZ3Detail:SetValue("Z3_QSALDO",(SZ3->Z3_QSALDO + M->Z4_PEOSSAI))
+			oSZ3Detail:SetValue("Z3_QSAIDA",(SZ3->Z3_QSAIDA - M->Z4_PEOSSAI))
 		endif
 		//Grava modelo da SZ3
 		If oModelSZ3:VldData()
