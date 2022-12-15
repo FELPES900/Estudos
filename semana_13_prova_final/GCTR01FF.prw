@@ -43,6 +43,7 @@ Static Function ReportDef(cAlias1, cPerg)
 
 	// Define se os totalizadores serão impressos em linha ou coluna
 	oReport:SetTotalInLine(.F.)
+	oReport:oPage:SetPaperSize(9)
 
 	// Criando um cabaeçalho de como o relatorio será gerado
 	oSection1 := TRSection():New(oReport, "Contrato", {cAlias1})
@@ -66,9 +67,9 @@ Static Function ReportDef(cAlias1, cPerg)
 
 	// Totalizador por contrato
 	// oBreak := TRBreak():New(oSection1,oSection1:Cell("Z2_CODCON"),"Sub Total",.f.)
-	// TRFunction():New(oSection2:Cell("Z3_QORIGIN"), "", "SUM", oBreak, "Total", "@E 999,999.99",, .F., .F.)
-	// TRFunction():New(oSection2:Cell("Z3_QSAIDA") , "", "SUM", oBreak, "Total", "@E 999,999.99",, .F., .F.)
-	// TRFunction():New(oSection2:Cell("Z3_QSALDO") , "", "SUM", oBreak, "Total", "@E 999,999.99",, .F., .F.)
+	TRFunction():New(oSection2:Cell("Z3_QORIGIN"), "", "SUM",, "Total", "@E 999,999.99",, .T., .T.)
+	TRFunction():New(oSection2:Cell("Z3_QSAIDA") , "", "SUM",, "Total", "@E 999,999.99",, .T., .T.)
+	TRFunction():New(oSection2:Cell("Z3_QSALDO") , "", "SUM",, "Total", "@E 999,999.99",, .T., .T.)
 
 Return oReport
 
@@ -130,6 +131,9 @@ Static Function ReportPrint(oReport,cAlias1)
 			oSection1:Cell("Z2_NCFISCA"):SetAlign("right")
 			oSection1:Cell("Z2_NCFISCA"):SetValue((cAlias1)->Z2_NCFISIC)
 		else
+
+			oSection1:init()
+			oSection2:init()
 
 			oSection1:Cell("Z2_CFISCAL"):SetHeaderAlign("left")
 			oSection1:Cell("Z2_CFISCAL"):SetAlign("right")
