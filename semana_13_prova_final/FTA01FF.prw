@@ -115,11 +115,13 @@ Static Function GRVSaldo(oModelSZ4)
 	Local aArea := FwGetArea()
 	Local oSZ4Master := oModelSZ4:GetModel("SZ4MASTER")
 
+	// Ativando a model da FELPE
+	if(!oModelSZ3:CanActivate())
+		oModelSZ3:Activate()
+	endif
+
 	// Buscando qual o tipo de operação que esta sendo executada
 	oModelSZ3:SetOperation(MODEL_OPERATION_UPDATE)
-
-	// Ativando a model da SZ3
-	oModelSZ3:Activate()
 
 	// Chamando a model dos produtos relacionados a o contrato
 	oSZ3Detail := oModelSZ3:GetModel('SZ3DETAIL')
@@ -131,8 +133,6 @@ Static Function GRVSaldo(oModelSZ4)
 	DbSetOrder(2)
 
 	// Verificando se a consulta será TRUE
-	//if( DbSeek(xFilial("SZ3") + M->Z4_CCONTRA + FwFldGet("Z4_CODPROD",,oModelSZ4)))
-
 	If oSZ3Detail:SeekLine({{"Z3_FILIAL",xFilial("SZ3")},{"Z3_CODCON",oSZ4Master:GetValue("Z4_CCONTRA")},{"Z3_CODPROD",oSZ4Master:GetValue("Z4_CODPROD")}})
 		// Vendo qual o tipo de operação que será executada
 		if(nOperation == 3)

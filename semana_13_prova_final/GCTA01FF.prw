@@ -44,7 +44,7 @@ Static Function ModelDef()
 	Local oModel                                                                as Object
 
 	// Cria o objeto do Modelo de Dados
-	oModel := MPFormModel():New( 'GCTM01FF', /*bPreValidacao*/, /*bPosValidacao*/, /*bCommit*/, /*bCancel*/ )
+	oModel := MPFormModel():New( 'GCTM01FF', /*bPreValidacao*/, {|oModel| modalValida(oModel)}, /*bCommit*/, /*bCancel*/ )
 
 	// Adiciona ao modelo uma estrutura de formulário de edição por campo
 	oModel:AddFields( 'SZ2MASTER', /*cOwner*/, oStruSZ2 )
@@ -72,6 +72,10 @@ Static Function ModelDef()
 	oStruSZ2:SetProperty("Z2_LFISCA" ,MODEL_FIELD_WHEN,{|oModel| valida(oModel,2)})
 	oStruSZ2:SetProperty("Z2_CFISCAL",MODEL_FIELD_WHEN,{|oModel| valida(oModel,2)})
 	oStruSZ2:SetProperty("Z2_NCFISCA",MODEL_FIELD_WHEN,{|oModel| valida(oModel,2)})
+
+	if(oModel:GetOperation() == 4)
+		oStruSZ2:SetProperty('*',MODEL_FIELD_WHEN,{|oModel| nedita(oModel)})
+	endif
 
 	// calcula quanto de saldo tem disponivel
 	oStruSZ3:AddTrigger( 'Z3_QORIGIN', 'Z3_QSALDO', {||.T. }, {||u_AttSaldo(oModel)} )
@@ -141,3 +145,71 @@ Function u_attsaldo(oModel)
 	Endif
 
 Return nValor
+
+Static Function modalValida(oModel)
+
+	Local oMdlSZ2 := oModel:GetModel('SZ2MASTER')
+	Local oMdlSZ3 := oModel:GetModel('SZ3DETAIL')
+	Local lRet := .T.
+	Private cAlias := GetNextAlias()
+
+	// Chamando a tabela de produtos relacionadas ao contrato
+	DbSelectArea("SZ3")
+
+	// Chamando o segundo Indice da tabela
+	DbSetOrder(3)
+
+	if oMdlSZ3:SeekLine({{"Z3_FILIAL",xFilial("SZ3")},{"Z3_QSAIDA",oMdlSZ3:GetValue("Z3_QSAIDA")},{"Z3_CODCON",oMdlSZ3:GetValue("Z3_CODCON")}})
+
+		// Verificar se todos os produtos estao com o saldo zerado
+		validacao(oMdlSZ3,cAlias)
+
+		if(oMdlSZ3:GetValue("Z3_QSAIDA") <> oMdlSZ3:GetValue("Z3_QORIGIN"))
+			lRet := .T.
+			oMdlSZ2:SetValue("Z2_TIPOCON", "2")
+			oMdlSZ2:SetValue("Z2_STATUS", "2")
+		elseif ((cAlias)->(!Eof())) ==  .F.
+			lRet := .T.
+			oMdlSZ2:SetValue("Z2_TIPOCON", "3")
+			oMdlSZ2:SetValue("Z2_STATUS", "3")
+		else
+			lRet := .T.
+			oMdlSZ2:SetValue("Z2_TIPOCON", "1")
+			oMdlSZ2:SetValue("Z2_STATUS", "1")
+		Endif
+		(cAlias)->(dbCloseArea())
+	endif
+
+Return lRet
+
+Static function nedita(oModel)
+
+	Local oMdlSZ2 := oModel:GetModel('SZ2MASTER')
+	Local lRet := .T.
+	Local nOperation := oMdlSZ2:GetOperation() as Numeric
+
+	if(nOperation == 4)
+		lRet := .F.
+	Endif
+
+Return lRet
+
+
+Static function validacao(oMdlSZ3,cAlias)
+
+	BeginSql Alias cAlias
+		SELECT
+			Z3_CODPROD,
+			Z3_NOME,
+			Z3_QORIGIN,
+			Z3_QSAIDA,
+			Z3_QSALDO,
+			Z3_CODCON
+		FROM
+			%Table:SZ3% SZ2
+		WHERE
+			Z3_QSAIDA = Z3_QORIGIN
+			AND Z3_CODCON = %exp:oMdlSZ3:GetValue("Z3_CODCON")%
+	EndSql
+
+Return cAlias
