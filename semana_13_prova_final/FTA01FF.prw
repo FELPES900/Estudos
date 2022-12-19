@@ -106,65 +106,68 @@ Return lRet
 Static Function GRVSaldo(oModelSZ4)
 
 	// Chamando a user function de contratos para buscar suas models
-	Local oModelSZ3 := FWLoadModel("GCTA01FF")	as Object
+	Local oModelCtr := FWLoadModel("GCTA01FF")	as Object
 	Local oSZ3Detail 							as Object
+	// Local oSZ2Master := oModelCtr:GetModel('SZ2MASTER')
 
 	// Pegando o tipo de operação que esta sendo executada
-	Local nOperation := oModelSZ4:GetOperation() as Numeric
+	// Local nOperation := oModelSZ4:GetOperation() as Numeric
 	Local lRet := .T.						 	 as Logical
-	Local aArea := FwGetArea()
+	// Local aArea := FwGetArea()
 	Local oSZ4Master := oModelSZ4:GetModel("SZ4MASTER")
 
-	// Ativando a model da FELPE
-	if(!oModelSZ3:CanActivate())
-		oModelSZ3:Activate()
-	endif
-
 	// Buscando qual o tipo de operação que esta sendo executada
-	oModelSZ3:SetOperation(MODEL_OPERATION_UPDATE)
+	oModelCtr:SetOperation(MODEL_OPERATION_UPDATE)
 
-	// Chamando a model dos produtos relacionados a o contrato
-	oSZ3Detail := oModelSZ3:GetModel('SZ3DETAIL')
+	// Chamando a tabela de contratos
+	DbSelectArea("SZ2")
+	DbSetOrder(4)
+	DbSeek(xFilial(SZ2) + oSZ4Master:GetValue("Z4_CCONTRA"))
 
-	// Chamando a tabela de produtos relacionadas ao contrato
-	DbSelectArea("SZ3")
+	// oModelCtr:Activate()
 
-	// Chamando o segundo Indice da tabela
-	DbSetOrder(2)
+	// // Chamando a model dos produtos relacionados a o contrato
+	oSZ3Detail := oModelCtr:GetModel('SZ3DETAIL')
 
-	// Verificando se a consulta será TRUE
-	If oSZ3Detail:SeekLine({{"Z3_FILIAL",xFilial("SZ3")},{"Z3_CODCON",oSZ4Master:GetValue("Z4_CCONTRA")},{"Z3_CODPROD",oSZ4Master:GetValue("Z4_CODPROD")}})
-		// Vendo qual o tipo de operação que será executada
-		if(nOperation == 3)
-			oSZ3Detail:SetValue("Z3_QSALDO",(SZ3->Z3_QSALDO - M->Z4_PEOSSAI))
-			oSZ3Detail:SetValue("Z3_QSAIDA",(SZ3->Z3_QSAIDA + M->Z4_PEOSSAI))
-		elseif(nOperation == 5)
-			oSZ3Detail:SetValue("Z3_QSALDO",(SZ3->Z3_QSALDO + M->Z4_PEOSSAI))
-			oSZ3Detail:SetValue("Z3_QSAIDA",(SZ3->Z3_QSAIDA - M->Z4_PEOSSAI))
-		endif
-		//Grava modelo da SZ3
-		If oModelSZ3:VldData()
-			oModelSZ3:CommitData()
-		Else
-			lRet := .F.
-			cLog := cValToChar(oModelSZ3:GetErrorMessage()[4]) + ' - '
-			cLog += cValToChar(oModelSZ3:GetErrorMessage()[5]) + ' - '
-			cLog += cValToChar(oModelSZ3:GetErrorMessage()[6])
+	// // Chamando a tabela de produtos relacionadas ao contrato
+	// DbSelectArea("SZ3")
 
-			Help( ,,"CONTRATOS",,cLog, 1, 0 )
-		Endif
-	endif
-	//Fecha model e a area da SZ3
-	oModelSZ3:DeActivate()
-	oModelSZ3 := Nil
-	SZ3->(DbCloseArea())
-	//Volto o posicionamento para a SZ4 e faço o commit
-	FwRestArea(aArea)
-	//Grava modelo principal
-	If oModelSZ4:VldData()
-		lRet := FWFormCommit(oModelSZ4)
-	Else
-		lRet := .F.
-	EndIf
+	// // Chamando o segundo Indice da tabela
+	// DbSetOrder(2)
+
+	// // Verificando se a consulta será TRUE
+	// If oSZ3Detail:SeekLine({{"Z3_FILIAL",xFilial("SZ3")},{"Z3_CODCON",oSZ4Master:GetValue("Z4_CCONTRA")},{"Z3_CODPROD",oSZ4Master:GetValue("Z4_CODPROD")}})
+	// 	// Vendo qual o tipo de operação que será executada
+	// 	if(nOperation == 3)
+	// 		oSZ3Detail:SetValue("Z3_QSALDO",(SZ3->Z3_QSALDO - M->Z4_PEOSSAI))
+	// 		oSZ3Detail:SetValue("Z3_QSAIDA",(SZ3->Z3_QSAIDA + M->Z4_PEOSSAI))
+	// 	elseif(nOperation == 5)
+	// 		oSZ3Detail:SetValue("Z3_QSALDO",(SZ3->Z3_QSALDO + M->Z4_PEOSSAI))
+	// 		oSZ3Detail:SetValue("Z3_QSAIDA",(SZ3->Z3_QSAIDA - M->Z4_PEOSSAI))
+	// 	endif
+	// 	//Grava modelo da SZ3
+	// 	If oModelCtr:VldData()
+	// 		oModelCtr:CommitData()
+	// 	Else
+	// 		lRet := .F.
+	// 		cLog := cValToChar(oModelCtr:GetErrorMessage()[4]) + ' - '
+	// 		cLog += cValToChar(oModelCtr:GetErrorMessage()[5]) + ' - '
+	// 		cLog += cValToChar(oModelCtr:GetErrorMessage()[6])
+
+	// 		Help( ,,"CONTRATOS",,cLog, 1, 0 )
+	// 	Endif
+	// endif
+	// //Fecha model e a area da SZ3
+	// oModelCtr:DeActivate()
+	// oModelCtr := Nil
+	// SZ3->(DbCloseArea())
+	// //Volto o posicionamento para a SZ4 e faço o commit
+	// FwRestArea(aArea)
+	// //Grava modelo principal
+	// If oModelSZ4:VldData()
+	// 	lRet := FWFormCommit(oModelSZ4)
+	// Else
+	// 	lRet := .F.
+	// EndIf
 
 Return lRet

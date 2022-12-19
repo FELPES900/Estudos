@@ -39,8 +39,8 @@ Return aRotina
 Static Function ModelDef()
 
 	// Cria a estrutura a ser usada no Modelo de Dados
-	Local oStruSZ2 := FWFormStruct( 1, 'SZ2' , /*bAvalCampo*/, /*lViewUsado*/ ) as Object
-	Local oStruSZ3 := FWFormStruct( 1, 'SZ3' , /*bAvalCampo*/, /*lViewUsado*/ ) as Object
+	Local oStruSZ2 := FWFormStruct( 1, 'SZ2' ) as Object
+	Local oStruSZ3 := FWFormStruct( 1, 'SZ3' ) as Object
 	Local oModel                                                                as Object
 
 	// Cria o objeto do Modelo de Dados
@@ -73,7 +73,7 @@ Static Function ModelDef()
 	oStruSZ2:SetProperty("Z2_CFISCAL",MODEL_FIELD_WHEN,{|oModel| valida(oModel,2)})
 	oStruSZ2:SetProperty("Z2_NCFISCA",MODEL_FIELD_WHEN,{|oModel| valida(oModel,2)})
 
-	if(oModel:GetOperation() == 4)
+	if(oModel:GetOperation() == 4) .And. !FwIsInCallStack("FTA01FF")
 		oStruSZ2:SetProperty('*',MODEL_FIELD_WHEN,{|oModel| nedita(oModel)})
 	endif
 
