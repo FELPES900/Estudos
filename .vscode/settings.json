@@ -1,5 +1,5 @@
 {
     "totvsLanguageServer.welcomePage": false,
     "advpl.debug_multiThread": false,
-    "totvsLanguageServer.workspaceServerConfig": true
+    "totvsLanguageServer.workspaceServerConfig": false
 }

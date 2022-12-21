@@ -37,7 +37,7 @@ Static Function ModelDef()
 	Local oModel                                                                as Object
 
 	// Cria o objeto do Modelo de Dados
-	oModel := MPFormModel():New('FTMA01FF', {|| novosaldo()}, /*bPosValidacao*/, {|oModel| GRVSaldo(oModel)}, /*bCancel*/ )
+	oModel := MPFormModel():New('FTMA01FF', {|| novosaldo()},{|oModel| GRVSaldo(oModel)},/*bCommit*/, /*bCancel*/ )
 
 	// Adiciona ao modelo uma estrutura de formulário de edição por campo
 	oModel:AddFields( 'SZ4MASTER', /*cOwner*/, oStruSZ4, /*bPreValidacao*/, /*bPosValidacao*/, /*bCarga*/ )
@@ -105,69 +105,30 @@ Return lRet
 
 Static Function GRVSaldo(oModelSZ4)
 
-	// Chamando a user function de contratos para buscar suas models
-	Local oModelCtr := FWLoadModel("GCTA01FF")	as Object
-	Local oSZ3Detail 							as Object
-	// Local oSZ2Master := oModelCtr:GetModel('SZ2MASTER')
+	Local lRet       := .T.                               as Logical
+	Local nOperation := oModelSZ4:GetOperation()          as Numeric
 
-	// Pegando o tipo de operação que esta sendo executada
-	// Local nOperation := oModelSZ4:GetOperation() as Numeric
-	Local lRet := .T.						 	 as Logical
-	// Local aArea := FwGetArea()
-	Local oSZ4Master := oModelSZ4:GetModel("SZ4MASTER")
+	// Chamando a tabela de produtos relacionadas ao contrato
+	DbSelectArea("SZ3")
 
-	// Buscando qual o tipo de operação que esta sendo executada
-	oModelCtr:SetOperation(MODEL_OPERATION_UPDATE)
+	// Chamando o segundo Indice da tabela
+	DbSetOrder(1)
 
-	// Chamando a tabela de contratos
-	DbSelectArea("SZ2")
-	DbSetOrder(4)
-	DbSeek(xFilial(SZ2) + oSZ4Master:GetValue("Z4_CCONTRA"))
+	if DbSeek(xFilial("SZ3") + SZ4->Z4_CODPROD + SZ4->Z4_CCONTRA)
 
-	// oModelCtr:Activate()
+		// Vendo qual o tipo de operação que será executada
+		if(nOperation == 3)
+			RecLock("SZ3", .F.)
+			SZ3->Z3_QSALDO := (SZ3->Z3_QSALDO - SZ4->Z4_PEOSSAI)
+			SZ3->Z3_QSAIDA := (SZ3->Z3_QSAIDA + SZ4->Z4_PEOSSAI)
+			MsUnlock()
+		elseif(nOperation == 5)
+			RecLock("SZ3", .F.)
+			SZ3->Z3_QSALDO := (SZ3->Z3_QSALDO + SZ4->Z4_PEOSSAI)
+			SZ3->Z3_QSAIDA := (SZ3->Z3_QSAIDA - SZ4->Z4_PEOSSAI)
+			MsUnlock()
+		endif
 
-	// // Chamando a model dos produtos relacionados a o contrato
-	oSZ3Detail := oModelCtr:GetModel('SZ3DETAIL')
-
-	// // Chamando a tabela de produtos relacionadas ao contrato
-	// DbSelectArea("SZ3")
-
-	// // Chamando o segundo Indice da tabela
-	// DbSetOrder(2)
-
-	// // Verificando se a consulta será TRUE
-	// If oSZ3Detail:SeekLine({{"Z3_FILIAL",xFilial("SZ3")},{"Z3_CODCON",oSZ4Master:GetValue("Z4_CCONTRA")},{"Z3_CODPROD",oSZ4Master:GetValue("Z4_CODPROD")}})
-	// 	// Vendo qual o tipo de operação que será executada
-	// 	if(nOperation == 3)
-	// 		oSZ3Detail:SetValue("Z3_QSALDO",(SZ3->Z3_QSALDO - M->Z4_PEOSSAI))
-	// 		oSZ3Detail:SetValue("Z3_QSAIDA",(SZ3->Z3_QSAIDA + M->Z4_PEOSSAI))
-	// 	elseif(nOperation == 5)
-	// 		oSZ3Detail:SetValue("Z3_QSALDO",(SZ3->Z3_QSALDO + M->Z4_PEOSSAI))
-	// 		oSZ3Detail:SetValue("Z3_QSAIDA",(SZ3->Z3_QSAIDA - M->Z4_PEOSSAI))
-	// 	endif
-	// 	//Grava modelo da SZ3
-	// 	If oModelCtr:VldData()
-	// 		oModelCtr:CommitData()
-	// 	Else
-	// 		lRet := .F.
-	// 		cLog := cValToChar(oModelCtr:GetErrorMessage()[4]) + ' - '
-	// 		cLog += cValToChar(oModelCtr:GetErrorMessage()[5]) + ' - '
-	// 		cLog += cValToChar(oModelCtr:GetErrorMessage()[6])
-
-	// 		Help( ,,"CONTRATOS",,cLog, 1, 0 )
-	// 	Endif
-	// endif
-	// //Fecha model e a area da SZ3
-	// oModelCtr:DeActivate()
-	// oModelCtr := Nil
-	// SZ3->(DbCloseArea())
-	// //Volto o posicionamento para a SZ4 e faço o commit
-	// FwRestArea(aArea)
-	// //Grava modelo principal
-	// If oModelSZ4:VldData()
-	// 	lRet := FWFormCommit(oModelSZ4)
-	// Else
-	// 	lRet := .F.
-	// EndIf
+	endif
 
 Return lRet

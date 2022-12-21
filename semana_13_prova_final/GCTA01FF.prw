@@ -41,10 +41,13 @@ Static Function ModelDef()
 	// Cria a estrutura a ser usada no Modelo de Dados
 	Local oStruSZ2 := FWFormStruct( 1, 'SZ2' ) as Object
 	Local oStruSZ3 := FWFormStruct( 1, 'SZ3' ) as Object
-	Local oModel                                                                as Object
+	Local oModel                               as Object
+
+	// Modifica a legenda dos contratos
+	validacao()
 
 	// Cria o objeto do Modelo de Dados
-	oModel := MPFormModel():New( 'GCTM01FF', /*bPreValidacao*/, {|oModel| modalValida(oModel)}, /*bCommit*/, /*bCancel*/ )
+	oModel := MPFormModel():New( 'GCTM01FF', /*bPreValidacao*/,, /*bCommit*/, /*bCancel*/ )
 
 	// Adiciona ao modelo uma estrutura de formulário de edição por campo
 	oModel:AddFields( 'SZ2MASTER', /*cOwner*/, oStruSZ2 )
@@ -146,42 +149,6 @@ Function u_attsaldo(oModel)
 
 Return nValor
 
-Static Function modalValida(oModel)
-
-	Local oMdlSZ2 := oModel:GetModel('SZ2MASTER')
-	Local oMdlSZ3 := oModel:GetModel('SZ3DETAIL')
-	Local lRet := .T.
-	Private cAlias := GetNextAlias()
-
-	// Chamando a tabela de produtos relacionadas ao contrato
-	DbSelectArea("SZ3")
-
-	// Chamando o segundo Indice da tabela
-	DbSetOrder(3)
-
-	if oMdlSZ3:SeekLine({{"Z3_FILIAL",xFilial("SZ3")},{"Z3_QSAIDA",oMdlSZ3:GetValue("Z3_QSAIDA")},{"Z3_CODCON",oMdlSZ3:GetValue("Z3_CODCON")}})
-
-		// Verificar se todos os produtos estao com o saldo zerado
-		validacao(oMdlSZ3,cAlias)
-
-		if(oMdlSZ3:GetValue("Z3_QSAIDA") <> oMdlSZ3:GetValue("Z3_QORIGIN"))
-			lRet := .T.
-			oMdlSZ2:SetValue("Z2_TIPOCON", "2")
-			oMdlSZ2:SetValue("Z2_STATUS", "2")
-		elseif ((cAlias)->(!Eof())) ==  .F.
-			lRet := .T.
-			oMdlSZ2:SetValue("Z2_TIPOCON", "3")
-			oMdlSZ2:SetValue("Z2_STATUS", "3")
-		else
-			lRet := .T.
-			oMdlSZ2:SetValue("Z2_TIPOCON", "1")
-			oMdlSZ2:SetValue("Z2_STATUS", "1")
-		Endif
-		(cAlias)->(dbCloseArea())
-	endif
-
-Return lRet
-
 Static function nedita(oModel)
 
 	Local oMdlSZ2 := oModel:GetModel('SZ2MASTER')
@@ -194,22 +161,82 @@ Static function nedita(oModel)
 
 Return lRet
 
+Static function validacao()
 
-Static function validacao(oMdlSZ3,cAlias)
+	Local cUpZPB1 as Character
+	Local cUpZPB2 as Character
+	Local cUpZPB3 as Character
 
-	BeginSql Alias cAlias
-		SELECT
-			Z3_CODPROD,
-			Z3_NOME,
-			Z3_QORIGIN,
-			Z3_QSAIDA,
-			Z3_QSALDO,
-			Z3_CODCON
-		FROM
-			%Table:SZ3% SZ2
-		WHERE
-			Z3_QSAIDA = Z3_QORIGIN
-			AND Z3_CODCON = %exp:oMdlSZ3:GetValue("Z3_CODCON")%
-	EndSql
+	//-- ABERTO
+	cUpZPB1 := "UPDATE"
+	cUpZPB1 += "	Z2 SET Z2.Z2_STATUS = '1'"
+	cUpZPB1 += "FROM"
+	cUpZPB1 += "	SZ2990 AS Z2"
+	cUpZPB1 += "INNER JOIN("
+	cUpZPB1 += "	SELECT"
+	cUpZPB1 += "		Z3_CODCON,"
+	cUpZPB1 += "		Z3_FILIAL,"
+	cUpZPB1 += "		SUM(Z3_QSALDO) AS 'Z3_QSALDO',"
+	cUpZPB1 += "		SUM(Z3_QORIGIN) AS 'Z3_QORIGIN',"
+	cUpZPB1 += "		SUM(Z3_QSAIDA) AS 'Z3_QSAIDA'"
+	cUpZPB1 += "	FROM"
+	cUpZPB1 += "		SZ3990"
+	cUpZPB1 += "	GROUP BY"
+	cUpZPB1 += "		Z3_FILIAL,"
+	cUpZPB1 += "		Z3_CODCON)AS Z3 ON"
+	cUpZPB1 += "		Z2_CODCON = Z3_CODCON"
+	cUpZPB1 += "		AND Z2_FILIAL = Z3_FILIAL"
+	cUpZPB1 += "	WHERE"
+	cUpZPB1 += "		Z3_QSALDO = Z3_QORIGIN"
 
-Return cAlias
+	TCSqlExec(cUpZPB1)
+
+	//-- PARCIAL
+	cUpZPB2 := "UPDATE"
+	cUpZPB2 += "	Z2 SET Z2.Z2_STATUS = '2'"
+	cUpZPB2 += "FROM"
+	cUpZPB2 += "	SZ2990 AS Z2"
+	cUpZPB2 += "INNER JOIN("
+	cUpZPB2 += "	SELECT"
+	cUpZPB2 += "		Z3_CODCON,"
+	cUpZPB2 += "		Z3_FILIAL,"
+	cUpZPB2 += "		SUM(Z3_QSALDO) AS 'Z3_QSALDO',"
+	cUpZPB2 += "		SUM(Z3_QORIGIN) AS 'Z3_QORIGIN',"
+	cUpZPB2 += "		SUM(Z3_QSAIDA) AS 'Z3_QSAIDA'"
+	cUpZPB2 += "	FROM"
+	cUpZPB2 += "		SZ3990"
+	cUpZPB2 += "	GROUP BY"
+	cUpZPB2 += "		Z3_FILIAL,"
+	cUpZPB2 += "		Z3_CODCON)AS Z3 ON"
+	cUpZPB2 += "		Z2_CODCON = Z3_CODCON"
+	cUpZPB2 += "		AND Z2_FILIAL = Z3_FILIAL"
+	cUpZPB2 += "	WHERE"
+	cUpZPB2 += "		Z3_QSAIDA > 0 AND Z3_QSAIDA < Z3_QORIGIN"
+
+	TCSqlExec(cUpZPB2)
+
+	//-- FINALIZADA
+	cUpZPB3 := "UPDATE"
+	cUpZPB3 += "	Z2 SET Z2.Z2_STATUS = '3'"
+	cUpZPB3 += "FROM"
+	cUpZPB3 += "	SZ2990 AS Z2"
+	cUpZPB3 += "INNER JOIN("
+	cUpZPB3 += "	SELECT"
+	cUpZPB3 += "		Z3_CODCON,"
+	cUpZPB3 += "		Z3_FILIAL,"
+	cUpZPB3 += "		SUM(Z3_QSALDO) AS 'Z3_QSALDO',"
+	cUpZPB3 += "		SUM(Z3_QORIGIN) AS 'Z3_QORIGIN',"
+	cUpZPB3 += "		SUM(Z3_QSAIDA) AS 'Z3_QSAIDA'"
+	cUpZPB3 += "	FROM"
+	cUpZPB3 += "		SZ3990"
+	cUpZPB3 += "	GROUP BY"
+	cUpZPB3 += "		Z3_FILIAL,"
+	cUpZPB3 += "		Z3_CODCON)AS Z3 ON"
+	cUpZPB3 += "		Z2_CODCON = Z3_CODCON"
+	cUpZPB3 += "		AND Z2_FILIAL = Z3_FILIAL"
+	cUpZPB3 += "	WHERE"
+	cUpZPB3 += "		Z3_QSAIDA = Z3_QORIGIN"
+
+	TCSqlExec(cUpZPB3)
+
+Return
