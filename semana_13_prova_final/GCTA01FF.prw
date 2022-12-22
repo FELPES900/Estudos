@@ -127,6 +127,7 @@ Return oView
 Static Function valida(oModel, nValor)
 	Local lRet  := .F.  as Logical
 
+	// Ativa os campos que serao necessarios dependendo do tipo do contrato
 	If((oModel:GetValue("Z2_TIPOCON") == "1" .and. nValor == 1) .or. (oModel:GetValue("Z2_TIPOCON") == "2" .and. nValor == 2))
 		lRet := .T.
 	endif
@@ -140,8 +141,10 @@ Function u_attsaldo(oModel)
 	Local nValor := 0
 	Local oMdlSZ3 := oModel:GetModel('SZ3DETAIL')
 
+	// Subtração que verifica se o saldo e menor que zero
 	nValor := oMdlSZ3:GetValue("Z3_QORIGIN") - oMdlSZ3:GetValue("Z3_QSAIDA")
 
+	// Retorno caso seja TRUE
 	if(nValor < 0)
 		Help("",1,,ProcName(),"A quantidade de saldo não pode ser menor do que Zero",1,0)
 		nValor := 0
