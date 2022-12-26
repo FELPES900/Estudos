@@ -47,7 +47,9 @@ Static Function ModelDef()
 	validacao()
 
 	// Cria o objeto do Modelo de Dados
-	oModel := MPFormModel():New( 'GCTM01FF', /*bPreValidacao*/,, /*bCommit*/, /*bCancel*/ )
+	oModel := MPFormModel():New( 'GCTM01FF', /*bPreValidacao*/,{|oModel| excluicontrato(oModel)}, /*bCommit*/, /*bCancel*/ )
+
+	oModel:SetVldActivate({|oModel|tipoperacao(oModel)})
 
 	// Adiciona ao modelo uma estrutura de formulÃ¡rio de ediÃ§Ã£o por campo
 	oModel:AddFields( 'SZ2MASTER', /*cOwner*/, oStruSZ2 )
@@ -75,10 +77,6 @@ Static Function ModelDef()
 	oStruSZ2:SetProperty("Z2_LFISCA" ,MODEL_FIELD_WHEN,{|oModel| valida(oModel,2)})
 	oStruSZ2:SetProperty("Z2_CFISCAL",MODEL_FIELD_WHEN,{|oModel| valida(oModel,2)})
 	oStruSZ2:SetProperty("Z2_NCFISCA",MODEL_FIELD_WHEN,{|oModel| valida(oModel,2)})
-
-	if(oModel:GetOperation() == 4) .And. !FwIsInCallStack("FTA01FF")
-		oStruSZ2:SetProperty('*',MODEL_FIELD_WHEN,{|oModel| nedita(oModel)})
-	endif
 
 	// calcula quanto de saldo tem disponivel
 	oStruSZ3:AddTrigger( 'Z3_QORIGIN', 'Z3_QSALDO', {||.T. }, {||u_AttSaldo(oModel)} )
@@ -151,18 +149,6 @@ Function u_attsaldo(oModel)
 	Endif
 
 Return nValor
-
-Static function nedita(oModel)
-
-	Local oMdlSZ2 := oModel:GetModel('SZ2MASTER')
-	Local lRet := .T.
-	Local nOperation := oMdlSZ2:GetOperation() as Numeric
-
-	if(nOperation == 4)
-		lRet := .F.
-	Endif
-
-Return lRet
 
 Static function validacao()
 
@@ -243,3 +229,35 @@ Static function validacao()
 	TCSqlExec(cUpZPB3)
 
 Return
+
+Static function excluicontrato(oModel)
+
+	Local lRet := .T.
+	Local oSZ2Master := oModel:GetModel("SZ2MASTER")
+
+	// Selecionando a tabela de movimentcao
+	DbSelectArea("SZ4")
+
+	// Chamando o indice
+	DbSetOrder(2)
+
+	// Verifica se a alguma movimentação usando o contrato
+	if (DbSeek(xFilial("SZ4") + oSZ2Master:GetValue("Z2_CODCON")))
+		lRet := .F.
+		APMsginfo("O contrato não pode ser excluido pois existe movimentações que estão usando este contrato","ATENÇÃO")
+	endif
+
+Return
+
+Static function tipoperacao(oModel)
+
+	Local nOperation
+
+	nOperation := oModel:GetOperation()
+
+	if (nOperation == 4 .And.SZ2->Z2_STATUS == "3")
+		oModel:GetModel("SZ2MASTER"):GetStruct():SetProperty( '*'  , MODEL_FIELD_WHEN, {|| .F.} )
+		oModel:GetModel("SZ3DETAIL"):GetStruct():SetProperty( '*'  , MODEL_FIELD_WHEN, {|| .F.} )
+	endif
+
+Return .T.
