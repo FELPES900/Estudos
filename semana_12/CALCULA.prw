@@ -49,36 +49,36 @@ Class da calculadora
 @author felip
 @since 23/11/2022
 /*/
-CLASS oCalcula FROM LongClassName
-	
-	DATA cValor1 as Character
-	DATA cValor2 as Character
-	DATA cTipo   as Character
+	CLASS oCalcula FROM LongClassName
 
-	// Methodo contrutor
-	METHOD new() CONSTRUCTOR
+		DATA cValor1 as Character
+		DATA cValor2 as Character
+		DATA cTipo   as Character
 
-	// Numeros da calculadora
-	METHOD numero1()
-	METHOD numero2()
-	METHOD numero3()
-	METHOD numero4()
-	METHOD numero5()
-	METHOD numero6()
-	METHOD numero7()
-	METHOD numero8()
-	METHOD numero9()
-	METHOD numero0()
+		// Methodo contrutor
+		METHOD new() CONSTRUCTOR
+
+		// Numeros da calculadora
+		METHOD numero1()
+		METHOD numero2()
+		METHOD numero3()
+		METHOD numero4()
+		METHOD numero5()
+		METHOD numero6()
+		METHOD numero7()
+		METHOD numero8()
+		METHOD numero9()
+		METHOD numero0()
 
 
-	// Operadores matematicos
-	METHOD operadores()
-	METHOD igual()
+		// Operadores matematicos
+		METHOD operadores()
+		METHOD igual()
 
-	// Methodo para limpar as variaveis do tipo DATE
-	METHOD limpaTela()
+		// Methodo para limpar as variaveis do tipo DATE
+		METHOD limpaTela()
 
-ENDCLASS
+	ENDCLASS
 
 Method new() CLASS oCalcula
 	self:cValor1 := ""
