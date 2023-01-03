@@ -25,7 +25,7 @@ User Function MT410TOK()
 				endif
 			endif*/
 			///////////////////////////////////////////// LOGICA SIMPLES ///////////////////////////////////////////
-			IF (Posicione("SB1", 14, xFilial("SB1") + "1" + aCols[nX][cProduto],"B1_XLTOE") == "1")
+			IF (Posicione("SB1", 14, xFilial("SB1") + "1" + aCols[nX][cProduto],"B1_XLTOE") =="1")
 				If Empty(aCols[nX][dDtFicti])
 					Help("",1,,ProcName(),"Erro ao tentar fazer os registros verifique se os produtos selecionados"+;
 						"estão com o lote ativado caso esteja preencha os campos 'Dt Ficticia",1,0)
