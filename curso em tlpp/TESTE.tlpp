@@ -1,0 +1,77 @@
+#INCLUDE "TOTVS.CH"
+#INCLUDE "TLPP-CORE.TH"
+#INCLUDE "TLPP-REST.TH"
+
+@Get("/fornecedores")
+Function u_GetFornecedores()
+
+	Local jResponse   := JsonObject():New()      as Object
+	Local jQuery      := oRest:GetQueryRequest() as Object
+	Local cQuery      := ""                      as Character
+	Local cFinalQuery := ""                      as Character
+	Local cAlias      := ""                      as Character
+	Local aDados      := {}                      as Array
+	Local nX          := 1                       as Numeric
+	Local nValor      := 0                       as Numeric
+
+	if(jQuery:HasProperty("fields") == .T. .And. jQuery['fields'] <> "")
+		cQuery := "SELECT " + jQuery["fields"] + " FROM SA1990"
+	else
+		cQuery := "SELECT A1_COD, A1_LOJA, A1_NOME, A1_CGC FROM SA1990"
+	endif
+
+	if(jQuery:HasProperty("cliente") .And. jQuery['cliente'] <> "" .And. jQuery:HasProperty("fields") == .T.)
+		cQuery += " WHERE A1_COD = " + "'" +jQuery['cliente'] + "'"
+	endif
+
+	oQuery := FWPreparedStatement():New()
+	oQuery:SetQuery(cQuery)
+	cFinalQuery := oQuery:GetFixQuery()
+	cAlias := MPSysOpenQuery(cFinalQuery)
+
+	if(jQuery:HasProperty("fields") == .T.)
+		while nX <= Len(StrTokArr2(jQuery['fields'],","))
+			if((StrTokArr2(jQuery['fields'],",")[nX] $ "A1_COD") .Or. (StrTokArr2(jQuery['fields'],",")[nX] $ "A1_LOJA"))
+				nValor := nValor + 1
+			endif
+			nX++
+		enddo
+	endif
+	nX := 1
+	if ((jQuery:HasProperty("fields") == .T. .And. nValor == 2) .Or. jQuery:HasProperty("fields") == .F.)
+		if(!(cAlias)->(Eof()))
+			oRest:setStatusCode(200)
+			jResponse['status'] := "success"
+			While (cAlias)->(!Eof())
+				aAdd(aDados, JsonObject():New())
+				nX := 1
+				if(jQuery:HasProperty("fields") == .F.)
+					aDados[Len(aDados)]["A1_COD"]  := (cAlias)->A1_COD
+					aDados[Len(aDados)]["A1_LOJA"] := (cAlias)->A1_LOJA
+					aDados[Len(aDados)]["A1_NOME"] := (cAlias)->A1_NOME
+					aDados[Len(aDados)]["A1_CGC"]  := (cAlias)->A1_CGC
+				else
+					while nX <= Len(StrTokArr2(jQuery['fields'],","))
+						aDados[Len(aDados)][StrTokArr2(jQuery['fields'],",")[nX]] := (cAlias)->&(StrTokArr2(jQuery['fields'],",")[nX])
+						nX++
+					end
+				endif
+				(cAlias)->(DbSkip())
+			end
+			jResponse['produtos'] := aDados
+		else
+			oRest:setStatusCode(400)
+			jResponse['status'] := "error"
+			jResponse['message'] := "Nenhum registro encontrado"
+		endif
+	else
+		oRest:setStatusCode(400)
+		jResponse['status'] := "error"
+		jResponse['message'] := "Quando tiver usando a query field e querer buscar pelos campo sao obrigatorio os campos: A1_COD e A1_LOJA"
+	endif
+	oRest:setKeyHeaderResponse('Content-Type','application/json')
+	oRest:setResponse(jResponse)
+	oQuery:Destroy()
+	FwFreeObj(oQuery)
+
+RETURN .T.
