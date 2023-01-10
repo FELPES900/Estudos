@@ -82,4 +82,25 @@ IX - Semana_12
 
 X - Semana_13
 
-    --EM AGUARDO--
+    I - Primeiro criei um MVC para parte de contratos com produtos relacionados a esse contrato
+        Obs: Gestão de contratos que será usada nas movimentações que utilizara os produtos
+        consumindo o saldo disponivel
+    
+    II - Após isso criei mais um MVC para criação das movimentações e com isso atualizando 
+        os status que podem a ser passados como: Aberto, Em andamento e Fechado
+        Obs: Os status de gestão de contratos serão atualizados em tempo de executação
+        de movimentação
+
+    III - Como etapa final criei um relatorio que retorna todos os contrato e em baixo dos
+    contratos estarão todas as movimentações relacionadas a esses contratos
+
+XI - Semana_14
+
+    I - Criado uma manipulação de erro e validação de dois campos customizados quando o produtos
+    estiver usando o lote e quando não estiver, ira prosegui ao criar como o Pedido de venda
+
+## Estudos em TLPP
+
+Aprendendo a criar uma API em TLPP para trazer todos os clientes sem nenhum  filtro de campos
+mas quando tiver podera trazer os campos de ordem aleatoria desde que os campo de "codigo" e
+"loja" nao deixa de estar no filtro
