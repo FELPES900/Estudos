@@ -67,7 +67,7 @@ Static Function ModelDef()
 	oModel:SetDescription( 'Contratos' )
 
 	// Adiciona a descricao do Componente do Modelo de Dados
-	oModel:GetModel( 'SZ2MASTER' ):SetDescription( 'Contato' )
+	oModel:GetModel( 'SZ2MASTER' ):SetDescription( 'Contrato' )
 	oModel:GetModel( 'SZ3DETAIL' ):SetDescription( 'Produtos do contrato'  )
 
 	// Campos travados ou nao travados --> validando com o tipo de contrato
