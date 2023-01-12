@@ -21,22 +21,27 @@ Function u_GetFornecedores()
 	jQuery := oRest:GetQueryRequest()
 
 	// Verifica se a fields exuste e verifica se existe alguma informação dentro
-	if(jQuery:HasProperty("fields") == .T. .And. jQuery['fields'] <> "")
-		cQuery := "SELECT " + jQuery["fields"] + " FROM SA1990"
+	if(jQuery:HasProperty("fields") == .T. .And. !Empty(jQuery['fields']))
+		cQuery := "SELECT " + jQuery["fields"] + " FROM SA1990 WHERE 1=1 AND D_E_L_E_T_ <> '*'"
 	else
-		cQuery := "SELECT A1_COD, A1_LOJA, A1_NOME, A1_CGC FROM SA1990"
-	endif
-
-	// caso exista a query de cliente e de fields ira colocar um where retornando um cliente em expecifico
-	if(jQuery:HasProperty("cliente") .And. jQuery['cliente'] <> "" .And. jQuery:HasProperty("fields") == .T.)
-		cQuery += " WHERE A1_COD = " + "'" +jQuery['cliente'] + "'"
+		cQuery := "SELECT A1_COD, A1_LOJA, A1_NOME, A1_CGC FROM SA1990 WHERE 1=1 AND D_E_L_E_T_ <> '*'"
 	endif
 
 	// Construtor da carga
 	oQuery := FWPreparedStatement():New()
 
+	// caso exista a query de cliente e de fields ira colocar um where retornando um cliente em expecifico
+	if(jQuery:HasProperty("cliente") .And. !Empty(jQuery['cliente']) .And. jQuery:HasProperty("fields") .And. !Empty(jQuery["fields"]))
+		cQuery += " AND A1_COD = ?"
+	endif
+
 	// Informa a query a ser executada, deve ser utilizada a construção com os parametros com "?"
 	oQuery:SetQuery(cQuery)
+
+	// caso exista a query de cliente e de fields ira colocar um where retornando um cliente em expecifico
+	if(jQuery:HasProperty("cliente") .And. !Empty(jQuery['cliente']) .And. jQuery:HasProperty("fields") .And. !Empty(jQuery["fields"]))
+		oQuery:setString(1,jQuery['cliente'])
+	endif
 
 	// Retorna a query com os parâmetros já tratados e substituídos
 	cFinalQuery := oQuery:GetFixQuery()
@@ -45,7 +50,7 @@ Function u_GetFornecedores()
 	cAlias := MPSysOpenQuery(cFinalQuery)
 
 	// ve se os campos passados existem os A1_COD e A1_LOJA
-	if(jQuery:HasProperty("fields") == .T.)
+	if(jQuery:HasProperty("fields") .And. !Empty(jQuery['fields']))
 		while nX <= Len(StrTokArr2(jQuery['fields'],","))
 			if((StrTokArr2(jQuery['fields'],",")[nX] $ "A1_COD") .Or. (StrTokArr2(jQuery['fields'],",")[nX] $ "A1_LOJA"))
 				nValor := nValor + 1
@@ -56,29 +61,29 @@ Function u_GetFornecedores()
 	nX := 1
 
 	// Verifica se os dois campos foram passados caso nao retorna uma mesagem falando que deve-se ser passado os dois campos
-	if ((jQuery:HasProperty("fields") == .T. .And. nValor == 2) .Or. jQuery:HasProperty("fields") == .F.)
+	if ((jQuery:HasProperty("fields") .And. nValor == 2) .Or. !jQuery:HasProperty("fields") .Or. (jQuery:HasProperty("fields") .And. Empty(jQuery['fields'])))
 		if(!(cAlias)->(Eof()))
 			oRest:setStatusCode(200)
 			jResponse['status'] := "success"
-			// Loop de todos os dados do resultado da consulta SQL
-			While (cAlias)->(!Eof())
-				aAdd(aDados, JsonObject():New())
-				nX := 1
-				// Caso a fields nao exista retorna as
-				if(jQuery:HasProperty("fields") == .F.)
+			// Caso a fields nao exista retorna as
+			if(!jQuery:HasProperty("fields") .Or. Empty(jQuery['fields']))
+				While (cAlias)->(!Eof())
+					aAdd(aDados, JsonObject():New())
 					aDados[Len(aDados)]["A1_COD"]  := (cAlias)->A1_COD
 					aDados[Len(aDados)]["A1_LOJA"] := (cAlias)->A1_LOJA
 					aDados[Len(aDados)]["A1_NOME"] := (cAlias)->A1_NOME
 					aDados[Len(aDados)]["A1_CGC"]  := (cAlias)->A1_CGC
-				else
-					// Loop retornando os campos quando tiver a query fields
+					(cAlias)->(DbSkip())
+				end
+			else
+				While (cAlias)->(!Eof())
 					while nX <= Len(StrTokArr2(jQuery['fields'],","))
 						aDados[Len(aDados)][StrTokArr2(jQuery['fields'],",")[nX]] := (cAlias)->&(StrTokArr2(jQuery['fields'],",")[nX])
 						nX++
 					end
-				endif
-				(cAlias)->(DbSkip())
-			end
+					(cAlias)->(DbSkip())
+				end
+			endif
 			jResponse['produtos'] := aDados
 		else
 			oRest:setStatusCode(400)
@@ -91,13 +96,13 @@ Function u_GetFornecedores()
 		jResponse['message'] := "Quando tiver usando a query field e querer buscar pelos campo sao obrigatorio os campos: A1_COD e A1_LOJA"
 	endif
 
-	// Define o valor de uma chave do cabeçalho de resposta
+// Define o valor de uma chave do cabeçalho de resposta
 	oRest:setKeyHeaderResponse('Content-Type','application/json')
 
-	// Retorna um objeto Json
+// Retorna um objeto Json
 	oRest:setResponse(jResponse)
 
-	// Destrói a Lista
+// Destrói a Lista
 	oQuery:Destroy()
 	FwFreeObj(oQuery)
 
