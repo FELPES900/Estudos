@@ -1,8 +1,15 @@
 #INCLUDE "TOTVS.CH"
 #INCLUDE "TLPP-CORE.TH"
 #INCLUDE "TLPP-REST.TH"
+#INCLUDE "TBICONN.CH"
 
-@Get("/fornecedores")
+/*/{Protheus.doc} u_GetFornecedores
+Get de todos os clientes da SA1
+@type function
+@version 12.1.33
+@author felip
+@since 13/01/2023
+/*/@Get("/fornecedores")
 Function u_GetFornecedores()
 
 	Local jResponse   := Nil as Json
@@ -107,3 +114,39 @@ Function u_GetFornecedores()
 	FwFreeObj(oQuery)
 
 RETURN .T.
+
+
+/*/{Protheus.doc} u_PostFornecedores
+Fazendo um insert de clientes
+@type function
+@version 12.1.33
+@author felip
+@since 13/01/2023
+/*/@POST("/fornecedores/tipo/incluir")
+Function u_PostFornecedores()
+
+	Local lRet := .F. as Logical
+	Local oModel      as Object
+	Local oSA1Model   as Object
+	Local nOpc := 0 as Numeric
+
+
+	if SELECT("SX2") == 0 //Para ser executado pelo usuario
+		PREPARE ENVIRONMENT EMPRESA "99" FILIAL "01"
+	endif
+
+	nOpc := 3
+	oModel := FWLoadModel("MATA020M")
+	oModel:SetOperation(nOpc)
+	oModel:Activate()
+
+	oSA1Model := oModel:GetModel("SA1MASTER")
+
+
+
+
+	if SELECT("SX2") > 0
+		RESET ENVIRONMENT
+	endif
+
+Return
