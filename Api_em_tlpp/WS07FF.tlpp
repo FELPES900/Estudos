@@ -1,0 +1,107 @@
+#INCLUDE "TOTVS.CH"
+#INCLUDE "TLPP-CORE.TH"
+#INCLUDE "TLPP-REST.TH"
+
+@Get("/fornecedores/clientes/:table")
+Function U_GetClieForne()
+
+	Local lRet        := .T. as Logical
+	Local jResponse   := Nil as Json
+	Local jQuery      := Nil as Json
+	Local jParam      := Nil as Json
+	Local cQuery      := ""  as Character
+	Local cAlias      := ""  as Character
+	Local cFinalQuery := ""  as Character
+	Local nX          := 0   as Numeric
+
+	// Cria uma nova instância no objeto
+	jResponse := JsonObject():New()
+
+	// Pega o parametro passado na route
+	jParam := oRest:getPathParamsRequest()
+
+	// Responsavel pela query que será consumida
+	jQuery := oRest:getQueryRequest()
+
+	// Construtor da carga
+	oQuery := FWPreparedStatement():New()
+
+	// Verifica se o tabela passada na rota está correta
+	if(jParam['table'] == "SA1" .Or. jParam['table'] == "SA2")
+
+		// Verifica se estiver usando o fields e se está passando no minimo dois campos como obrigatorios // Ou caso exista mas nao tenha informção dentro  // ou nao exista
+		if((jQuery:HasProperty('fields') .And. !Empty(jQuery['fields']) .And. Len(StrTokArr2(jQuery['fields'],",")) >= 2) .Or. (jQuery:HasProperty('fields') .And. Empty(jQuery['fields'])) .Or. !jQuery:HasProperty('fields'))
+
+			// Vetifica se todos os campos passados estão com mesmo referencial da tabela
+			if(ValidaCampos(jParam,jQuery))
+
+				// Fazendo atribuição a uma query
+				if(jQuery:HasProperty('fields') .And.!Empty(jQuery['fields']))
+					cQuery := "SELECT " + jQuery['fields'] +" FROM " + jParam['table'] + "990 WHERE 1=1"
+				else
+					if(jParam['table'] == "SA1")
+						cQuery := "SELECT A1_COD, A1_LOJA, A1_NOME, A1_END, A1_NREDUZ, A1_TIPO, A1_EST, A1_MUN FROM "+ jParam['table'] + "990 WHERE 1=1"
+					else
+						cQuery := "SELECT A2_COD, A2_LOJA, A2_NOME, A2_NREDUZ, A2_END, A2_EST, A2_MUN, A2_TIPO FROM "+ jParam['table'] + "990 WHERE 1=1"
+					endif
+				endif
+
+				// Informa a query a ser executada, deve ser utilizada a construção com os parametros com "?"
+				oQuery:SetQuery(cQuery)
+
+				// Retorna a query com os parâmetros já tratados e substituídos
+				cFinalQuery := oQuery:GetFixQuery()
+
+				// Abre um alias com a query informada
+				cAlias := MPSysOpenQuery(cFinalQuery)
+
+			else
+				oRest:setStatusCode(400)
+				jResponse['status'] := "error"
+				jResponse['message'] := "Por favor, insira o nome dos campos reference a tebela " + jParam['table']
+			endif
+		else
+			oRest:setStatusCode(400)
+			jResponse['status'] := "error"
+			jResponse['message'] := "Caso esteja usando a Query fields é obrigatorio passar no minimo dois campos como obrigatorios"
+		endif
+
+	else
+		oRest:setStatusCode(400)
+		jResponse['status'] := "error"
+		jResponse['message'] := "Por favor, passar somente a SA1 --> clientes ou SA2 --> Fornecedore"
+
+	endif
+
+	// Define o valor de uma chave do cabeçalho de resposta
+	oRest:setKeyHeaderResponse('Content-Type','application/json')
+
+	// Retorna um objeto Json
+	oRest:setResponse(jResponse)
+
+	// Destrói a Lista
+	oQuery:Destroy()
+	FwFreeObj(oQuery)
+
+
+Return lRet
+
+Static function ValidaCampos(jParam as Json,jQuery as Json)
+
+	Local lRet := .T. as Logical
+	Local nX := 1 as Numeric
+
+	if(Empty(jQuery['fields']) == Nil)
+	endif
+
+	if(!Empty(jQuery['fields']))
+		While (nX <= Len(StrTokArr2(jQuery['fields'],",")))
+			if(Left(StrTokArr2(jQuery['fields'],",")[nX],2) <> Right(jParam['table'],2))
+				lRet := .F.
+				Exit
+			endif
+			nX++
+		enddo
+	endif
+
+Return lRet
