@@ -210,4 +210,8 @@ Function u_PostFornecedores()
 	// Retorna um objeto Json
 	oRest:setResponse(jResponse)
 
+	// Destrói a Lista
+	oModel:Destroy()
+	FwFreeObj(oModel)
+
 Return lRet

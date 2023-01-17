@@ -95,6 +95,7 @@ Function U_GetClieForne()
 							(cAlias)->(DbSkip())
 						end
 					endif
+					jResponse['produtos'] := aDados
 				else
 					oRest:setStatusCode(400)
 					jResponse['status'] := "error"
