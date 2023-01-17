@@ -9,7 +9,7 @@ Get de todos os clientes da SA1
 @version 12.1.33
 @author felip
 @since 13/01/2023
-/*/@Get("/fornecedores")
+/*/@Get("/fornecedores/tipo/visualizar")
 Function u_GetFornecedores()
 
 	Local jResponse   := Nil as Json
@@ -125,28 +125,86 @@ Fazendo um insert de clientes
 /*/@POST("/fornecedores/tipo/incluir")
 Function u_PostFornecedores()
 
-	Local lRet := .F. as Logical
-	Local oModel      as Object
-	Local oSA1Model   as Object
-	Local nOpc := 0 as Numeric
+	Local aBody      := {}                                                              as Array
+	Local cCampos    := "A2_COD|A2_LOJA|A2_NOME|A2_NREDUZ|A2_END|A2_TIPO|A2_EST|A2_MUN" as Character
+	Local jBody      := Nil                                                             as Json
+	local jResponse  := Nil                                                             as Json
+	Local lRet       := .T.                                                             as Logical
+	Local nOpc       := 0                                                               as Numeric
+	Local nValor     := 0                                                               as Numeric
+	Local nX         := 1                                                               as Numeric
+	Local oModel     := Nil                                                             as Object
+	Local oSA2Model  := Nil                                                             as Object
 
+	// Cria um object Json
+	jBody := JsonObject():new()
 
-	if SELECT("SX2") == 0 //Para ser executado pelo usuario
-		PREPARE ENVIRONMENT EMPRESA "99" FILIAL "01"
+	// Cria um Json de resposta no final do proceso realizado
+	jResponse := JsonObject():New()
+
+	// Permite popular o JsonObject
+	jBody:fromJson( oRest:GetBodyRequest() )
+
+	// Pega o nome dos campos que foram passados na JSON
+	aBody := jBody:GetNames()
+
+	// Aqui vemos se todos os campos obrigatorios da tabela de fornecedores estão preenchidos
+	while nX <= Len(aBody)
+		if(aBody[nX] $ cCampos)
+			nValor += 1
+		endif
+		nX++
+	end
+	nX := 1
+	// Caso estejam apresenta prosegui com o Insert na tabela
+	if(nValor >= 8)
+		if(aBody[1] == "A2_COD" .And.aBody[2] == "A2_LOJA")
+			DbSelectArea("SA2")
+			if((!DBSeek(xFilial("SA2") + jBody[aBody[1]] + jBody[aBody[2]])))
+				nOpc := 3
+				oModel := FWLoadModel("MATA020M")
+				oModel:SetOperation(nOpc)
+				oModel:Activate()
+
+				oSA2Model := oModel:GetModel("SA2MASTER")
+
+				while nX <= Len(aBody)
+					oSA2Model:setValue(aBody[nX],jBody[aBody[nX]]) // Campos determinados pelo usuario
+					nX++
+				end
+				oRest:setStatusCode(200)
+				jResponse['status'] := "Sucesso"
+				jResponse['message'] := "Gegistro salvo com sucesso"
+			else
+				oRest:setStatusCode(400)
+				jResponse['status'] := "error"
+				jResponse['message'] := "Este registro ja existe"
+			endif
+		else
+			oRest:setStatusCode(400)
+			jResponse['status'] := "error"
+			jResponse['message'] := "Os dois campos iniciais devem ser A2_COD e A2_LOJA"
+		endif
+	else
+		oRest:setStatusCode(400)
+		jResponse['status'] := "error"
+		jResponse['message'] := "Os campos obrigatorios não estao todos referenciados no Jsonp"
+		jResponse['campos'] := "Campos necessarios: A2_COD, A2_LOJA, A2_NOME, A2_NREDUZ, A2_END, A2_TIPO, A2_EST, A2_MUN"
 	endif
 
-	nOpc := 3
-	oModel := FWLoadModel("MATA020M")
-	oModel:SetOperation(nOpc)
-	oModel:Activate()
+	// Define o valor de uma chave do cabeçalho de resposta
+	oRest:setKeyHeaderResponse('Content-Type','application/json')
+	oRest:setKeyHeaderResponse("Connection: Keep-Alive")
+	oRest:setKeyHeaderResponse( "Accept-Encoding: gzip")
 
-	oSA1Model := oModel:GetModel("SA1MASTER")
+	// Retorna um objeto Json
+	oRest:setResponse(jResponse)
 
+Return lRet
 
+/*
+{aBody[1],jResponse[aBody[1]]}
 
-
-	if SELECT("SX2") > 0
-		RESET ENVIRONMENT
-	endif
-
-Return
+{aBody[1],jResponse[aBody[1]]}[1]:"A1_COD"}
+{aBody[1],jResponse[aBody[1]]}[2]:"000001"}
+*/
