@@ -2,16 +2,23 @@
 #INCLUDE "TLPP-CORE.TH"
 #INCLUDE "TLPP-REST.TH"
 
-@Get("/fornecedores/clientes/:table")
+/*/{Protheus.doc} U_GetClieForne
+Retorna um Get do tipo cliente ou fornecedor junto
+ com filtros como adicionais ao Json de resposts
+@type function
+@version 12.1.33
+@author felip
+@since 17/01/2023
+/*/@Get("/fornecedores/clientes/:table")
 Function U_GetClieForne()
 
-	Local lRet        := .T. as Logical
-	Local jResponse   := Nil as Json
-	Local jQuery      := Nil as Json
-	Local jParam      := Nil as Json
-	Local cQuery      := ""  as Character
 	Local cAlias      := ""  as Character
 	Local cFinalQuery := ""  as Character
+	Local cQuery      := ""  as Character
+	Local jParam      := Nil as Json
+	Local jQuery      := Nil as Json
+	Local jResponse   := Nil as Json
+	Local lRet        := .T. as Logical
 	Local nX          := 0   as Numeric
 
 	// Cria uma nova instância no objeto
@@ -55,6 +62,45 @@ Function U_GetClieForne()
 				// Abre um alias com a query informada
 				cAlias := MPSysOpenQuery(cFinalQuery)
 
+				// Verrifica se existew informação no alias
+				if(!(cAlias)->(Eof()))
+					oRest:setStatusCode(200)
+					jResponse['status'] := "success"
+					// Verifica se a tabela que está em uso é a SA1
+					if(!jQuery:HasProperty("fields") .Or. Empty(jQuery['fields']) .And. jParam['table'] == "SA1")
+						While (cAlias)->(!Eof())
+							aAdd(aDados, JsonObject():New())
+							aDados[Len(aDados)]["A1_COD"]  := (cAlias)->A1_COD
+							aDados[Len(aDados)]["A1_LOJA"] := (cAlias)->A1_LOJA
+							aDados[Len(aDados)]["A1_NOME"] := (cAlias)->A1_NOME
+							aDados[Len(aDados)]["A1_CGC"]  := (cAlias)->A1_CGC
+							(cAlias)->(DbSkip())
+						end
+						// Verifica se a tabela que está em uso é a SA2
+					elseif(!jQuery:HasProperty("fields") .Or. Empty(jQuery['fields']) .And. jParam['table'] == "SA2")
+						While (cAlias)->(!Eof())
+							aAdd(aDados, JsonObject():New())
+							aDados[Len(aDados)]["A2_COD"]  := (cAlias)->A2_COD
+							aDados[Len(aDados)]["A2_LOJA"] := (cAlias)->A2_LOJA
+							aDados[Len(aDados)]["A2_NOME"] := (cAlias)->A2_NOME
+							aDados[Len(aDados)]["A2_CGC"]  := (cAlias)->A2_CGC
+							(cAlias)->(DbSkip())
+						end
+					else
+						While (cAlias)->(!Eof())
+							while nX <= Len(StrTokArr2(jQuery['fields'],","))
+								aDados[Len(aDados)][StrTokArr2(jQuery['fields'],",")[nX]] := (cAlias)->&(StrTokArr2(jQuery['fields'],",")[nX])
+								nX++
+							end
+							(cAlias)->(DbSkip())
+						end
+					endif
+				else
+					oRest:setStatusCode(400)
+					jResponse['status'] := "error"
+					jResponse['message'] := "Nenhum registro encontrado"
+				endif
+
 			else
 				oRest:setStatusCode(400)
 				jResponse['status'] := "error"
@@ -65,7 +111,6 @@ Function U_GetClieForne()
 			jResponse['status'] := "error"
 			jResponse['message'] := "Caso esteja usando a Query fields é obrigatorio passar no minimo dois campos como obrigatorios"
 		endif
-
 	else
 		oRest:setStatusCode(400)
 		jResponse['status'] := "error"
@@ -85,7 +130,13 @@ Function U_GetClieForne()
 
 
 Return lRet
-
+/*/{Protheus.doc} ValidaCampos
+Cira um arraym com as fields ou nao cria o Json
+@type function
+@version 12.1.33
+@author felip
+@since 17/01/2023
+/*/
 Static function ValidaCampos(jParam as Json,jQuery as Json)
 
 	Local lRet := .T. as Logical
