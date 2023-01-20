@@ -1,0 +1,80 @@
+#INCLUDE "TOTVS.CH"
+#INCLUDE "TLPP-CORE.TH"
+#INCLUDE "TLPP-REST.TH"
+#INCLUDE "FWMVCDEF.CH"
+
+/*/{Protheus.doc} U_PostProdutos
+Criando novos produtos
+@type function
+@version 12.1.33
+@author felip
+@since 20/01/2023
+/*/@PUST()
+Function U_PostProdutos()
+
+	Local aBody     := {}  as Array
+	Local cCampos   := ""  as Character
+	Local jBody     := Nil as Json
+	local jResponse := Nil as Json
+	Local lRet      := .T.
+	Local lRet      := .T. as Logical
+	Local nPosicao  := 0   as Numeric
+	Local nValor    := 0   as Numeric
+	Local nX        := 0   as Numeric
+	Local oModel    := Nil as Object
+	Local oSB1Model := Nil as Object
+
+	// Cria um object Json
+	jBody := JsonObject():new()
+
+	// Cria um Json de resposta no final do proceso realizado
+	jResponse := JsonObject():New()
+
+	// Permite popular o JsonObject
+	jBody:fromJson( oRest:GetBodyRequest() )
+
+	// Pega o nome dos campos que foram passados na JSON
+	aBody := jBody:GetNames()
+
+	nX := 1
+	cCampos := "B1_COD|B1_DESC|B1_TIPO|B1_UM|B1_LOCPAD|B1_GARANT"
+	while nX <= Len(aBody)
+		if(aBody[nX] $ cCampos)
+			nValor += 1
+		endif
+		if(aBody[nX] ==  "B1_COD")
+			nPosicao := nX
+		endif
+		nX++
+	end
+	nX := 1
+	if(nVlaor == 6)
+		DBSelectArea("SB1")
+		if(DbSeek(xFilial("SB1") + jBody[aBody[nPosicao]]))
+			oModel := FWLoadModel("MATA010M")
+			oModel:SetOperation(MODEL_OPERATION_INSERT)
+			oModel:Activate()
+
+			while nX <= Len(aBody)
+				oSB1Model:setValue(aBody[nX], jBody[aBody[nX]])
+			end
+
+			if(oModel:VldData())
+				oModel:CommitData()
+				oRest:setStatusCode(200)
+				jResponse['Status'] := "Sucesso"
+				jResponse['Message'] := "Produto inserido com sucesso"
+			else
+				oRest:setStatusCode(200)
+				jResponse['Status'] := "Sucesso"
+			endif
+		else
+			oRest:setStatusCode(400)
+			jResponse['status'] := "Verifique se todos os campos estão com os dados correto"
+		endif
+	else
+		oRest:setStatusCode(400)
+		jResponse['status'] := "Todos os campos com '*' são obrigatorios"
+	endif
+
+Return lRet
