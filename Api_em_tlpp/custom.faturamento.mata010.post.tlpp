@@ -9,14 +9,13 @@ Criando novos produtos
 @version 12.1.33
 @author felip
 @since 20/01/2023
-/*/@PUST()
+/*/@POST("faturamneto/produtos/create")
 Function U_PostProdutos()
 
 	Local aBody     := {}  as Array
 	Local cCampos   := ""  as Character
 	Local jBody     := Nil as Json
 	local jResponse := Nil as Json
-	Local lRet      := .T.
 	Local lRet      := .T. as Logical
 	Local nPosicao  := 0   as Numeric
 	Local nValor    := 0   as Numeric
