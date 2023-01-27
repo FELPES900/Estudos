@@ -1,0 +1,65 @@
+#INCLUDE "TOTVS.CH"
+#INCLUDE "TLPP-CORE.TH"
+#INCLUDE "TLPP-REST.TH"
+
+/*/{Protheus.doc} U_Getprodutos
+Retorno de produtos
+@type function
+@version 12.1.33
+@author felip
+@since 19/01/2023
+/*/@Get("faturamento/cliente/tipo/visualizar")
+Function U_Getprodutos()
+
+	Local aProduct  := {}  as Array
+	Local cAlias    := ""  as Character
+	Local jResponse := Nil as Json
+	Local lRet      := .T. as Logical
+	Local nLoop     := 0   as Numeric
+	Local cQuery := "" as Character
+	Local cFinalQuery := "" as Character
+
+	//Cria uma nova instância do objeto
+	jResponse := JsonObject():New()
+
+	cQuery := "SELECT B1_COD, B1_DESC, B1_TIPO, B1_UM, B1_LOCPAD, B1_GARANT FROM SB1990 WHERE D_E_L_E_T_ <> '*'"
+
+	// Construtor da carga
+	oQuery := FWPreparedStatement():New()
+
+	oQuery:SetQuery(cQuery)
+
+	// Retorna a query com os parâmetros já tratados e substituídos
+	cFinalQuery := oQuery:GetFixQuery()
+
+	// Abre um alias com a query informada
+	cAlias := MPSysOpenQuery(cFinalQuery)
+
+	while !(cAlias)->(Eof())
+
+		nLoop++
+
+		aAdd(aProduct, JsonObject():New())
+
+		// Valores a serem atribuidos no Json
+		aProduct[nLoop]["B1_COD"]    := AllTrim((cAlias)->B1_COD)
+		aProduct[nLoop]["B1_DESC"]   := AllTrim((cAlias)->B1_DESC)
+		aProduct[nLoop]["B1_TIPO"]   := AllTrim((cAlias)->B1_TIPO)
+		aProduct[nLoop]["B1_UM"]     := AllTrim((cAlias)->B1_UM)
+		aProduct[nLoop]["B1_LOCPAD"] := AllTrim((cAlias)->B1_LOCPAD)
+		aProduct[nLoop]["B1_GARANT"] := AllTrim((cAlias)->B1_GARANT)
+
+		(cAlias)->(dbSkip())
+
+	end
+
+	jResponse["Produtos"] := aProduct
+
+	// Define o valor de uma chave do cabeçalho de resposta
+	oRest:setKeyHeaderResponse('Content-Type','application/json')
+
+	// Retorna um objeto Json
+	oRest:setResponse(jResponse)
+
+
+Return lRet
