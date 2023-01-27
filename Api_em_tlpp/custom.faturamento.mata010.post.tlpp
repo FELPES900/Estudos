@@ -2,6 +2,7 @@
 #INCLUDE "TLPP-CORE.TH"
 #INCLUDE "TLPP-REST.TH"
 #INCLUDE "FWMVCDEF.CH"
+#INCLUDE "TBICONN.CH"
 
 /*/{Protheus.doc} U_PostProdutos
 Criando novos produtos
@@ -22,6 +23,10 @@ Function U_PostProdutos()
 	Local nX        := 0   as Numeric
 	Local oModel    := Nil as Object
 	Local oSB1Model := Nil as Object
+
+	if SELECT("SX2") == 0 //Para ser executado pelo usuario
+		PREPARE ENVIRONMENT EMPRESA "99" FILIAL "01"
+	endif
 
 	// Cria um object Json
 	jBody := JsonObject():new()
@@ -47,15 +52,18 @@ Function U_PostProdutos()
 		nX++
 	end
 	nX := 1
-	if(nVlaor == 6)
+	if(nValor == 6)
 		DBSelectArea("SB1")
-		if(DbSeek(xFilial("SB1") + jBody[aBody[nPosicao]]))
-			oModel := FWLoadModel("MATA010M")
+		if(!DbSeek(xFilial("SB1") + jBody[aBody[nPosicao]]))
+			oModel := FWLoadModel("MATA010")
 			oModel:SetOperation(MODEL_OPERATION_INSERT)
 			oModel:Activate()
 
+			oSB1Model := oModel:GetModel("SB1MASTER")
+
 			while nX <= Len(aBody)
 				oSB1Model:setValue(aBody[nX], jBody[aBody[nX]])
+				nX++
 			end
 
 			if(oModel:VldData())
@@ -75,5 +83,10 @@ Function U_PostProdutos()
 		oRest:setStatusCode(400)
 		jResponse['status'] := "Todos os campos com '*' são obrigatorios"
 	endif
+
+	if SELECT("SX2") > 0
+		RESET ENVIRONMENT
+	endif
+
 
 Return lRet
