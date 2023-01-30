@@ -1,0 +1,57 @@
+#INCLUDE "TOTVS.CH"
+#INCLUDE "TLPP-CORE.TH"
+#INCLUDE "TLPP-REST.TH"
+
+/*/{Protheus.doc} U_DeleteProduto
+Metodo de delete de produtos
+@type function
+@version 12.1.33
+@author felip
+@since 27/01/2023
+/*/@Delete("faturamneto/produtos/edit")
+Function U_DeleteProduto()
+
+	Local lRet := .T.
+
+Return lRet
+
+//DELETE com todos os campos
+	@DELETE('/DelClientes')
+User Function DelClientes()
+	Local cSeek := ""
+	Local jResponse := JsonObject():New()
+	Local jPath := oRest:getQueryRequest()
+
+	SA1->( DbSelectArea("SA1"))
+	SA1->( DbSetOrder(1))
+	IF jPath:HasProperty("A1_COD")
+		cSeek := STRZERO(VAL(jPath['A1_COD']), TAMSX3( 'A1_COD' )[1])
+		If jPath:HasProperty("A1_LOJA")
+			cSeek += STRZERO(VAL(jPath['A1_LOJA']), TAMSX3( 'A1_LOJA' )[1])
+		ENDIF
+
+		IF SA1->( DBSEEK( xFilial('SA1') + cSeek ) )
+
+			RecLock('SA1', .F.)
+			SA1->(DbDelete())
+			SA1->(MsUnlock())
+
+			jResponse['status'] := "Success"
+			jResponse['message'] := "Cliente Deletado!"
+
+		ELSE
+			oRest:setStatusCode(404)
+			jResponse['status'] := "error"
+			jResponse['message'] := "Cliente nao encontrado!"
+		ENDIF
+
+	ELSE
+		oRest:setStatusCode(400)
+		jResponse['status'] := "error"
+		jResponse['message'] := "Uso incorreto do servico"
+	ENDIF
+
+	oRest:setKeyHeaderResponse('Content-Type','application/json')
+	oRest:setResponse(jResponse)
+
+RETURN
