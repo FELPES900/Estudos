@@ -1,0 +1,113 @@
+#INCLUDE "TOTVS.CH"
+#INCLUDE "TLPP-CORE.TH"
+#INCLUDE "TLPP-REST.TH"
+#INCLUDE "FWMVCDEF.CH"
+#INCLUDE "TBICONN.CH"
+
+
+/*/{Protheus.doc} U_PatchProduto
+Edit de produtos, pode tambem ser usado como um PUT
+@type function
+@version 12.1.33
+@author felip
+@since 27/01/2023
+/*/@Patch("faturamneto/produtos/edit")
+Function U_PatchProduto()
+
+	Local aBody     := {}  as Array
+	Local cCampos   := ""  as Character
+	Local jBody     := Nil as Json
+	Local jPath     := Nil as Json
+	Local jResponse := Nil as Json
+	Local lRet      := .T. as Logical
+	Local nPosicao  := 0   as Numeric
+	Local nValor    := 0   as Numeric
+	Local nX        := 0   as Numeric
+	Local oSB1Model := Nil as Object
+
+	if SELECT("SX2") == 0 //Para ser executado pelo usuario
+		PREPARE ENVIRONMENT EMPRESA "99" FILIAL "01"
+	endif
+
+	// Cria um Object Json
+	jPath := JsonObject():New()
+
+	// Pega o codigo que foi passado na URL
+	jPath := oRest:getPathParamsRequest()
+
+	// Cria um object Json
+	jBody := JsonObject():new()
+
+	// Cria um Json de resposta no final do proceso realizado
+	jResponse := JsonObject():New()
+
+	// Permite popular o JsonObject
+	jBody:fromJson( oRest:GetBodyRequest() )
+
+	// Pega o nome dos campos que foram passados na JSON
+	aBody := jBody:GetNames()
+
+	nX := 1
+	cCampos := "B1_COD|B1_DESC|B1_TIPO|B1_UM|B1_LOCPAD|B1_GARANT"
+	while nX <= Len(aBody)
+		if(aBody[nX] $ cCampos)
+			nValor += 1
+		endif
+		if(aBody[nX] ==  "B1_COD")
+			nPosicao := nX
+		endif
+		nX++
+	end
+	nX := 2
+
+	if(nValor == 6)
+		DBSelectArea("SB1")
+		if(DbSeek(xFilial("SB1") + jBody[aBody[nPosicao]]) .And. jBody[1] == "B1_COD")
+
+			// Pegansdo a Model que será usada
+			oModel := FWLoadModel("MATA010")
+
+			//peração
+			oModel:SetOperation(MODEL_OPERATION_UPDATE)
+
+			// Ativando Modelo
+			oModel:Activate()
+
+			oSB1Model := oModel:GetModel("SB1MASTER")
+
+			// Atualizando os valores
+			while nX <= Len(aBody)
+				oSB1Model:setValue(aBody[nX], jBody[aBody[nX]])
+				nX++
+			end
+
+			if(oModel:VldData())
+				oModel:CommitData()
+				oRest:setStatusCode(200)
+				jResponse['Status'] := "Sucesso"
+				jResponse['Message'] := "Produto inserido com sucesso"
+			else
+				oRest:setStatusCode(400)
+				jResponse['status'] := "Verifique se todos os campos estão com os dados correto"
+			endif
+		else
+			oRest:setStatusCode(400)
+			jResponse['status'] := "Produto não encontrado"
+		endif
+	else
+		oRest:setStatusCode(400)
+		jResponse['status'] := "Todos os campos com '*' são obrigatorios"
+		jResponse['correção'] := "Caso o campo codigo não esteja como primario ou nao existente por favor informe"
+	endif
+
+	// Define o valor de uma chave do cabeçalho de resposta
+	oRest:setKeyHeaderResponse('Content-Type','application/json')
+
+	// Retorna um objeto Json
+	oRest:setResponse(jResponse)
+
+	if SELECT("SX2") > 0
+		RESET ENVIRONMENT
+	endif
+
+Return lRet
