@@ -1,6 +1,8 @@
 #INCLUDE "TOTVS.CH"
 #INCLUDE "TLPP-CORE.TH"
 #INCLUDE "TLPP-REST.TH"
+#INCLUDE "FWMVCDEF.CH"
+#INCLUDE "TBICONN.CH"
 
 /*/{Protheus.doc} U_DeleteProduto
 Metodo de delete de produtos
@@ -8,50 +10,78 @@ Metodo de delete de produtos
 @version 12.1.33
 @author felip
 @since 27/01/2023
-/*/@Delete("faturamneto/produtos/edit")
+/*/@Delete("faturamento/produtos/delete")
 Function U_DeleteProduto()
 
-	Local lRet := .T.
+	Local aBody     := {}  as Array
+	Local jBody     := Nil as Json
+	Local jPath     := Nil as Json
+	Local jResponse := Nil as Json
+	Local lRet      := .T. as Logical
+	Local oSB1Model := Nil as Object
 
-Return lRet
+	if SELECT("SX2") == 0 //Para ser executado pelo usuario
+		PREPARE ENVIRONMENT EMPRESA "99" FILIAL "01"
+	endif
 
-//DELETE com todos os campos
-	@DELETE('/DelClientes')
-User Function DelClientes()
-	Local cSeek := ""
-	Local jResponse := JsonObject():New()
-	Local jPath := oRest:getQueryRequest()
+	// Cria um Object Json
+	jPath := JsonObject():New()
 
-	SA1->( DbSelectArea("SA1"))
-	SA1->( DbSetOrder(1))
-	IF jPath:HasProperty("A1_COD")
-		cSeek := STRZERO(VAL(jPath['A1_COD']), TAMSX3( 'A1_COD' )[1])
-		If jPath:HasProperty("A1_LOJA")
-			cSeek += STRZERO(VAL(jPath['A1_LOJA']), TAMSX3( 'A1_LOJA' )[1])
-		ENDIF
+	// Pega o codigo que foi passado na URL
+	jPath := oRest:getPathParamsRequest()
 
-		IF SA1->( DBSEEK( xFilial('SA1') + cSeek ) )
+	// Cria um object Json
+	jBody := JsonObject():new()
 
-			RecLock('SA1', .F.)
-			SA1->(DbDelete())
-			SA1->(MsUnlock())
+	// Cria um Json de resposta no final do proceso realizado
+	jResponse := JsonObject():New()
 
-			jResponse['status'] := "Success"
-			jResponse['message'] := "Cliente Deletado!"
+	// Permite popular o JsonObject
+	jBody:fromJson( oRest:GetBodyRequest() )
 
-		ELSE
-			oRest:setStatusCode(404)
-			jResponse['status'] := "error"
-			jResponse['message'] := "Cliente nao encontrado!"
-		ENDIF
+	// Pega o nome dos campos que foram passados na JSON
+	aBody := jBody:GetNames()
 
-	ELSE
+	DBSelectArea("SB1")
+	if(DbSeek(xFilial("SB1") + jBody[aBody[1]]))
+
+		// Pegansdo a Model que será usada
+		oModel := FWLoadModel("MATA010")
+
+		//peração
+		oModel:SetOperation(MODEL_OPERATION_DELETE)
+
+		// Ativando Modelo
+		oModel:Activate()
+
+		// Pegando um model especifico
+		oSB1Model := oModel:GetModel("SB1MASTER")
+
+		oSB1Model:setValue(aBody[1], jBody[aBody[1]])
+
+		if(oModel:VldData())
+			oModel:CommitData()
+			oRest:setStatusCode(202)
+			jResponse['Status'] := "Sucesso"
+			jResponse['Message'] := "Produto inserido com sucesso"
+		else
+			oRest:setStatusCode(400)
+			jResponse['status'] := "Verifique se todos os campos estão com os dados correto"
+		endif
+	else
 		oRest:setStatusCode(400)
-		jResponse['status'] := "error"
-		jResponse['message'] := "Uso incorreto do servico"
-	ENDIF
+		jResponse['status'] := "Produto não encontrado"
+	endif
 
+	// Define o valor de uma chave do cabeçalho de resposta
 	oRest:setKeyHeaderResponse('Content-Type','application/json')
+
+	// Retorna um objeto Json
 	oRest:setResponse(jResponse)
 
-RETURN
+	if SELECT("SX2") > 0
+		RESET ENVIRONMENT
+	endif
+
+
+Return lRet
