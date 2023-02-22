@@ -18,7 +18,6 @@ Function U_DeleteProduto()
 	Local jPath     := Nil as Json
 	Local jResponse := Nil as Json
 	Local lRet      := .T. as Logical
-	Local oSB1Model := Nil as Object
 
 	if SELECT("SX2") == 0 //Para ser executado pelo usuario
 		PREPARE ENVIRONMENT EMPRESA "99" FILIAL "01"
@@ -55,19 +54,19 @@ Function U_DeleteProduto()
 		oModel:Activate()
 
 		// Pegando um model especifico
-		oSB1Model := oModel:GetModel("SB1MASTER")
+		// oSB1Model := oModel:GetModel("SB1MASTER")
 
-		oSB1Model:setValue(aBody[1], jBody[aBody[1]])
+		// oSB1Model:setValue(aBody[1], jBody[aBody[1]])
 
-		if(oModel:VldData())
-			oModel:CommitData()
-			oRest:setStatusCode(202)
-			jResponse['Status'] := "Sucesso"
-			jResponse['Message'] := "Produto inserido com sucesso"
-		else
-			oRest:setStatusCode(400)
-			jResponse['status'] := "Verifique se todos os campos estão com os dados correto"
-		endif
+		// if(oModel:VldData())
+		oModel:CommitData()
+		oRest:setStatusCode(202)
+		jResponse['Status'] := "Sucesso"
+		jResponse['Message'] := "Produto inserido com sucesso"
+		// else
+		// 	oRest:setStatusCode(400)
+		// 	jResponse['status'] := "Verifique se todos os campos estão com os dados correto"
+		// endif
 	else
 		oRest:setStatusCode(400)
 		jResponse['status'] := "Produto não encontrado"
