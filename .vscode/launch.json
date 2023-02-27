@@ -44,7 +44,10 @@
 		{
 			"args": [],
 			"label": "u_MT410TOK"
+		},
+		{
+			"label": "u_testes"
 		}
 	],
-	"lastProgramExecuted": "xxx"
+	"lastProgramExecuted": "u_testes"
 }
