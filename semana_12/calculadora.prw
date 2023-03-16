@@ -138,7 +138,6 @@ Return
 // valor2 e resultado da equação matematica
 Method igual(cAct) CLASS oCalcula
 	self:cValor2 := cTGet1
-	// cTGet1 := SubStr(MathC(self:cValor1,self:cTipo,self:cValor2),1, At(".",MathC(self:cValor1,self:cTipo,self:cValor2))-1) + SubStr(MathC(self:cValor1,self:cTipo,self:cValor2),At(".",MathC(self:cValor1,self:cTipo,self:cValor2)),2) // Estudar com suas palavras
 	cTGet1 := CValToChar(VAL(MathC(self:cValor1,self:cTipo,self:cValor2)))
 	oText:refresh()
 Return
