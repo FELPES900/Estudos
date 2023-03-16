@@ -21,9 +21,6 @@
 			"label": "sigamdi"
 		},
 		{
-			"label": "U_teste123"
-		},
-		{
 			"label": "U_CRMA02FF"
 		},
 		{
@@ -46,8 +43,8 @@
 			"label": "u_MT410TOK"
 		},
 		{
-			"label": "u_testes"
+			"label": "u_teste1"
 		}
 	],
-	"lastProgramExecuted": "u_testes"
+	"lastProgramExecuted": "sigamdi"
 }
