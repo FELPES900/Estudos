@@ -26,7 +26,7 @@ Function u_GENA01AA()
 	cMensagem += ' Hora : ' + Time()      + ' <BR> '        + chr(13)+chr(10)
 
 	/*
-	Voce pode colocar o que quiser 
+	Voce pode colocar o que quiser
 	*/
 
 	cMensagem += ' ---------------------------------------------------------------------------<BR> '
@@ -59,11 +59,6 @@ METHOD new() CLASS oEmail
 Return
 
 METHOD EnvEmail(cAssunto,cMsg,cPara) CLASS oEmail
-
-	//Local cUser     := Alltrim(GetMV("MV_RELACNT")) // vitor.rosa@j2aconsultoria.com.br
-	//Local cPass     := Alltrim(GetMV("MV_RELPSW"))  // @Vitor2022
-	//cSMTPAddr       := Alltrim(GetMV("MV_RELSERV")) // email-ssl.com.br:465 --cortar e usar a string ate os dois pontos
-	//nSMTPPort       := Alltrim(GetMV("MV_RELSERV")) // email-ssl.com.br:465 --cortar e usar a string apos os dois pontos
 
 	Local oServer       := NIL as Object
 	Local oMessage      := Nil as Object

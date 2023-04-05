@@ -62,7 +62,7 @@ Function U_PatchProduto()
 
 	if(nValor == 6)
 		DBSelectArea("SB1")
-		if(DbSeek(xFilial("SB1") + jBody[aBody[nPosicao]]) .And. jBody[1] == "B1_COD")
+		if(DbSeek(xFilial("SB1") + jBody[aBody[nPosicao]]) .And. aBody[1] == "B1_COD")
 
 			// Pegansdo a Model que será usada
 			oModel := FWLoadModel("MATA010")
