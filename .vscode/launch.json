@@ -18,13 +18,7 @@
 			"label": "xxx"
 		},
 		{
-			"label": "sigamdi"
-		},
-		{
 			"label": "U_CRMA02FF"
-		},
-		{
-			"label": "SIGAADV"
 		},
 		{
 			"label": "APSDU"
@@ -44,7 +38,13 @@
 		},
 		{
 			"label": "u_teste1"
+		},
+		{
+			"label": "SIGACFG"
+		},
+		{
+			"label": "SIGAMDI"
 		}
 	],
-	"lastProgramExecuted": "sigamdi"
+	"lastProgramExecuted": "SIGAMDI"
 }
