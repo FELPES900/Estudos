@@ -156,12 +156,12 @@ Static Function FiltroFIL(nLinha,aApelidosValidos,cRetCpo)
 	Local nI
 
 	For nI := 1 To Len(aApelidosValidos)
-		If AllTrim(cRetCpo) $ aApelidosValidos[nI][1]
+		If AllTrim(cRetCpo) $ aApelidosValidos[nI][2] .Or. AllTrim(cRetCpo) $ aApelidosValidos[nI][3]
 			oBrwPrc:nAt := nI
 			oBrwPrc:Refresh()
 			Exit
 		EndIf
-	Next nI
+	Next
 
 Return
 
