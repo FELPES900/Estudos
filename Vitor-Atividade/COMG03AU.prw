@@ -106,20 +106,20 @@ Retorno os nomes dos dados do array
 /*/
 Static Function ConfApelidos(_nPos, aApelidosValidos, lRet)
 
-	Local nF      := 0
 	Local cApelidos := ""
+	Local nF        := 0
 
 	For nF := 1 To Len(aApelidosValidos)
-		If aApelidosValidos[nF][1]
+		If aApelidosValidos[nF][1] .And. cApelidos == ""
 			cApelidos += AllTrim(aApelidosValidos[nF][3]) + ""
+			lRet := .T.
+		elseif cApelidos <> ""
+			FWAlertWarning("Voce nao pode ter mais de um apelido","Alerta")
+			lRet := .F.
 		EndIf
 	Next
 
-	cMeuApelido := cApelidos
-	lRet := .T.
-
-	// Finaliza o Dialog
-	oDlg:End()
+	IIF(lRet,(cMeuApelido:=cApelidos,oDlg:End()),)
 
 Return
 
