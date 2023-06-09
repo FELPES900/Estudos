@@ -31,7 +31,9 @@ WSMETHOD POST WSSERVICE POSTCLI
 
 		for nX := 1 to Len(oJson:GetJsonObject('CLIENTES'))
 
-			if !SA1->(MsSeek( PadR(xFilial("SA1",oJson:GetJsonObject( 'CLIENTES' )[nX][ 'FILIAL' ]),TamSx3('A1_FILIAL')[1]) + PadL(oJson:GetJsonObject( 'CLIENTES' )[nX][ 'ID' ],TamSx3('A1_COD')[1],'0')   +  cLoja))
+			if !SA1->(MsSeek( PadR(xFilial("SA1",oJson:GetJsonObject( 'CLIENTES' )[nX][ 'FILIAL' ]),TamSx3('A1_FILIAL')[1]);
+					+ PadL(oJson:GetJsonObject( 'CLIENTES' )[nX][ 'ID' ],TamSx3('A1_COD')[1],'0')   ;
+					+  cLoja))
 				aClient := {}
 				aadd(aClient, {"A1_FILIAL" , xFilial("SA1",oJson:GetJsonObject( 'CLIENTES' )[nX][ 'FILIAL' ])                                            , NIL})
 				aadd(aClient, {"A1_COD"    , PadL(oJson:GetJsonObject( 'CLIENTES' )[nX][ 'ID' ],TamSx3( 'A1_COD' )[1], '0' )                             , NIL})
