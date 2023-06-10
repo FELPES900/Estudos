@@ -15,83 +15,70 @@ EXTRA: Colocar dados chumbados caso quiser
 /*/
 User Function OMSA01FF()
 
-	// Pedido de venda --> Table SC5
-	// Criando um pedido de venda passando dados chumbados
-	Local cSC5CEnt := "" //Cli.Entrega
-	Local cSC5Cli  := "" //Cliente
-	Local cSC5CPag := "" //Cond. Pagto
-	Local cSC5Fili := "" //Filial
-	Local cSC5LEnt := "" //Loja Entrega
-	Local cSC5Loja := "" //Loja
-	Local cSC5Num  := "" //Numero
-	Local cSC5TCli := "" //Tipo Cliente
-	Local cSC5Tipo := "" //Tipo Pedido
+	Local aPdv := {;
+		{"C5_CLIENT" ,""}// [1] -- Cli Entrega
+	{"C5_CLIENTE",""}	 // [2] -- Cliente
+	{"C5_FILIAL" ,""}	 // [3] -- Cond Pagto
+	{"C5_LOJACLI",""}	 // [4] -- Filial
+	{"C5_LOJAENT",""}	 // [5] -- Loja Entrega
+	{"C5_CONDPAG",""}	 // [6] -- Loja
+	{"C5_NUM"    ,""} 	 // [7] -- Numero
+	{"C5_TIPO"   ,""} 	 // [8] -- Tipo Cliente
+	{"C5_TIPOCLI",""}	 // [9] -- Tipo Pedido
+	}
 
-	// Itens do pedido de venda --> SC6
-	/*
-	[1]  -- Cod. Fiscal
-	[2]  -- Cliente
-	[3]  -- Filial
-	[4]  -- Entrega
-	[5]  -- Descricao
-	[6]  -- Int. Rot.
-	[7]  -- Item
-	[8]  -- Produto
-	[9]  -- Quantidade
-	[10] -- Prc Unitario
-	[11] -- Armazem
-	[12] -- Loja
-	[13] -- Num. Pedido
-	[14] -- Rateio
-	[15] -- Unidade
-	[16] -- Vlr.Total
-	[17] -- Tipo Saida
-	[18] -- Tipo Op
-	[19] -- Ent.Sugerida
-	[20] -- Tp. Prod.
-	*/
-	Local aItemPed := ;
-		{;
-		{;
-		"6107",;
-		"000001",;
-		"01",;
-		Date(),;
-		"MONITOR ",;
-		"1",;
-		"01",;
-		"000000000000001",;
-		100.00,;
-		1000.00,;
-		"01",;
-		"01",;
-		"000001",;
-		"2",;
-		"UN",;
-		100000.00,;
-		"501",;
-		"F",;
-		DATE(),;
-		"1";
-		};
-		}
-
+	Local cC6Filial := ""
+	Local aItemPed := {;
+		{
+	{"C6_CF"	 ,"6107"}	     	,; // 	[1]  -- Cod. Fiscal
+	{"C6_CLI"	 ,"000001"}		 	,; // 	[2]  -- Cliente
+	{"C6_FILIAL" ,cC6Filial}		,; // 	[3]  -- Filial
+	{"C6_ENTREG" ,Date()}			,; // 	[4]  -- Entrega
+	{"C6_DESCRI" ,"MONITOR"}		,; // 	[5]  -- Descricao
+	{"C6_INTROT" ,"1"}				,; // 	[6]  -- Int. Rot.
+	{"C6_ITEM"	 ,"01"}			 	,; // 	[7]  -- Item
+	{"C6_PRODUTO","000000000000001"},; // 	[8]  -- Produto
+	{"C6_QTDVEN" ,100.00}			,; // 	[9]  -- Quantidade
+	{"C6_PRCVEN" ,1000.00} 		 	,; // 	[10] -- Prc Unitario
+	{"C6_LOCAL"  ,"01"}			 	,; // 	[11] -- Armazem
+	{"C6_LOJA"	 ,"01"}			 	,; // 	[12] -- Loja
+	{"C6_NUM"	 ,"000001"}		 	,; // 	[13] -- Num. Pedido
+	{"C6_RATEIO" ,"2"}				,; // 	[14] -- Rateio
+	{"C6_UM"	 ,"UN"}			 	,; // 	[15] -- Unidade
+	{"C6_VALOR"	 ,100000.00}		,; // 	[16] -- Vlr.Total
+	{"C6_TES"	 ,"501"}			,; // 	[17] -- Tipo Saida
+	{"C6_TPOP"   ,"F"}				,; // 	[18] -- Tipo Op
+	{"C6_SUGENTR",DATE()}			,; // 	[19] -- Ent.Sugerida
+	{"C6_TPPROD" ,"1"}				 ; // 	[20] -- Tp. Prod.
+	}}
 	Local lRet  := .T.
+	Local lOk := .T.
 	Local nX    := 0
+	local nOpc :=
 
 	if SELECT("SX2") == 0 //Para ser executado pelo usuario
 		PREPARE ENVIRONMENT EMPRESA "99" FILIAL "01"
 	endif
 
+	// Fazendo select nas tabelas
 	DbSelectArea("SC5") // Pedido de Venda
 	DbSelectArea("SC6")	// Itens do pedido de vneda
 
-	if (!SC5->(MsSeek(xFilial("SC5")) + aPdv[1]))
-		for nX := 1 to Len(aItemPed)
-			if ((!SC6)->() .And. nX == Len(aItemPed))
+	// Qual Indice está usando
+	SC5->(dbSetOrder(1))
+	SC6->(dbSetOrder(1))
 
-			endif
-		next
+	// Atribuindo a Filial da SC6
+	cC6Filial := xFilial("SC6")
+
+	for nX := 1 to Len(aItemPed)
+		if ((!SC6)->(MsSeek(aItemPed[nX][3] + aItemPed[nX][13] + aItemPed[nX][7] + aItemPed[nX][8])) .And. (!SC5->(MsSeek(xFilial("SC5")) + aPdv[1])))
+			lOk := .F.
+		endif
+	next
+
+	if(lOK)
+
 	endif
 
 	if SELECT("SX2") > 0
