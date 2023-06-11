@@ -51,10 +51,13 @@ User Function OMSA01FF()
 	{"C6_SUGENTR",DATE()}			,; // 	[19] -- Ent.Sugerida
 	{"C6_TPPROD" ,"1"}				 ; // 	[20] -- Tp. Prod.
 	}}
-	Local lRet  := .T.
-	Local lOk := .T.
-	Local nX    := 0
-	local nOpc :=
+	Local aErroAuto := {}
+	Local cLogErro  := ""
+	Local lOk       := .T.
+	Local lRet      := .T.
+	Local nCount    := 0
+	local nOpc      := 3
+	Local nX        := 0
 
 	if SELECT("SX2") == 0 //Para ser executado pelo usuario
 		PREPARE ENVIRONMENT EMPRESA "99" FILIAL "01"
@@ -78,7 +81,17 @@ User Function OMSA01FF()
 	next
 
 	if(lOK)
-
+		MSExecAuto({|a, b, c, d| MATA410(a, b, c, d)}, aPdv, aItemPed, nOpc, .F.)
+		If !lMsErroAuto
+			ConOut("Alterado com sucesso! ")
+		Else
+			ConOut("Erro na alteração!")
+			aErroAuto := GetAutoGRLog()
+			For nCount := 1 To Len(aErroAuto)
+				cLogErro += StrTran(StrTran(aErroAuto[nCount], "<", ""), "-", "") + " "
+				ConOut(cLogErro)
+			Next nCount
+		EndIf
 	endif
 
 	if SELECT("SX2") > 0
