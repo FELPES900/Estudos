@@ -13,7 +13,7 @@ EXTRA: Colocar dados chumbados caso quiser
 @since 07/06/2023
 @return variant, return_lRet
 /*/
-User Function OMSA01FF()
+User Function OMSA02FF()
 
 	Local aPdv := {;
 		{"C5_FILIAL" ,"01"},;	// [1] -- Filial
@@ -55,7 +55,7 @@ User Function OMSA01FF()
 	Local lOk       := .T.
 	Local lRet      := .T.
 	Local nCount    := 0
-	local nOpc      := MODEL_OPERATION_INSERT
+	local nOpc      := MODEL_OPERATION_UPDATE
 	Local nX        := 0
 
 	if SELECT("SX2") == 0 //Para ser executado pelo usuario
