@@ -73,8 +73,12 @@ User Function OMSA01FF()
 	// Atribuindo a Filial da SC6
 	cC6Filial := xFilial("SC6")
 
+	// Organiza os campos comforme a SX3
+	FWVetByDic(aPdv,"SC5",.F.,/*nCpoPos*/)
+	FWVetByDic(aItemPed,"SC6",.T.,/*nCpoPos*/)
+
 	for nX := 1 to Len(aItemPed)
-		if ((!SC6)->(MsSeek(aItemPed[nX][3] + aItemPed[nX][13] + aItemPed[nX][7] + aItemPed[nX][8])) .And. (!SC5->(MsSeek(xFilial("SC5")) + aPdv[1])))
+		if ((!SC5->(MsSeek(xFilial("SC5")) + aPdv[1])))
 			lOk := .F.
 		endif
 	next

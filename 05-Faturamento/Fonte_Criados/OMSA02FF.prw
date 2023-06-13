@@ -29,7 +29,7 @@ User Function OMSA02FF()
 	Local cC6Filial := ""
 	Local aItemPed := {;
 		{;
-		{"C6_CF"	 ,"6107"}	     	,; // 	[1]  -- Cod. Fiscal
+		{"C6_CF"	 ,"6107"}	     ,; // 	[1]  -- Cod. Fiscal
 	{"C6_CLI"	 ,"000001"}		 	,; // 	[2]  -- Cliente
 	{"C6_FILIAL" ,cC6Filial}		,; // 	[3]  -- Filial
 	{"C6_ENTREG" ,Date()}			,; // 	[4]  -- Entrega
@@ -72,6 +72,10 @@ User Function OMSA02FF()
 
 	// Atribuindo a Filial da SC6
 	cC6Filial := xFilial("SC6")
+
+	// Organiza os campos comforme a SX3
+	FWVetByDic(aPdv,"SC5",.F.,/*nCpoPos*/)
+	FWVetByDic(aItemPed,"SC6",.T.,/*nCpoPos*/)
 
 	for nX := 1 to Len(aItemPed)
 		if ((!SC6)->(MsSeek(aItemPed[nX][3] + aItemPed[nX][13] + aItemPed[nX][7] + aItemPed[nX][8])) .And. (!SC5->(MsSeek(xFilial("SC5")) + aPdv[1])))
