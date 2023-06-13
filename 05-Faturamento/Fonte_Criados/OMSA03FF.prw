@@ -37,14 +37,14 @@ User Function OMSA02FF()
 	{"C6_INTROT" ,"1"}				,; // 	[6]  -- Int. Rot.
 	{"C6_ITEM"	 ,"01"}			 	,; // 	[7]  -- Item
 	{"C6_PRODUTO","000000000000001"},; // 	[8]  -- Produto
-	{"C6_QTDVEN" ,1000.00}			,; // 	[9]  -- Quantidade
+	{"C6_QTDVEN" ,100.00}			,; // 	[9]  -- Quantidade
 	{"C6_PRCVEN" ,1000.00} 		 	,; // 	[10] -- Prc Unitario
 	{"C6_LOCAL"  ,"01"}			 	,; // 	[11] -- Armazem
 	{"C6_LOJA"	 ,"01"}			 	,; // 	[12] -- Loja
 	{"C6_NUM"	 ,"000001"}		 	,; // 	[13] -- Num. Pedido
 	{"C6_RATEIO" ,"2"}				,; // 	[14] -- Rateio
 	{"C6_UM"	 ,"UN"}			 	,; // 	[15] -- Unidade
-	{"C6_VALOR"	 ,1000000.00}		,; // 	[16] -- Vlr.Total
+	{"C6_VALOR"	 ,100000.00}		,; // 	[16] -- Vlr.Total
 	{"C6_TES"	 ,"501"}			,; // 	[17] -- Tipo Saida
 	{"C6_TPOP"   ,"F"}				,; // 	[18] -- Tipo Op
 	{"C6_SUGENTR",DATE()}			,; // 	[19] -- Ent.Sugerida
@@ -55,7 +55,7 @@ User Function OMSA02FF()
 	Local lOk       := .T.
 	Local lRet      := .T.
 	Local nCount    := 0
-	local nOpc      := MODEL_OPERATION_UPDATE
+	local nOpc      := MODEL_OPERATION_DELETE
 	Local nX        := 0
 
 	if SELECT("SX2") == 0 //Para ser executado pelo usuario
@@ -86,7 +86,7 @@ User Function OMSA02FF()
 	if(lOK)
 		MSExecAuto({|a, b, c, d| MATA410(a, b, c, d)}, aPdv, aItemPed, nOpc, .F.)
 		If !lMsErroAuto
-			ConOut("Incluido com sucesso! ")
+			ConOut("Excluido com sucesso! ")
 		Else
 			ConOut("Erro na Incluido!")
 			aErroAuto := GetAutoGRLog()
