@@ -88,7 +88,7 @@ User Function OMSA02FF()
 		If !lMsErroAuto
 			ConOut("Excluido com sucesso! ")
 		Else
-			ConOut("Erro na Incluido!")
+			ConOut("Erro na exllusão!")
 			aErroAuto := GetAutoGRLog()
 			For nCount := 1 To Len(aErroAuto)
 				cLogErro += StrTran(StrTran(aErroAuto[nCount], "<", ""), "-", "") + " "
