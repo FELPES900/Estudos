@@ -2,5 +2,5 @@
     "totvsLanguageServer.welcomePage": false,
     "advpl.debug_multiThread": false,
     "totvsLanguageServer.workspaceServerConfig": true,
-    "totvsLanguageServer.editor.toggle.autocomplete": "Basic"
+    "totvsLanguageServer.editor.toggle.autocomplete": "LS"
 }

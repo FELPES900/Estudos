@@ -43,7 +43,16 @@
 		},
 		{
 			"label": "SIGAMDI"
+		},
+		{
+			"label": "U_ITEM"
+		},
+		{
+			"label": "U_OMSA01FF"
+		},
+		{
+			"label": "U_OMSA03FF"
 		}
 	],
-	"lastProgramExecuted": "SIGAMDI"
+	"lastProgramExecuted": "U_OMSA03FF"
 }
