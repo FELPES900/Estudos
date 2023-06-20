@@ -1,0 +1,145 @@
+#INCLUDE "TOTVS.CH"
+#INCLUDE "TLPP-CORE.TH"
+#INCLUDE "TLPP-REST.TH"
+#INCLUDE "FWMVCDEF.CH"
+#INCLUDE "TBICONN.CH"
+
+/*/{Protheus.doc} U_PostProdutos
+Criando novos produtos
+@type function
+@version 12.1.33
+@author felip
+@since 20/01/2023
+/*/@POST("faturamneto/produtos/create")
+Function U_PostProdutos()
+
+	Local aBody     := {}         as Array
+	Local aDados    := {}         as Array
+	Local aLogAuto  := {}         as Array
+	Local aSB1      := {}         as Array
+	Local cArqLog   := ""         as Character
+	Local cCampos   := ""         as Character
+	Local cDirLog   := '\x_logs\' as Character
+	Local cError    := ""         as Character
+	Local cErrorLog := ""         as Character
+	Local cTitulo   := ""         as Character
+	Local jBody     := Nil        as Json
+	Local jHeader   := Nil        as Json
+	local jResponse := Nil        as Json
+	Local lRet      := .T.        as Logical
+	Local nPosicao  := 0          as Numeric
+	Local nValor    := 0          as Numeric
+	Local nX        := 0          as Numeric
+	Local oModelSB1 := Nil        as Object
+	Local oModelSD1 := Nil        as Object
+	Local oSB1Model := Nil        as Object
+
+	if SELECT("SX2") == 0 //Para ser executado pelo usuario
+		PREPARE ENVIRONMENT EMPRESA "99" FILIAL "01"
+	endif
+
+	//Se não existir a pasta de logs, cria..
+	IF ! ExistDir(cDirLog)
+		MakeDir(cDirLog)
+	EndIF
+
+
+	// Cria um object Json
+	jBody := JsonObject():new()
+
+	// Cria um Json de resposta no final do proceso realizado
+	jResponse := JsonObject():New()
+
+	// Permite popular o JsonObject
+	jBody:fromJson( oRest:GetBodyRequest() )
+
+	// Pega o nome dos campos que foram passados na JSON
+	aBody := jBody:GetNames()
+
+	// Pega todos os campos da tabela de produtos
+	aSB1 := FWSX3Util():GetAllFields( "SB1" , .T. )
+
+	// Retorna todo o cabecalho da requisicao
+	jHeader := oRest:getHeaderRequest()
+
+	// Pega o Json que foi enviado na requisição
+	cError := jBody:FromJson(cJson)
+
+	//Se tiver algum erro no Parse, encerra a execução
+	IF !Empty(cError)
+		oRest:setStatusCode(500)
+		jResponse['errorId']  := 'NEW004'
+		jResponse['error']    := 'Parse do JSON'
+		jResponse['solution'] := 'Erro ao fazer o Parse do JSON'
+	Else
+
+		// Pega o nome dos campos que foram informados no Json criando uma string unica que contem todos os campos que foram informados
+		cTitulo := Arrtokstr(aBody)
+
+		For nX := 1 to Len(aSB1)
+			If ALLTRIM(GetSX3Cache(aSB1[nX], 'X3_TITULO')) $ cTitulo
+				nPosFild := aScan(aBody, ALLTRIM(GetSX3Cache(aSB1[nX], 'X3_TITULO')))
+				aadd(aDados, {Alltrim(GetSX3Cache(aSB1[nX], 'X3_CAMPO')), jBody:GetJsonObject( aBody[nPosFild] ), Nil})
+			EndIf
+		Next
+
+		// Resetando o valor
+		nX := 0
+
+		For nX := 1 to Len(aDados)
+			//Se o campo for data, retira as barras e faz a conversão
+			If GetSX3Cache(aDados[nCampo][1], 'X3_TIPO') == 'D'
+				aDados[nCampo][2] := StrTran(aDados[nCampo][2], '/', '')
+				aDados[nCampo][2] := sToD(aDados[nCampo][2])
+			EndIf
+		Next
+
+		// Resetando o valor
+		nX := 0
+
+		//Chama a inclusão automática
+		MsExecAuto({|x, y| MATA010(x, y)}, aDados, 3) 	//Opção: 3=Incluir; 4=Alterar; 5=Excluir;
+
+		//Se houve erro, gera um arquivo de log dentro do diretório da protheus data
+		If lMsErroAuto
+
+			//Monta o texto do Error Log que será salvo
+			cErrorLog   := ""
+			aLogAuto    := GetAutoGrLog()
+			For nX := 1 To Len(aLogAuto)
+				cErrorLog += aLogAuto[nX] + CRLF
+			Next
+
+			//Grava o arquivo de log
+			cArqLog := 'PostProduto_' + dToS(Date()) + '_' + StrTran(Time(), ':', '-') + '.log'
+			MemoWrite(cDirLog + cArqLog, cErrorLog)
+
+			//Define o retorno para o WebService
+			oRest:setStatusCode(500)
+			jResponse['errorId']  := 'NEW005'
+			jResponse['error']    := 'Erro na inclusão do registro: '
+			jResponse['solution'] := 'Nao foi possivel incluir o registro, foi gerado um arquivo de log em ' + cDirLog + cArqLog + ' '
+
+		else
+			jResponse['Registro'] := 'Produto '+jBody:GetJsonObject( 'Codigo' )+' - '+jBody:GetJsonObject( 'Nome' )+' incluido com sucesso'
+		Endif
+
+	Endif
+
+	if( jHeader <> Nil )
+		//Definindo o header de resposta
+		oRest:setKeyHeaderResponse('Connection','Keep-Alive')
+		oRest:setKeyHeaderResponse('accept-encoding','gzip,deflate')
+		oRest:setKeyHeaderResponse('accept','/')
+		oRest:setKeyHeaderResponse('User-Agent','Thunder Client (https://www.thunderclient.com)')
+	Endif
+
+	//Define o retorno
+	oRest:setKeyHeaderResponse('Content-Type','application/json') // Define a estrutura como Json
+	oRest:setResponse(jResponse)
+
+	if SELECT("SX2") > 0 // Finaliza operação pelo usuario
+		RESET ENVIRONMENT
+	endif
+
+Return lRet
