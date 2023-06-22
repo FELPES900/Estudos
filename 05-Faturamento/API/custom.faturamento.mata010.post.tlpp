@@ -13,26 +13,31 @@ Criando novos produtos
 /*/@POST("faturamneto/produtos/create")
 Function U_PostProdutos()
 
-	Local aBody     := {}         as Array
-	Local aDados    := {}         as Array
-	Local aLogAuto  := {}         as Array
-	Local aSB1      := {}         as Array
-	Local cArqLog   := ""         as Character
-	Local cCampos   := ""         as Character
-	Local cDirLog   := '\x_logs\' as Character
-	Local cError    := ""         as Character
-	Local cErrorLog := ""         as Character
-	Local cTitulo   := ""         as Character
-	Local jBody     := Nil        as Json
-	Local jHeader   := Nil        as Json
-	local jResponse := Nil        as Json
-	Local lRet      := .T.        as Logical
-	Local nPosicao  := 0          as Numeric
-	Local nValor    := 0          as Numeric
-	Local nX        := 0          as Numeric
-	Local oModelSB1 := Nil        as Object
-	Local oModelSD1 := Nil        as Object
-	Local oSB1Model := Nil        as Object
+	Local aBody       := {}         as Array
+	Local aDA1        := {}         as Array
+	Local aDadosDA1   := {}         as Array
+	Local aDadosDA0   := {}         as Array
+	Local aDadosSB1   := {}         as Array
+	Local aLogAuto    := {}         as Array
+	Local aSB1        := {}         as Array
+	Local cArqLog     := ""         as Character
+	Local cCampos     := ""         as Character
+	Local cCodigo     := ""         as Character
+	Local cDirLog     := '\x_logs\' as Character
+	Local cError      := ""         as Character
+	Local cErrorLog   := ""         as Character
+	Local cFilial     := ""         as Character
+	Local cTitulo     := ""         as Character
+	Local jBody       := Nil        as Json
+	Local jHeader     := Nil        as Json
+	local jResponse   := Nil        as Json
+	Local lMsErroAuto := .F.
+	Local lRet        := .T.        as Logical
+	Local nOpcDA0     := 4          as Numeric
+	Local nOpcSB1     := 3          as Numeric
+	Local nPosicao    := 0          as Numeric
+	Local nValor      := 0          as Numeric
+	Local nX          := 0          as Numeric
 
 	if SELECT("SX2") == 0 //Para ser executado pelo usuario
 		PREPARE ENVIRONMENT EMPRESA "99" FILIAL "01"
@@ -42,7 +47,6 @@ Function U_PostProdutos()
 	IF ! ExistDir(cDirLog)
 		MakeDir(cDirLog)
 	EndIF
-
 
 	// Cria um object Json
 	jBody := JsonObject():new()
@@ -58,12 +62,19 @@ Function U_PostProdutos()
 
 	// Pega todos os campos da tabela de produtos
 	aSB1 := FWSX3Util():GetAllFields( "SB1" , .T. )
+	aDA1 := FWSX3Util():GetAllFields( "DA1" , .T. )
 
 	// Retorna todo o cabecalho da requisicao
 	jHeader := oRest:getHeaderRequest()
 
 	// Pega o Json que foi enviado na requisição
-	cError := jBody:FromJson(cJson)
+	cError := jBody:FromJson(oRest:getBodyRequest())
+
+	// Da uma SELECT na tabela de produtos
+	DBSelectArea("SB1")
+
+	// Setando qual Indice deve usar
+	DbSetOrder(1)
 
 	//Se tiver algum erro no Parse, encerra a execução
 	IF !Empty(cError)
@@ -79,51 +90,83 @@ Function U_PostProdutos()
 		For nX := 1 to Len(aSB1)
 			If ALLTRIM(GetSX3Cache(aSB1[nX], 'X3_TITULO')) $ cTitulo
 				nPosFild := aScan(aBody, ALLTRIM(GetSX3Cache(aSB1[nX], 'X3_TITULO')))
-				aadd(aDados, {Alltrim(GetSX3Cache(aSB1[nX], 'X3_CAMPO')), jBody:GetJsonObject( aBody[nPosFild] ), Nil})
+				aadd(aDadosSB1, {Alltrim(GetSX3Cache(aSB1[nX], 'X3_CAMPO')), jBody:GetJsonObject( aBody[nPosFild] ), Nil})
 			EndIf
 		Next
 
 		// Resetando o valor
 		nX := 0
 
-		For nX := 1 to Len(aDados)
+		For nX := 1 to Len(aDadosSB1)
 			//Se o campo for data, retira as barras e faz a conversão
-			If GetSX3Cache(aDados[nCampo][1], 'X3_TIPO') == 'D'
-				aDados[nCampo][2] := StrTran(aDados[nCampo][2], '/', '')
-				aDados[nCampo][2] := sToD(aDados[nCampo][2])
+			If GetSX3Cache(aDadosSB1[nX][1], 'X3_TIPO') == 'D'
+				aDadosSB1[nX][2] := StrTran(aDadosSB1[nX][2], '/', '')
+				aDadosSB1[nX][2] := sToD(aDadosSB1[nX][2])
 			EndIf
+			IIF(aDadosSB1[nX][1] $ "B1_COD",cCodigo := aDadosSB1[nX][2],)
 		Next
 
 		// Resetando o valor
 		nX := 0
 
-		//Chama a inclusão automática
-		MsExecAuto({|x, y| MATA010(x, y)}, aDados, 3) 	//Opção: 3=Incluir; 4=Alterar; 5=Excluir;
+		// Verifica se o produto ja existe na tabela
+		if(!DBSeek(xFilial("SB1") + cCodigo))
 
-		//Se houve erro, gera um arquivo de log dentro do diretório da protheus data
-		If lMsErroAuto
+			//Chama a inclusão automática
+			MsExecAuto({|x, y| MATA010(x, y)}, aDadosSB1, nOpcSB1)
 
-			//Monta o texto do Error Log que será salvo
-			cErrorLog   := ""
-			aLogAuto    := GetAutoGrLog()
-			For nX := 1 To Len(aLogAuto)
-				cErrorLog += aLogAuto[nX] + CRLF
-			Next
 
-			//Grava o arquivo de log
-			cArqLog := 'PostProduto_' + dToS(Date()) + '_' + StrTran(Time(), ':', '-') + '.log'
-			MemoWrite(cDirLog + cArqLog, cErrorLog)
+			//Se houve erro, gera um arquivo de log dentro do diretório da protheus data
+			If lMsErroAuto
 
-			//Define o retorno para o WebService
-			oRest:setStatusCode(500)
-			jResponse['errorId']  := 'NEW005'
-			jResponse['error']    := 'Erro na inclusão do registro: '
-			jResponse['solution'] := 'Nao foi possivel incluir o registro, foi gerado um arquivo de log em ' + cDirLog + cArqLog + ' '
+				//Monta o texto do Error Log que será salvo
+				cErrorLog   := ""
+				aLogAuto    := GetAutoGrLog()
+				For nX := 1 To Len(aLogAuto)
+					cErrorLog += aLogAuto[nX] + CRLF
+				Next
+
+				//Grava o arquivo de log
+				cArqLog := 'PostProduto_' + dToS(Date()) + '_' + StrTran(Time(), ':', '-') + '.log'
+				MemoWrite(cDirLog + cArqLog, cErrorLog)
+
+				//Define o retorno para o WebService
+				oRest:setStatusCode(500)
+				jResponse['errorId']  := 'NEW005'
+				jResponse['error']    := 'Erro na inclusão do produto: '
+				jResponse['solution'] := 'Nao foi possivel incluir o produto, foi gerado um arquivo de log em ' + cDirLog + cArqLog + ' '
+
+			else
+
+				// Passando uma tabela de preço ja existente
+				aadd(aDadosDA0, {"DA0_CODTAB", "001"             , Nil})
+				aadd(aDadosDA0, {"DA0_DESCRI", "TESTE"           , Nil})
+				aadd(aDadosDA0, {"DA0_DATDE" , CTOD("19/06/2023"), Nil})
+				aadd(aDadosDA0, {"DA0_HORADE", "08:00"           , Nil})
+				aadd(aDadosDA0, {"DA0_HORATE", "18:00"           , Nil})
+				aadd(aDadosDA0, {"DA0_TPHORA", "1"               , Nil})
+				aadd(aDadosDA0, {"DA0_ATIVO" , "1 "              , Nil})
+
+				// Atribuindo os dados do produto ao array dos itens da tabela de preco
+				aadd(aDadosDA1, {"DA1_ATIVO" , "1"      , Nil})
+				aadd(aDadosDA1, {"DA1_CODPRO", cCodigo  , Nil})
+				aadd(aDadosDA1, {"DA1_CODTAB", "001"    , Nil})
+				aadd(aDadosDA1, {"DA1_ITEM"  , "0002 "  , Nil})
+				aadd(aDadosDA1, {"DA1_MOEDA" , 1        , Nil})
+				aadd(aDadosDA1, {"DA1_PRCVEN", 1000.00  , Nil})
+				aadd(aDadosDA1, {"DA1_QTDLOT", 999999.99, Nil})
+				aadd(aDadosDA1, {"DA1_TPOPER", "4"      , Nil})
+
+				// Executando a alteração da tabela de preço
+				MsExecAuto({|x, y, z| OMSA010(x, y, z)}, aDadosDA1, aDadosDA0, nOpcDA0)
+
+				oRest:setStatusCode(500)
+				jResponse['Registro'] := "Produto registrado com sucesso"
+			Endif
 
 		else
-			jResponse['Registro'] := 'Produto '+jBody:GetJsonObject( 'Codigo' )+' - '+jBody:GetJsonObject( 'Nome' )+' incluido com sucesso'
-		Endif
-
+			jResponse['error']  := 'Produto ja registrado na tabela de preço'
+		endif
 	Endif
 
 	if( jHeader <> Nil )
