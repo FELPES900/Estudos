@@ -10,33 +10,28 @@ Criando novos produtos
 @version 12.1.33
 @author felip
 @since 20/01/2023
-/*/@POST("faturamneto/produtos/create")
+/*/@POST("faturamento/produtos/create")
 Function U_PostProdutos()
 
 	Local aBody       := {}         as Array
-	Local aDA1        := {}         as Array
-	Local aDadosDA1   := {}         as Array
 	Local aDadosDA0   := {}         as Array
+	Local aDadosDA1   := {}         as Array
 	Local aDadosSB1   := {}         as Array
 	Local aLogAuto    := {}         as Array
 	Local aSB1        := {}         as Array
 	Local cArqLog     := ""         as Character
-	Local cCampos     := ""         as Character
 	Local cCodigo     := ""         as Character
 	Local cDirLog     := '\x_logs\' as Character
 	Local cError      := ""         as Character
 	Local cErrorLog   := ""         as Character
-	Local cFilial     := ""         as Character
 	Local cTitulo     := ""         as Character
 	Local jBody       := Nil        as Json
 	Local jHeader     := Nil        as Json
 	local jResponse   := Nil        as Json
-	Local lMsErroAuto := .F.
+	Local lMsErroAuto := .F.        as Logical
 	Local lRet        := .T.        as Logical
 	Local nOpcDA0     := 4          as Numeric
 	Local nOpcSB1     := 3          as Numeric
-	Local nPosicao    := 0          as Numeric
-	Local nValor      := 0          as Numeric
 	Local nX          := 0          as Numeric
 
 	if SELECT("SX2") == 0 //Para ser executado pelo usuario
@@ -62,7 +57,6 @@ Function U_PostProdutos()
 
 	// Pega todos os campos da tabela de produtos
 	aSB1 := FWSX3Util():GetAllFields( "SB1" , .T. )
-	aDA1 := FWSX3Util():GetAllFields( "DA1" , .T. )
 
 	// Retorna todo o cabecalho da requisicao
 	jHeader := oRest:getHeaderRequest()
@@ -74,11 +68,16 @@ Function U_PostProdutos()
 	DBSelectArea("SB1")
 
 	// Setando qual Indice deve usar
-	DbSetOrder(1)
+	SB1->(DbSetOrder(1))
+
+	// Posiciona na tabela de Preco
+	DBSelectArea("DA0")
+
+	// Indice que sera usado
+	DA0->(dbSetOrder(1))
 
 	//Se tiver algum erro no Parse, encerra a execução
 	IF !Empty(cError)
-		oRest:setStatusCode(500)
 		jResponse['errorId']  := 'NEW004'
 		jResponse['error']    := 'Parse do JSON'
 		jResponse['solution'] := 'Erro ao fazer o Parse do JSON'
@@ -110,7 +109,7 @@ Function U_PostProdutos()
 		nX := 0
 
 		// Verifica se o produto ja existe na tabela
-		if(!DBSeek(xFilial("SB1") + cCodigo))
+		if SB1->(!DBSeek(xFilial("SB1") + cCodigo))
 
 			//Chama a inclusão automática
 			MsExecAuto({|x, y| MATA010(x, y)}, aDadosSB1, nOpcSB1)
@@ -139,29 +138,48 @@ Function U_PostProdutos()
 			else
 
 				// Passando uma tabela de preço ja existente
-				aadd(aDadosDA0, {"DA0_CODTAB", "001"             , Nil})
-				aadd(aDadosDA0, {"DA0_DESCRI", "TESTE"           , Nil})
-				aadd(aDadosDA0, {"DA0_DATDE" , CTOD("19/06/2023"), Nil})
-				aadd(aDadosDA0, {"DA0_HORADE", "08:00"           , Nil})
-				aadd(aDadosDA0, {"DA0_HORATE", "18:00"           , Nil})
-				aadd(aDadosDA0, {"DA0_TPHORA", "1"               , Nil})
-				aadd(aDadosDA0, {"DA0_ATIVO" , "1 "              , Nil})
+				aadd(aDadosDA0, {"DA0_CODTAB",jBody["pedido"][1]["pedido"], Nil})
 
 				// Atribuindo os dados do produto ao array dos itens da tabela de preco
-				aadd(aDadosDA1, {"DA1_ATIVO" , "1"      , Nil})
-				aadd(aDadosDA1, {"DA1_CODPRO", cCodigo  , Nil})
-				aadd(aDadosDA1, {"DA1_CODTAB", "001"    , Nil})
-				aadd(aDadosDA1, {"DA1_ITEM"  , "0002 "  , Nil})
-				aadd(aDadosDA1, {"DA1_MOEDA" , 1        , Nil})
-				aadd(aDadosDA1, {"DA1_PRCVEN", 1000.00  , Nil})
-				aadd(aDadosDA1, {"DA1_QTDLOT", 999999.99, Nil})
-				aadd(aDadosDA1, {"DA1_TPOPER", "4"      , Nil})
+				// aadd(aDadosDA1, {"DA1_ATIVO" , "1"           , Nil})
+				// aadd(aDadosDA1, {"DA1_CODPRO", cCodigo       , Nil})
+				// aadd(aDadosDA1, {"DA1_CODTAB", "001"         , Nil})
+				// aadd(aDadosDA1, {"DA1_MOEDA" , 1             , Nil})
+				// aadd(aDadosDA1, {"DA1_PRCVEN", 1000.00       , Nil})
+				// aadd(aDadosDA1, {"DA1_QTDLOT", 999999.99     , Nil})
+				// aadd(aDadosDA1, {"DA1_TPOPER", "4"           , Nil})
 
-				// Executando a alteração da tabela de preço
-				MsExecAuto({|x, y, z| OMSA010(x, y, z)}, aDadosDA1, aDadosDA0, nOpcDA0)
+				// Pocisiona no registro
+				if DA0->(MsSeek(xFilial("DA0") + aDadosDA0[1][2]))
 
-				oRest:setStatusCode(500)
-				jResponse['Registro'] := "Produto registrado com sucesso"
+					// Executando a alteração da tabela de preço
+					MsExecAuto({|x, y, z| OMSA010(x, y, z)}, aDadosDA0, aDadosDA1, nOpcDA0)
+
+					//Se houve erro, gera um arquivo de log dentro do diretório da protheus data
+					If lMsErroAuto
+
+						//Monta o texto do Error Log que será salvo
+						cErrorLog   := ""
+						aLogAuto    := GetAutoGrLog()
+						For nX := 1 To Len(aLogAuto)
+							cErrorLog += aLogAuto[nX] + CRLF
+						Next
+
+						//Grava o arquivo de log
+						cArqLog := 'PostProduto_' + dToS(Date()) + '_' + StrTran(Time(), ':', '-') + '.log'
+						MemoWrite(cDirLog + cArqLog, cErrorLog)
+
+						//Define o retorno para o WebService
+						oRest:setStatusCode(500)
+						jResponse['errorId']  := 'NEW005'
+						jResponse['error']    := 'Erro na inclusão do produto na tabela de preco: '
+						jResponse['solution'] := 'Nao foi possivel incluir o produto na tabela de preco, foi gerado um arquivo de log em ' + cDirLog + cArqLog + ' '
+
+					else
+						oRest:setStatusCode(200)
+						jResponse['Registro'] := "Produto registrado com sucesso e gravado na tabela de preco"
+					endif
+				endif
 			Endif
 
 		else
@@ -186,3 +204,35 @@ Function U_PostProdutos()
 	endif
 
 Return lRet
+
+/*
+1=Preco Venda;2=Venda Consumidor;3=Atacado;4=Varejo;5=Promocao
+
+1=Sim;2=Nao
+
+1=Estadual;2=InterEstadual;3=Norte/Nordeste;4=Todos
+
+{
+	"Codigo": "000000000000002",
+	"Descricao": "CADEIRA",
+	"Tipo": "MC",
+	"Unidade": "UN",
+	"Armazem Pad.": "01",
+	"Garantia?": "2",
+	"pedido" : [
+		{
+			"pedido" : "001"
+		}
+	],
+	"item" : [
+		{
+			"Tipo Preco" : "Preco Venda",
+			"Preco Venda" : 1200.00,
+			"Ativo" : "Sim",
+			"Tipo Operac." : "Estadual",
+			"Moeda" : "1",
+			"Vigencia" : "24/06/2023"
+		}
+	]
+}
+*/

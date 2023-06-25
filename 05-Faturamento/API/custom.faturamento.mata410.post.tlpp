@@ -1,0 +1,73 @@
+#INCLUDE "TOTVS.CH"
+#INCLUDE "TLPP-CORE.TH"
+#INCLUDE "TLPP-REST.TH"
+#INCLUDE "FWMVCDEF.CH"
+#INCLUDE "TBICONN.CH"
+
+/*/{Protheus.doc} U_PostVenda
+Criando um pedido de venda e criasndo um item no pedido de venda
+@type function
+@version 12.1.2210
+@author felip
+@since 22/06/2023
+@return variant, return
+/*/@POST("faturamneto/pedido/create")
+Function U_PostVenda()
+
+	Local cDirLog   := '\x_logs\' as Character
+	Local aSC5		:= {}		  as Array
+	Local aSC6		:= {}		  as Array
+	Local jBody     := Nil        as Json
+	Local jHeader   := Nil        as Json
+	Local jResponse := Nil        as Json
+	Local nLoop		:= 0		  as Numeric
+	Local nX  		:= 0 		  as Numeric
+
+	if SELECT("SX2") == 0 //Para ser executado pelo usuario
+		PREPARE ENVIRONMENT EMPRESA "99" FILIAL "01"
+	endif
+
+	//Se não existir a pasta de logs, cria..
+	IF ! ExistDir(cDirLog)
+		MakeDir(cDirLog)
+	EndIF
+
+	// Cria um object Json
+	jBody := JsonObject():new()
+
+	// Cria um Json de resposta no final do proceso realizado
+	jResponse := JsonObject():New()
+
+	// Cria um Json de resposta no final do proceso realizado
+	jResponse := JsonObject():New()
+
+	// Pega todos os campos da tabela de produtos
+	aSC5 := FWSX3Util():GetAllFields( "SC5" , .T. )
+
+	// Pega todos os campos da tabela de preco
+	aSC6 := FWSX3Util():GetAllFields( "SC6" , .T. )
+
+	// Permite popular o JsonObject
+	jBody:fromJson( oRest:GetBodyRequest() )
+
+	for nLoop := 1 to Len()
+	next
+
+	if( jHeader <> Nil )
+		//Definindo o header de resposta
+		oRest:setKeyHeaderResponse('Connection','Keep-Alive')
+		oRest:setKeyHeaderResponse('accept-encoding','gzip,deflate')
+		oRest:setKeyHeaderResponse('accept','/')
+		oRest:setKeyHeaderResponse('User-Agent','Thunder Client (https://www.thunderclient.com)')
+	Endif
+
+	//Define o retorno
+	oRest:setKeyHeaderResponse('Content-Type','application/json') // Define a estrutura como Json
+	oRest:setResponse(jResponse)
+
+	if SELECT("SX2") > 0 // Finaliza operação pelo usuario
+		RESET ENVIRONMENT
+	endif
+
+
+Return
