@@ -137,6 +137,9 @@ Function U_PostProdutos()
 				EndIf
 			Next
 
+			// Adicionando novo item na tabela preco
+			aadd(aDadosDA1,{"DA1_ITEM",novoitem(),Nil})
+
 			// Resetando o valor
 			nX := 0
 
@@ -181,7 +184,7 @@ Function U_PostProdutos()
 				else
 
 					// Pocisiona no registro
-					if DA0->(MsSeek(xFilial("DA0") + aDadosDA0[1][2]))
+					if DA0->(MsSeek(xFilial("DA0") + cPedido))
 
 						// Executando a alteração da tabela de preço
 						MsExecAuto({|x, y, z| OMSA010(x, y, z)}, aDadosDA0, aDadosDA1, nOpcDA0)
@@ -244,6 +247,36 @@ Function U_PostProdutos()
 
 Return lRet
 
+Static function novoitem()
+
+	Local cAlias      := ""  as Character
+	Local cFinalQuery := ""  as Character
+	Local cQuery      := ""  as Character
+	Local oQuery      := Nil as Object
+
+	// Construtor da carga
+	oQuery := FWPreparedStatement():New()
+
+	// Query que será executada
+	cQuery := "SELECT DA1_ITEM FROM DA1990 WHERE D_E_L_E_T_ <>  '*'"
+
+	// Informa a query a ser executada, deve ser utilizada a construção com os parametros com "?"
+	oQuery:SetQuery(cQuery)
+
+	// Retorna a query com os parâmetros já tratados e substituídos
+	cFinalQuery := oQuery:GetFixQuery()
+
+	// Abre um alias com a query informada
+	cAlias := MPSysOpenQuery(cFinalQuery)
+
+	while (cAlias)->(Eof())
+		cValItem := VAL((cAlias)->DA1_ITEM) + 1
+		(cAlias)->(DbSkip())
+	end
+
+	cValItem := cValToChar(cValItem)
+
+Return cValItem
 /*
 1=Preco Venda;2=Venda Consumidor;3=Atacado;4=Varejo;5=Promocao A
 

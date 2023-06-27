@@ -50,8 +50,8 @@ Function U_PostVenda()
 	// Permite popular o JsonObject
 	jBody:fromJson( oRest:GetBodyRequest() )
 
-	for nLoop := 1 to Len()
-	next
+	// for nLoop := 1 to Len()
+	// next
 
 	if( jHeader <> Nil )
 		//Definindo o header de resposta
