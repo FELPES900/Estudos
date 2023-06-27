@@ -13,7 +13,8 @@ Criando novos produtos
 /*/@POST("faturamento/produtos/create")
 Function U_PostProdutos()
 
-	Local aBody       := {}         as Array
+	Local aBodyDA1    := {}         as Array
+	Local aBodySB1    := {}         as Array
 	Local aDA1        := {}         as Array
 	Local aDadosDA0   := {}         as Array
 	Local aDadosDA1   := {}         as Array
@@ -25,17 +26,17 @@ Function U_PostProdutos()
 	Local cDirLog     := '\x_logs\' as Character
 	Local cError      := ""         as Character
 	Local cErrorLog   := ""         as Character
-	Local cPedido     := ""         as Character
-	Local cTitulo     := ""         as Character
+	Local cTituloSB1     := ""         as Character
+	Local cTituloDA1     := ""         as Character
 	Local jBody       := Nil        as Json
 	Local jHeader     := Nil        as Json
 	local jResponse   := Nil        as Json
 	Local lMsErroAuto := .F.        as Logical
 	Local lRet        := .T.        as Logical
-	Local nOBrig      := 0          as Numeric
 	Local nOpcDA0     := 4          as Numeric
 	Local nOpcSB1     := 3          as Numeric
 	Local nX          := 0          as Numeric
+	Private cPedido     := ""         as Character
 
 	if SELECT("SX2") == 0 //Para ser executado pelo usuario
 		PREPARE ENVIRONMENT EMPRESA "99" FILIAL "01"
@@ -56,7 +57,12 @@ Function U_PostProdutos()
 	jBody:fromJson( oRest:GetBodyRequest() )
 
 	// Pega o nome dos campos que foram passados na JSON
-	aBody := jBody:GetNames()
+	aBodySB1 := jBody:GetJsonObject("produto")
+	aBodyDA1 := jBody:GetJsonObject("tabela_preco")
+
+	// Cria um array a partir dos nomes que foram passandos os Json acima
+	aBodySB1 := aBodySB1:GetNames()
+	aBodyDA1 := aBodyDA1:GetNames()
 
 	// Pega todos os campos da tabela de produtos
 	aSB1 := FWSX3Util():GetAllFields( "SB1" , .T. )
@@ -89,143 +95,137 @@ Function U_PostProdutos()
 
 		// Sobrescreve alguns campos para poder ser tudo gravado sem erro
 		For nX := 1 to Len(aBody)
-			IIF(aBody[nX] $ "Garantia"	 ,aBody[nX] := "Garantia?",)
-			IIF(aBody[nX] $ "pedido"	 ,cPedido   := jBody["pedido"],)
-			IIF(aBody[nX] $ "Armazem Pad",aBody[nX] := "Armazem Pad.",)
-			IIF(aBody[nX] $ "Tipo Operac",aBody[nX] := "Tipo Operac.",)
-			nOBrig := nOBrig + 1
+			// Primeiro Json
+			IIF(aBodySB1[nX] $ "Garantia"	,aBodySB1[nX] := "Garantia?"    ,)
+			IIF(aBodySB1[nX] $ "Armazem_Pad",aBodySB1[nX] := "Armazem Pad." ,)
+			// Segundo Json
+			IIF(aBodyDA1[nX] $ "pedido"	    ,cPedido   	  := jBody["tabela_preco"]["tabela_preco"],)
+			IIF(aBodyDA1[nX] $ "Tipo_Operac",aBodyDA1[nX] := "Tipo Operac."            			  ,)
+			IIF(aBodyDA1[nX] $ "Preco_Venda",aBodyDA1[nX] := "Preco Venda"             			  ,)
+			IIF(aBodyDA1[nX] $ "Tipo_Preco" ,aBodyDA1[nX] := "Tipo Preco"              			  ,)
 		Next
 
-		if (nOBrig == 13)
+		// Resetando o valor
+		nX := 0
 
-			// Resetando o valor
-			nX := 0
+		// Pega o nome dos campos que foram informados no Json criando uma string unica que contem todos os campos que foram informados
+		cTituloSB1 := Arrtokstr(aBodySB1)
+		cTituloDA1 := Arrtokstr(aBodyDA1)
 
-			// Pega o nome dos campos que foram informados no Json criando uma string unica que contem todos os campos que foram informados
-			cTitulo := Arrtokstr(aBody)
+		For nX := 1 to Len(aSB1)
+			If ALLTRIM(GetSX3Cache(aSB1[nX], 'X3_TITULO')) $ cTituloSB1
+				nPosFild := aScan(aBodySB1, ALLTRIM(GetSX3Cache(aSB1[nX], 'X3_TITULO')))
+				aadd(aDadosSB1, {Alltrim(GetSX3Cache(aSB1[nX], 'X3_CAMPO')), jBody:GetJsonObject( aBodySB1[nPosFild] ), Nil})
+			EndIf
+		Next
 
-			For nX := 1 to Len(aSB1)
-				If ALLTRIM(GetSX3Cache(aSB1[nX], 'X3_TITULO')) $ cTitulo
-					nPosFild := aScan(aBody, ALLTRIM(GetSX3Cache(aSB1[nX], 'X3_TITULO')))
-					aadd(aDadosSB1, {Alltrim(GetSX3Cache(aSB1[nX], 'X3_CAMPO')), jBody:GetJsonObject( aBody[nPosFild] ), Nil})
-				EndIf
-			Next
+		// Resetando o valor
+		nX := 0
 
-			// Resetando o valor
-			nX := 0
+		For nX := 1 to Len(aDadosSB1)
+			//Se o campo for data, retira as barras e faz a conversão
+			If GetSX3Cache(aDadosSB1[nX][1], 'X3_TIPO') == 'D'
+				aDadosSB1[nX][2] := StrTran(aDadosSB1[nX][2], '/', '')
+				aDadosSB1[nX][2] := sToD(aDadosSB1[nX][2])
+			EndIf
+			IIF(aDadosSB1[nX][1] $ "B1_COD",cCodigo := aDadosSB1[nX][2],)
+		Next
 
-			For nX := 1 to Len(aDadosSB1)
-				//Se o campo for data, retira as barras e faz a conversão
-				If GetSX3Cache(aDadosSB1[nX][1], 'X3_TIPO') == 'D'
-					aDadosSB1[nX][2] := StrTran(aDadosSB1[nX][2], '/', '')
-					aDadosSB1[nX][2] := sToD(aDadosSB1[nX][2])
-				EndIf
-				IIF(aDadosSB1[nX][1] $ "B1_COD",cCodigo := aDadosSB1[nX][2],)
-			Next
+		// Resetando o valor
+		nX := 0
 
-			// Resetando o valor
-			nX := 0
+		// Passando uma tabela de preço ja existente
+		aadd(aDadosDA0, {"DA0_CODTAB",cPedido, Nil})
 
-			// Passando uma tabela de preço ja existente
-			aadd(aDadosDA0, {"DA0_CODTAB",cPedido, Nil})
+		// Gerando os campos da tabela de itens do pedido de venda
+		For nX := 1 to Len(aDA1)
+			If ALLTRIM(GetSX3Cache(aDA1[nX], 'X3_TITULO')) $ cTituloDA1
+				nPosFild := aScan(aBodyDA1, ALLTRIM(GetSX3Cache(aDA1[nX], 'X3_TITULO')))
+				aadd(aDadosDA1, {Alltrim(GetSX3Cache(aDA1[nX], 'X3_CAMPO')), jBody:GetJsonObject( aBodyDA1[nPosFild] ), Nil})
+			EndIf
+		Next
 
-			// Gerando os campos da tabela de itens do pedido de venda
-			For nX := 1 to Len(aDA1)
-				If ALLTRIM(GetSX3Cache(aDA1[nX], 'X3_TITULO')) $ cTitulo
-					nPosFild := aScan(aBody, ALLTRIM(GetSX3Cache(aDA1[nX], 'X3_TITULO')))
-					aadd(aDadosDA1, {Alltrim(GetSX3Cache(aDA1[nX], 'X3_CAMPO')), jBody:GetJsonObject( aBody[nPosFild] ), Nil})
-				EndIf
-			Next
+		// Adicionando novo item na tabela preco
+		aadd(aDadosDA1,{"DA1_ITEM",novoitem(cPedido),Nil})
 
-			// Adicionando novo item na tabela preco
-			aadd(aDadosDA1,{"DA1_ITEM",novoitem(),Nil})
+		// Resetando o valor
+		nX := 0
 
-			// Resetando o valor
-			nX := 0
+		For nX := 1 to Len(aDadosDA1)
+			//Se o campo for data, retira as barras e faz a conversão
+			If GetSX3Cache(aDadosDA1[nX][1], 'X3_TIPO') == 'D'
+				aDadosDA1[nX][2] := StrTran(aDadosDA1[nX][2], '/', '')
+				aDadosDA1[nX][2] := sToD(aDadosDA1[nX][2])
+			EndIf
+		Next
 
-			For nX := 1 to Len(aDadosDA1)
-				//Se o campo for data, retira as barras e faz a conversão
-				If GetSX3Cache(aDadosDA1[nX][1], 'X3_TIPO') == 'D'
-					aDadosDA1[nX][2] := StrTran(aDadosDA1[nX][2], '/', '')
-					aDadosDA1[nX][2] := sToD(aDadosDA1[nX][2])
-				EndIf
-			Next
+		// Resetando o valor
+		nX := 0
 
-			// Resetando o valor
-			nX := 0
+		// Verifica se o produto ja existe na tabela
+		if SB1->(!DBSeek(xFilial("SB1") + cCodigo))
 
-			// Verifica se o produto ja existe na tabela
-			if SB1->(!DBSeek(xFilial("SB1") + cCodigo))
-
-				//Chama a inclusão automática
-				MsExecAuto({|x, y| MATA010(x, y)}, aDadosSB1, nOpcSB1)
+			//Chama a inclusão automática
+			MsExecAuto({|x, y| MATA010(x, y)}, aDadosSB1, nOpcSB1)
 
 
-				//Se houve erro, gera um arquivo de log dentro do diretório da protheus data
-				If lMsErroAuto
+			//Se houve erro, gera um arquivo de log dentro do diretório da protheus data
+			If lMsErroAuto
 
-					//Monta o texto do Error Log que será salvo
-					cErrorLog   := ""
-					aLogAuto    := GetAutoGrLog()
-					For nX := 1 To Len(aLogAuto)
-						cErrorLog += aLogAuto[nX] + CRLF
-					Next
+				//Monta o texto do Error Log que será salvo
+				cErrorLog   := ""
+				aLogAuto    := GetAutoGrLog()
+				For nX := 1 To Len(aLogAuto)
+					cErrorLog += aLogAuto[nX] + CRLF
+				Next
 
-					//Grava o arquivo de log
-					cArqLog := 'PostProduto_' + dToS(Date()) + '_' + StrTran(Time(), ':', '-') + '.log'
-					MemoWrite(cDirLog + cArqLog, cErrorLog)
+				//Grava o arquivo de log
+				cArqLog := 'PostProduto_' + dToS(Date()) + '_' + StrTran(Time(), ':', '-') + '.log'
+				MemoWrite(cDirLog + cArqLog, cErrorLog)
 
-					//Define o retorno para o WebService
-					oRest:setStatusCode(500)
-					jResponse['errorId']  := 'NEW005'
-					jResponse['error']    := 'Erro na inclusão do produto: '
-					jResponse['solution'] := 'Nao foi possivel incluir o produto, foi gerado um arquivo de log em ' + cDirLog + cArqLog + ' '
-
-				else
-
-					// Pocisiona no registro
-					if DA0->(MsSeek(xFilial("DA0") + cPedido))
-
-						// Executando a alteração da tabela de preço
-						MsExecAuto({|x, y, z| OMSA010(x, y, z)}, aDadosDA0, aDadosDA1, nOpcDA0)
-
-						//Se houve erro, gera um arquivo de log dentro do diretório da protheus data
-						If lMsErroAuto
-
-							//Monta o texto do Error Log que será salvo
-							cErrorLog   := ""
-							aLogAuto    := GetAutoGrLog()
-							For nX := 1 To Len(aLogAuto)
-								cErrorLog += aLogAuto[nX] + CRLF
-							Next
-
-							//Grava o arquivo de log
-							cArqLog := 'PostProduto_' + dToS(Date()) + '_' + StrTran(Time(), ':', '-') + '.log'
-							MemoWrite(cDirLog + cArqLog, cErrorLog)
-
-							//Define o retorno para o WebService
-							oRest:setStatusCode(500)
-							jResponse['errorId']  := 'NEW005'
-							jResponse['error']    := 'Erro na inclusão do produto na tabela de preco: '
-							jResponse['solution'] := 'Nao foi possivel incluir o produto na tabela de preco, foi gerado um arquivo de log em ' + cDirLog + cArqLog + ' '
-
-						else
-							oRest:setStatusCode(200)
-							jResponse['Registro'] := "Produto registrado com sucesso e gravado na tabela de preco"
-						endif
-					endif
-				Endif
+				//Define o retorno para o WebService
+				oRest:setStatusCode(500)
+				jResponse['errorId']  := 'NEW005'
+				jResponse['error']    := 'Erro na inclusão do produto: '
+				jResponse['solution'] := 'Nao foi possivel incluir o produto, foi gerado um arquivo de log em ' + cDirLog + cArqLog + ' '
 
 			else
-				jResponse['error']  := 'Produto ja registrado na tabela de preço'
-			endif
+
+				// Pocisiona no registro
+				if DA0->(MsSeek(xFilial("DA0") + cPedido))
+
+					// Executando a alteração da tabela de preço
+					MsExecAuto({|x, y, z| OMSA010(x, y, z)}, aDadosDA0, aDadosDA1, nOpcDA0)
+
+					//Se houve erro, gera um arquivo de log dentro do diretório da protheus data
+					If lMsErroAuto
+
+						//Monta o texto do Error Log que será salvo
+						cErrorLog   := ""
+						aLogAuto    := GetAutoGrLog()
+						For nX := 1 To Len(aLogAuto)
+							cErrorLog += aLogAuto[nX] + CRLF
+						Next
+
+						//Grava o arquivo de log
+						cArqLog := 'PostProduto_' + dToS(Date()) + '_' + StrTran(Time(), ':', '-') + '.log'
+						MemoWrite(cDirLog + cArqLog, cErrorLog)
+
+						//Define o retorno para o WebService
+						oRest:setStatusCode(500)
+						jResponse['errorId']  := 'NEW005'
+						jResponse['error']    := 'Erro na inclusão do produto na tabela de preco: '
+						jResponse['solution'] := 'Nao foi possivel incluir o produto na tabela de preco, foi gerado um arquivo de log em ' + cDirLog + cArqLog + ' '
+
+					else
+						oRest:setStatusCode(200)
+						jResponse['Registro'] := "Produto registrado com sucesso e gravado na tabela de preco"
+					endif
+				endif
+			Endif
+
 		else
-			oRest:setStatusCode(404)
-			jResponse['error']   := 'Produto nao pode ser cadastrado pois nao esta sendo seguindo o campos obrigatorios para fazer a inserção do produto'
-			jResponse['solução'] := 'Campos que devem ser passados:'
-			jResponse['campos']  := "Codigo, Descricao, Tipo, Unidade, Armazem Pad" + CHR(13)+CHR(10) + ;
-				"arantia, pedido, Tipo Preco, Preco Venda, Ativo" + CHR(13)+CHR(10) + ;
-				" Tipo Operac, Moeda, Vigencia"
+			jResponse['error']  := 'Produto ja registrado na tabela de preço'
 		endif
 	Endif
 
@@ -247,7 +247,7 @@ Function U_PostProdutos()
 
 Return lRet
 
-Static function novoitem()
+Static function novoitem(cPedido)
 
 	Local cAlias      := ""  as Character
 	Local cFinalQuery := ""  as Character
@@ -258,10 +258,13 @@ Static function novoitem()
 	oQuery := FWPreparedStatement():New()
 
 	// Query que será executada
-	cQuery := "SELECT DA1_ITEM FROM DA1990 WHERE D_E_L_E_T_ <>  '*'"
+	cQuery := "SELECT MAX(DA1_ITEM) FROM DA1990 DA1 WHERE DA1_FILIAL = ''  AND	DA1_CODTAB = ? AND D_E_L_E_T_  <> '*'"
 
 	// Informa a query a ser executada, deve ser utilizada a construção com os parametros com "?"
 	oQuery:SetQuery(cQuery)
+
+	//Atribuindo as informações
+	oQuery:SetString(1, cPedido)
 
 	// Retorna a query com os parâmetros já tratados e substituídos
 	cFinalQuery := oQuery:GetFixQuery()
@@ -269,10 +272,8 @@ Static function novoitem()
 	// Abre um alias com a query informada
 	cAlias := MPSysOpenQuery(cFinalQuery)
 
-	while (cAlias)->(Eof())
-		cValItem := VAL((cAlias)->DA1_ITEM) + 1
-		(cAlias)->(DbSkip())
-	end
+	// Atribuindo a informação para adicionar o novo item
+	cValItem := cValtoChar(VAL((cAlias)->DA1_ITEM) + 1)
 
 	cValItem := cValToChar(cValItem)
 
