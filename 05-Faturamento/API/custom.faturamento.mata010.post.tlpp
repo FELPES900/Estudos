@@ -16,17 +16,26 @@ Function U_PostProdutos()
 	Local nX := 0 as Numeric
 	Private aBodyDA1    := {}         as Array
 	Private aBodySB1    := {}         as Array
-	Private aDA1        := {}         as Array
+
+	// Array com os dados que serao usando para inserção
 	Private aDadosDA0   := {}         as Array
 	Private aDadosDA1   := {}         as Array
 	Private aDadosSB1   := {}         as Array
-	Private aLogAuto    := {}         as Array
+	Private aCampoDA1	:= {} 		  as Array
+	Private aCampoSB1	:= {}		  as Array
+
+	// Que ira comter todos os campos das tabela SB1 e DA1
 	Private aSB1        := {}         as Array
+	Private aDA1        := {}         as Array
+
+	// Variaveis que serao usadas para messagem de erro caso ocorrer
 	Private cArqLog     := ""         as Character
-	Private cCodigo     := ""         as Character
 	Private cDirLog     := '\x_logs\' as Character
 	Private cError      := ""         as Character
 	Private cErrorLog   := ""         as Character
+	Private aLogAuto    := {}         as Array
+
+	Private cCodigo     := ""         as Character
 	Private cPedido     := ""         as Character
 	Private cTituloDA1  := ""         as Character
 	Private cTituloSB1  := ""         as Character
@@ -57,12 +66,12 @@ Function U_PostProdutos()
 	jBody:fromJson( oRest:GetBodyRequest() )
 
 	// Pega o nome dos campos que foram passados na JSON
-	aBodySB1 := jBody:GetJsonObject("produto")
-	aBodyDA1 := jBody:GetJsonObject("tabela_preco")
+	aBodySB1 := jBody:GetJsonObject("produto"):GetNames()
+	aBodyDA1 := jBody:GetJsonObject("tabela_preco"):GetNames()
 
-	// Cria um array a partir dos nomes que foram passandos os Json acima
-	aBodySB1 := aBodySB1:GetNames()
-	aBodyDA1 := aBodyDA1:GetNames()
+	// Fazendo um Bkp dos campos passados no Json
+	aCampoDA1 := jBody:GetJsonObject("tabela_preco"):GetNames()
+	aCampoSB1 := jBody:GetJsonObject("produto"):GetNames()
 
 	// Pega todos os campos da tabela de produtos
 	aSB1 := FWSX3Util():GetAllFields( "SB1" , .T. )
@@ -93,9 +102,8 @@ Function U_PostProdutos()
 		jResponse['solution'] := 'Erro ao fazer o Parse do JSON'
 	Else
 
-
-		()
 		DadosSB1()
+		DadosDA1()
 
 		// Passando uma tabela de preço ja existente
 		aadd(aDadosDA0, {"DA0_CODTAB",cPedido, Nil})
@@ -189,6 +197,16 @@ Function U_PostProdutos()
 
 Return lRet
 
+/*/{Protheus.doc} novoitem
+Retorna  o novo codigo que sera gravada na
+tabela DA1
+@type function
+@version 12..2210
+@author felip
+@since 28/06/2023
+@param cPedido, character, param
+@return variant, return_Character
+/*/
 Static function novoitem(cPedido)
 
 	Local cAlias      := ""  as Character
@@ -220,6 +238,15 @@ Static function novoitem(cPedido)
 
 Return cValItem
 
+/*/{Protheus.doc} DadosDA1
+Retorna um array com os dados da DA1
+para serem gravados
+@type function
+@version 12.1.2210
+@author Felipe Fraga
+@since 28/06/2023
+@return variant, return_Array
+/*/
 Static Function DadosDA1()
 
 	Local nX := 0 as Numeric
@@ -228,8 +255,9 @@ Static Function DadosDA1()
 		// Segundo Json
 		IIF(aBodyDA1[nX] $ "tabela_preco",cPedido      := jBody["tabela_preco"]["tabela_preco"]   ,)
 		IIF(aBodyDA1[nX] $ "Tipo_Operac" ,aBodyDA1[nX] := "Tipo Operac."            			  ,)
-		IIF(aBodyDA1[nX] $ "Preco_Venda" ,(jBody["tabela_preco"]["Preco_Venda"] := "1",aBodyDA1[nX] := "Preco Venda"),)
+		IIF(aBodyDA1[nX] $ "Preco_Venda" ,(aBodyDA1[nX] := "Preco Venda"),)
 		IIF(aBodyDA1[nX] $ "Tipo_Preco"  ,(jBody["tabela_preco"]["Tipo_Preco"]  := "1", aBodyDA1[nX] := "Tipo Preco"),)
+		IIF(aBodyDA1[nX] $ "Ativo"  ,jBody["tabela_preco"]["Ativo"]  := "1",)
 	Next
 
 	cTituloDA1 := Arrtokstr(aBodyDA1)
@@ -241,12 +269,13 @@ Static Function DadosDA1()
 	For nX := 1 to Len(aDA1)
 		If ALLTRIM(GetSX3Cache(aDA1[nX], 'X3_TITULO')) $ cTituloDA1
 			nPosFild := aScan(aBodyDA1, ALLTRIM(GetSX3Cache(aDA1[nX], 'X3_TITULO')))
-			aadd(aDadosDA1, {Alltrim(GetSX3Cache(aDA1[nX], 'X3_CAMPO')),jBody["tabela_preco"][aBodyDA1[nPosFild]], Nil})
+			aadd(aDadosDA1, {Alltrim(GetSX3Cache(aDA1[nX], 'X3_CAMPO')),jBody["tabela_preco"][aCampoDA1[nPosFild]], Nil})
 		EndIf
 	Next
 
 	// Adicionando novo item na tabela preco
 	aadd(aDadosDA1,{"DA1_ITEM",novoitem(cPedido),Nil})
+	aadd(aDadosDA1,{"DA1_CODPRO",jBody["produto"]["Codigo"],Nil})
 
 	// Resetando o valor
 	nX := 0
@@ -254,13 +283,21 @@ Static Function DadosDA1()
 	For nX := 1 to Len(aDadosDA1)
 		//Se o campo for data, retira as barras e faz a conversão
 		If GetSX3Cache(aDadosDA1[nX][1], 'X3_TIPO') == 'D'
-			aDadosDA1[nX][2] := StrTran(aDadosDA1[nX][2], '/', '')
-			aDadosDA1[nX][2] := sToD(aDadosDA1[nX][2])
+			aDadosDA1[nX][2] := cToD(aDadosDA1[nX][2])
 		EndIf
 	Next
 
 Return
 
+/*/{Protheus.doc} DadosSB1
+Retorna um array com os daods que serao
+gravados na SB1
+@type function
+@version 12.1.2210
+@author felip
+@since 28/06/2023
+@return variant, return_Array
+/*/
 Static Function DadosSB1()
 
 	Local nX := 0 as Numeric
@@ -276,7 +313,7 @@ Static Function DadosSB1()
 	For nX := 1 to Len(aSB1)
 		If ALLTRIM(GetSX3Cache(aSB1[nX], 'X3_TITULO')) $ cTituloSB1
 			nPosFild := aScan(aBodySB1, ALLTRIM(GetSX3Cache(aSB1[nX], 'X3_TITULO')))
-			aadd(aDadosSB1, {Alltrim(GetSX3Cache(aSB1[nX], 'X3_CAMPO')),jBody["produto"][aBodySB1[nPosFild]], Nil})
+			aadd(aDadosSB1, {Alltrim(GetSX3Cache(aSB1[nX], 'X3_CAMPO')),jBody["produto"][aCampoSB1[nPosFild]], Nil})
 		EndIf
 	Next
 
