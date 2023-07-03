@@ -1,0 +1,26 @@
+#INCLUDE "TOTVS.CH"
+#INCLUDE "TLPP-CORE.TH"
+#INCLUDE "TLPP-REST.TH"
+
+/*/{Protheus.doc} U_GetPreco
+API de Get para retornar todos as tabelas de preco,
+mas sem trazer seus itens
+@type function
+@version 12.1,2210
+@author Felipe Fraga
+@since 03/07/2023
+@return variant, return_Logical
+/*/@Get("faturamento/tabeladepreco/tipo/visualizar")
+Function U_GetPreco()
+
+	Local jResponse := Nil as Json
+	Local cQuery := "" as Character
+	Local oQuery := Nil as Object
+	Local cAlias := "" as Character
+	Local aTabela := {} as Array
+	Local lRet := .T. as Logical
+
+	//Cria uma nova instância do objeto
+	jResponse := JsonObject():New()
+
+Return lRet

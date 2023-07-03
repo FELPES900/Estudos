@@ -1,0 +1,116 @@
+#INCLUDE "TOTVS.CH"
+#INCLUDE "TLPP-CORE.TH"
+#INCLUDE "TLPP-REST.TH"
+
+/*/{Protheus.doc} U_Getprodutos
+Retorno de produtos
+@type function
+@version 12.1.33
+@author felip
+@since 19/01/2023
+/*/@Get("faturamento/cliente/tipo/visualizar")
+Function U_Getprodutos()
+
+	Local aProduct    := {}  as Array
+	Local cAlias      := ""  as Character
+	Local cFinalQuery := ""  as Character
+	Local cQuery      := ""  as Character
+	Local cDescricao  := ""  as Character
+	Local jQuery      := Nil as Json
+	Local jResponse   := Nil as Json
+	Local lRet        := .T. as Logical
+	Local nLoop       := 0   as Numeric
+
+	//Recupera oque foi passado em Query
+	jQuery := oRest:getQueryRequest()
+
+	//Cria uma nova instância do objeto
+	jResponse := JsonObject():New()
+
+	if(!Empty(jQuery:GetNames()))
+
+		if(!Empty(jQuery["Descricao"]))
+
+			// tratando a informação do campo para trazer os produtos que iniciarem com alguma palavra
+			jQuery["Descricao"] += "%"
+
+			// Colocando toda a string em caixa alta
+			cDescricao := UPPER(jQuery["Descricao"])
+
+			// Consulta que sera realizada
+			cQuery := "	SELECT B1_COD, B1_DESC, B1_TIPO, B1_UM, B1_LOCPAD, B1_GARANT FROM SB1990 WHERE B1_DESC LIKE ? AND D_E_L_E_T_ <> '*'"
+
+			cQuery := ChangeQuery(cQuery)
+
+			// Construtor da carga
+			oQuery := FWPreparedStatement():New(cQuery)
+
+			// Atribuindo informação a consulta a partir do "?"
+			oQuery:SetString(1,cDescricao)
+
+			// Retorna a query com os parâmetros já tratados e substituídos
+			cFinalQuery := oQuery:GetFixQuery()
+
+			// Abre um alias com a query informada
+			cAlias := MPSysOpenQuery(cFinalQuery)
+
+			while !(cAlias)->(Eof())
+
+				nLoop++
+
+				aAdd(aProduct, JsonObject():New())
+
+				// Valores a serem atribuidos no Json
+				aProduct[nLoop]["Codigo"]      := AllTrim((cAlias)->B1_COD)
+				aProduct[nLoop]["Descricao"]   := AllTrim((cAlias)->B1_DESC)
+				aProduct[nLoop]["Tipo"]        := AllTrim((cAlias)->B1_TIPO)
+				aProduct[nLoop]["Unidade"]     := AllTrim((cAlias)->B1_UM)
+				aProduct[nLoop]["Armazem_Pad"] := AllTrim((cAlias)->B1_LOCPAD)
+				aProduct[nLoop]["Garantia"]    := garantia(AllTrim((cAlias)->B1_GARANT))
+
+				(cAlias)->(dbSkip())
+
+			end
+			if(!Empty(aProduct))
+
+				oRest:setStatusCode(200)
+				jResponse["Produtos"] := aProduct
+
+			else
+
+				cDescricao := StrTran(cDescricao,"%","")
+				oRest:setStatusCode(500)
+				jResponse['Erro'] := "Nao foi encontrado nenhum produto passado pelo parametro: "+;
+					"'" + cDescricao + "'"
+				jResponse['Solucao'] := "Informeo outra letra para encontrar o produto desejado"
+
+			endif
+
+		else
+
+			oRest:setStatusCode(500)
+			jResponse['Registro'] := "Por favor ao passar o parametro desejado,"+;
+				"por favor informar ao menos uma letra para buscar o produto desejado"
+
+		endif
+
+	else
+		oRest:setStatusCode(500)
+		jResponse['Registro'] := "Nao foi encontrado a parametro 'Descricao' na query."+;
+			"Por favor faca a insercao desse parametro para poder buscar o seu produto desejado"
+	endif
+
+	// Define o valor de uma chave do cabeçalho de resposta
+	oRest:setKeyHeaderResponse('Content-Type','application/json')
+
+	// Retorna um objeto Json
+	oRest:setResponse(jResponse)
+
+
+Return lRet
+
+Static Function garantia(cGarantia)
+
+	IIF(cGarantia == "2",cGarantia := "Nao", cGarantia := "Sim")
+
+Return cGarantia
