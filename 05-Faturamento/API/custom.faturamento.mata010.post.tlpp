@@ -59,6 +59,8 @@ Function U_PostProdutos()
 	// Permite popular o JsonObject
 	jBody:fromJson( oRest:GetBodyRequest() )
 
+	jBody["produto"]['Codigo'] := JsonObject():New()
+
 	// Pega o nome dos campos que foram passados na JSON
 	aBodySB1 := jBody:GetJsonObject("produto"):GetNames()
 	aBodyDA1 := jBody:GetJsonObject("tabela_preco"):GetNames()
@@ -73,6 +75,8 @@ Function U_PostProdutos()
 	// Pega o Json que foi enviado na requisição
 	cError := jBody:FromJson(oRest:getBodyRequest())
 
+	jBody["produto"]['Codigo'] := NovoProduto()
+
 	//Se tiver algum erro no Parse, encerra a execução
 	IF !Empty(cError)
 		jResponse['errorId']  := 'NEW004'
@@ -83,6 +87,11 @@ Function U_PostProdutos()
 		cMessage := U_FAPD01FF(aBodySB1,aCampoSB1,aBodyDA1,aCampoDA1)
 
 		if (cMessage == cTudoOK)
+			oRest:setStatusCode(200)
+			jResponse['error']  := 'Produto criado com sucesso e cadastrado na tabela de preco'
+		else
+			oRest:setStatusCode(400)
+			jResponse['error']  := cMessage
 		endif
 	Endif
 
@@ -103,3 +112,31 @@ Function U_PostProdutos()
 	endif
 
 Return lRet
+
+
+Static Function NovoProduto()
+
+	Local cAlias        := ""  as Character
+	Local cQuery        := ""  as Character
+	Local cValorProduto := ""  as Character
+	Local oQuery        := Nil as Object
+
+	// Criando um novo Alias
+	cAlias := GetNextAlias()
+
+	// Query que será executada
+	cQuery := "SELECT MAX(B1_COD) B1_COD FROM SB1990 SB1 WHERE B1_FILIAL = ''  AND D_E_L_E_T_  <> '*'"
+
+	// Construtor da carga
+	oQuery := FWPreparedStatement():New(cQuery)
+
+	// Retorna a query com os parâmetros já tratados e substituídos
+	cQuery := oQuery:GetFixQuery()
+
+	// Abre um alias com a query informada
+	cAlias := MPSysOpenQuery(cQuery)
+
+	// Atribuindo a informação para adicionar o novo item
+	cValorProduto := SOMA1((cAlias)->B1_COD)
+
+Return cValorProduto

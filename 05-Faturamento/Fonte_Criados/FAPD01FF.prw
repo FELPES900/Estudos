@@ -41,41 +41,25 @@ Function U_FAPD01FF(aBodySB1,aCampoSB1,aBodyDA1,aCampoDA1)
 
 	//Se conseguir validar as informações
 	If oModel:VldData()
-
 		//Tenta realizar o Commit
 		If oModel:CommitData()
-
 			lOk := .T.
 
 			// U_FATP01FF(aBodyDA1,aCampoDA1,cMessage)
 
 		Else //Se não deu certo, altera a variável para false
-
 			lOk := .F.
 		EndIf
-
 	Else //Se não conseguir validar as informações, altera a variável para false
-
 		lOk := .F.
-
 	EndIf
 
 	//Se não deu certo a inclusão, mostra a mensagem de erro
 	If ! lOk
 		//Busca o Erro do Modelo de Dados
 		aErro := oModel:GetErrorMessage()
-
 		//Monta o Texto que será mostrado na tela
-		cMessage := "Id do formulário de origem:"  + ' [' + cValToChar(aErro[01]) + '], '
-		cMessage += "Id do campo de origem: "      + ' [' + cValToChar(aErro[02]) + '], '
-		cMessage += "Id do formulário de erro: "   + ' [' + cValToChar(aErro[03]) + '], '
-		cMessage += "Id do campo de erro: "        + ' [' + cValToChar(aErro[04]) + '], '
-		cMessage += "Id do erro: "                 + ' [' + cValToChar(aErro[05]) + '], '
-		cMessage += "Mensagem do erro: "           + ' [' + cValToChar(aErro[06]) + '], '
-		cMessage += "Mensagem da solução: "        + ' [' + cValToChar(aErro[07]) + '], '
-		cMessage += "Valor atribuído: "            + ' [' + cValToChar(aErro[08]) + '], '
-		cMessage += "Valor anterior: "             + ' [' + cValToChar(aErro[09]) + ']'
-
+		cMessage :=	"Mensagem do erro: "   + " [" + cValToChar(aErro[06]) + "] " + "  Mensagem da solução: "+ "[" + cValToChar(aErro[07]) + "]"
 	Else
 		cMessage := "Produto incluido com sucesso "
 	EndIf
