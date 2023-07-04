@@ -1,8 +1,8 @@
-#Include "TOTVS.CH"
+#INCLUDE "TOTVS.Ch"
 
 Static cModelAct := ""
 
-User Function OMSA010()
+User Function MATA410()
 
 	Local aParam     := PARAMIXB
 	Local xRet       := .T.
@@ -12,7 +12,9 @@ User Function OMSA010()
 	If aParam <> NIL
 		ConOut("> "+aParam[2])
 
+		//Pega informações dos parâmetros
 		cIdPonto := aParam[2]
+
 		// //Valida a abertura da tela
 		// If cIdPonto == "MODELVLDACTIVE" .And. !(cModelAct $ cIdPonto)
 		// 	cModelAct += cIdPonto + '|'
