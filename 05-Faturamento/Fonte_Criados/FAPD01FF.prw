@@ -8,6 +8,7 @@ Function U_FAPD01FF(aBodySB1,aCampoSB1,aBodyDA1,aCampoDA1)
 	Local oModel     := Nil
 	Local oModSB1    := Nil
 	Private cMessage := ""
+
 	// Chamando a model de produtos
 	oModel := FWLoadModel("MATA010")
 

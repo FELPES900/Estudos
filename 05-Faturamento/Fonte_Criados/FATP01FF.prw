@@ -5,9 +5,29 @@ Function U_FATP01FF(aBodyDA1,aCampoDA1)
 	Local aDA1 := {}
 	Local nX := 0
 	Local cMessage := ""
+	Local oModel := Nil
+	Local oModDA0 := Nil
+	Local oModDA1 := Nil
+
+	// Chamando a model da tabela de preco
+	oModel := FWLoadModel("OMSA010")
+
+	// Setando qual o tipo de operação
+	oModel:SetOperation(3)
+
+	// Ativando a model
+	oModel:Activate()
+
+	// Chamando a mastyer da model de tabela de preco
+	oModDA0 := oModel:GetModel( "DA0MASTER" )
+
+	// Chamando o item da model de tabela de preco
+	oModDA1 := oModel:GetModel( "DA1DETAIL" )
 
 	// Pegando todos os campos da DA1
 	aDA1 := FWSX3Util():GetAllFields( "DA1" , .T. )
+
+	// Selecionando a tabela
 
 	For nX := 1 to Len(aBodyDA1)
 		IIF(aBodyDA1[nX] $ "Ativo" ,jBody["tabela_preco"]["Ativo"] := "1",)
