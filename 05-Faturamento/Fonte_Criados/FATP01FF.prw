@@ -1,25 +1,22 @@
 #INCLUDE "TOTVS.CH"
 
-Function U_FATP01FF()
+Function U_FATP01FF(aBodyDA1,aCampoDA1)
 
 	Local aDA1 := {}
-	Local nX := 0 as Numeric
+	Local nX := 0
+	Local cMessage := ""
 
+	// Pegando todos os campos da DA1
 	aDA1 := FWSX3Util():GetAllFields( "DA1" , .T. )
 
 	For nX := 1 to Len(aBodyDA1)
-		// Segundo Json
-		IIF(aBodyDA1[nX] $ "tabela_preco",cPedido      := jBody["tabela_preco"]["tabela_preco"]   ,)
-		IIF(aBodyDA1[nX] $ "Tipo_Operac" ,(jBody["tabela_preco"]["Tipo_Operac"] := "1",aBodyDA1[nX] := "Tipo Operac.")            			  ,)
+		IIF(aBodyDA1[nX] $ "Ativo" ,jBody["tabela_preco"]["Ativo"] := "1",)
 		IIF(aBodyDA1[nX] $ "Preco_Venda" ,(aBodyDA1[nX] := "Preco Venda"),)
-		IIF(aBodyDA1[nX] $ "Tipo_Preco"  ,(jBody["tabela_preco"]["Tipo_Preco"]  := "1", aBodyDA1[nX] := "Tipo Preco"),)
-		IIF(aBodyDA1[nX] $ "Ativo"  ,jBody["tabela_preco"]["Ativo"]  := "1",)
+		IIF(aBodyDA1[nX] $ "Tipo_Operac" ,(jBody["tabela_preco"]["Tipo_Operac"] := TipoOperador(jBody["tabela_preco"]["Tipo_Operac"]),aBodyDA1[nX] := "Tipo Operac."),)
+		IIF(aBodyDA1[nX] $ "Tipo_Preco" ,(jBody["tabela_preco"]["Tipo_Preco"] := Tipo(jBody["tabela_preco"]["Tipo_Preco"]), aBodyDA1[nX] := "Tipo Preco"),)
 	Next
 
 	cTituloDA1 := Arrtokstr(aBodyDA1)
-
-	// Resetando o valor
-	nX := 0
 
 	// Gerando os campos da tabela de itens do pedido de venda
 	aadd(aDadosDA1,{})
@@ -29,11 +26,6 @@ Function U_FATP01FF()
 			aadd(aDadosDA1[1], {Alltrim(GetSX3Cache(aDA1[nX], 'X3_CAMPO')),jBody["tabela_preco"][aCampoDA1[nPosFild]], Nil})
 		EndIf
 	Next
-
-	// Adicionando novo item na tabela preco
-	aadd(aDadosDA1[1],{"DA1_ITEM",novoitem(cPedido),Nil})
-	aadd(aDadosDA1[1],{"DA1_CODPRO",jBody["produto"]["Codigo"],Nil})
-	aadd(aDadosDA1[1],{"DA1_TPOPER","4",Nil})
 
 	// Passando uma tabela de preço ja existente
 	aadd(aDadosDA0, {"DA0_CODTAB",cPedido, Nil})
@@ -49,46 +41,25 @@ Function U_FATP01FF()
 		ENDIF
 	endif
 
-Return
+Return cMessage
 
 
-/*/{Protheus.doc} novoitem
-Retorna  o novo codigo que sera gravada na
-tabela DA1
-@type function
-@version 12..2210
-@author felip
-@since 28/06/2023
-@param cPedido, character, param
-@return variant, return_Character
-/*/
-Static function novoitem(cPedido)
+Static Function TipoOperador(Operador)
 
-	Local cAlias      := ""  as Character
-	Local cQuery      := ""  as Character
-	Local oQuery      := Nil as Object
+	Local cTipoOperador
 
-	// Criando um novo Alias
-	cAlias := GetNextAlias()
+	IIF(Operador == "Estadual",cTipoOperador := "1",)
+	IIF(Operador == "InterEstadual",cTipoOperador := "2",)
+	IIF(Operador == "Norte/Nordeste",cTipoOperador := "3",)
+	IIF(Operador == "Todos",cTipoOperador := "4",)
 
-	// Query que será executada
-	cQuery := "SELECT MAX(DA1_ITEM) DA1_ITEM FROM DA1990 DA1 WHERE DA1_FILIAL = ''  AND	DA1_CODTAB = ? AND D_E_L_E_T_  <> '*'"
+Return cTipoOperador
 
-	// Construtor da carga
-	oQuery := FWPreparedStatement():New(cQuery)
+Static Function Tipo(cTipo)
 
-	//Atribuindo as informações
-	oQuery:SetString(1, cPedido)
+	Local cAtivo := ""
 
-	// Retorna a query com os parâmetros já tratados e substituídos
-	cQuery := oQuery:GetFixQuery()
+	IIF(cTipo == "Sim",cAtivo := "1",)
+	IIF(cTipo == "Nao",cAtivo := "2",)
 
-	// Abre um alias com a query informada
-	cAlias := MPSysOpenQuery(cQuery)
-
-	// Atribuindo a informação para adicionar o novo item
-	cValItem := SOMA1((cAlias)->DA1_ITEM)
-
-	cValItem := cValToChar(cValItem)
-
-Return cValItem
+Return cAtivo

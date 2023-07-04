@@ -2,11 +2,11 @@
 
 Function U_FAPD01FF(aBodySB1,aCampoSB1,aBodyDA1,aCampoDA1)
 
-	Local oModSB1 := Nil
-	Local oModel := Nil
-	Local aSB1 := {}
-	Local nX := 0
-	Local lOk := .T.
+	Local aSB1       := {}
+	Local lOk        := .T.
+	Local nX         := 0
+	Local oModel     := Nil
+	Local oModSB1    := Nil
 	Private cMessage := ""
 	// Chamando a model de produtos
 	oModel := FWLoadModel("MATA010")
@@ -40,16 +40,12 @@ Function U_FAPD01FF(aBodySB1,aCampoSB1,aBodyDA1,aCampoDA1)
 	Next
 
 	//Se conseguir validar as informações
-	If oModel:VldData()
+	If oModel:VldData() .And. oModel:CommitData()
 		//Tenta realizar o Commit
-		If oModel:CommitData()
-			lOk := .T.
+		lOk := .T.
 
-			// U_FATP01FF(aBodyDA1,aCampoDA1,cMessage)
+		cMessage := CadastroDeItemTabelaPreco(aBodyDA1,aCampoDA1,cMessage)
 
-		Else //Se não deu certo, altera a variável para false
-			lOk := .F.
-		EndIf
 	Else //Se não conseguir validar as informações, altera a variável para false
 		lOk := .F.
 	EndIf
@@ -60,11 +56,17 @@ Function U_FAPD01FF(aBodySB1,aCampoSB1,aBodyDA1,aCampoDA1)
 		aErro := oModel:GetErrorMessage()
 		//Monta o Texto que será mostrado na tela
 		cMessage :=	"Mensagem do erro: "   + " [" + cValToChar(aErro[06]) + "] " + "  Mensagem da solução: "+ "[" + cValToChar(aErro[07]) + "]"
-	Else
-		cMessage := "Produto incluido com sucesso "
 	EndIf
 
 	//Desativa o modelo de dados
 	oModel:DeActivate()
 
 Return cMessage
+
+Static Function CadastroDeItemTabelaPreco(aBodyDA1,aCampoDA1,cMessage)
+
+	Local cNewMessage := cMessage
+
+	cNewMessage := U_FATP01FF(aBodyDA1,aCampoDA1)
+
+Return cNewMessage
