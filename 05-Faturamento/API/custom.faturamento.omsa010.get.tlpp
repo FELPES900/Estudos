@@ -13,14 +13,78 @@ mas sem trazer seus itens
 /*/@Get("faturamento/tabeladepreco/tipo/visualizar")
 Function U_GetPreco()
 
+	Local aTabela   := {}  as Array
+	Local cAlias    := ""  as Character
+	Local cQuery    := ""  as Character
+	Local cFinalQuery := "" as Character
+	Local jQuery    := Nil as Json
 	Local jResponse := Nil as Json
-	Local cQuery := "" as Character
-	Local oQuery := Nil as Object
-	Local cAlias := "" as Character
-	Local aTabela := {} as Array
-	Local lRet := .T. as Logical
+	Local lRet      := .T. as Logical
+	Local nLoop := 0 as Numeric
+	Local oQuery    := Nil as Object
 
 	//Cria uma nova instância do objeto
 	jResponse := JsonObject():New()
+
+	//Recupera oque foi passado em Query
+	jQuery := oRest:getQueryRequest()
+
+	if SELECT("SX2") == 0 //Para ser executado pelo usuario
+		PREPARE ENVIRONMENT EMPRESA "99" FILIAL "01"
+	endif
+
+	// Consulta que sera realizada
+	cQuery := " SELECT 	DA0_CODTAB,	DA0_DESCRI,	DA0_DATDE,	DA0_HORADE,	DA0_DATATE,	DA0_HORATE,	DA0_CONDPG,	DA0_TPHORA,	DA0_ATIVO FROM DA0990 WHERE D_E_L_E_T_ <> '*' "
+
+	cQuery := ChangeQuery(cQuery)
+
+	// Construtor da carga
+	oQuery := FWPreparedStatement():New(cQuery)
+
+	// Atribuindo informação a consulta a partir do "?"
+	oQuery:SetString(1,cDescricao)
+
+	// Retorna a query com os parâmetros já tratados e substituídos
+	cFinalQuery := oQuery:GetFixQuery()
+
+	// Abre um alias com a query informada
+	cAlias := MPSysOpenQuery(cFinalQuery)
+
+	while !(cAlias)->(Eof())
+
+		nLoop++
+
+		aAdd(aTabela, JsonObject():New())
+
+		aTabela[nLoop]["Tab. Ativa"] := AllTrim(cAlias->(DA0_ATIVO))
+		aTabela[nLoop]["Cod. Tabela"] := AllTrim(cAlias->(DA0_CODTAB))
+		aTabela[nLoop]["Descricao"] := AllTrim(cAlias->(DA0_DESCRI))
+		aTabela[nLoop]["Data Inicial"] := AllTrim(cAlias->(DA0_DATDE))
+		aTabela[nLoop]["Data Final"] := AllTrim(cAlias->(DA0_DATATE))
+		aTabela[nLoop]["Cond.Pagto."] := AllTrim(cAlias->(DA0_CONDPG))
+		aTabela[nLoop]["Hora Inicial"] := AllTrim(cAlias->(DA0_HORADE))
+		aTabela[nLoop]["Hora Final"] := AllTrim(cAlias->(DA0_HORATE))
+		aTabela[nLoop]["Tipo horario"] := AllTrim(cAlias->(DA0_TPHORA))
+
+	End
+
+	if( jHeader <> Nil )
+		//Definindo o header de resposta
+		oRest:setKeyHeaderResponse('Connection','Keep-Alive')
+		oRest:setKeyHeaderResponse('accept-encoding','gzip,deflate')
+		oRest:setKeyHeaderResponse('accept','/')
+		oRest:setKeyHeaderResponse('User-Agent','Thunder Client (https://www.thunderclient.com)')
+	Endif
+
+	// Define o valor de uma chave do cabeçalho de resposta
+	oRest:setKeyHeaderResponse('Content-Type','application/json')
+
+	// Retorna um objeto Json
+	oRest:setResponse(jResponse)
+
+	if SELECT("SX2") > 0 // Finaliza operação pelo usuario
+		RESET ENVIRONMENT
+	endif
+
 
 Return lRet
