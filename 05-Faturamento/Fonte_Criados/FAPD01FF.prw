@@ -1,6 +1,6 @@
 #INCLUDE "TOTVS.CH"
 
-Function U_FAPD01FF(aBodySB1,aCampoSB1,aBodyDA1,aCampoDA1)
+Function U_FAPD01FF(aBodySB1,aCampoSB1,aBodyDA1,aCampoDA1,jBody)
 
 	Local aSB1       := {}
 	Local lOk        := .T.
@@ -45,7 +45,7 @@ Function U_FAPD01FF(aBodySB1,aCampoSB1,aBodyDA1,aCampoDA1)
 		//Tenta realizar o Commit
 		lOk := .T.
 
-		cMessage := CadastroDeItemTabelaPreco(aBodyDA1,aCampoDA1,cMessage)
+		cMessage := CadastroDeItemTabelaPreco(aBodyDA1,aCampoDA1,cMessage,jBody)
 
 	Else //Se não conseguir validar as informações, altera a variável para false
 		lOk := .F.
@@ -64,10 +64,10 @@ Function U_FAPD01FF(aBodySB1,aCampoSB1,aBodyDA1,aCampoDA1)
 
 Return cMessage
 
-Static Function CadastroDeItemTabelaPreco(aBodyDA1,aCampoDA1,cMessage)
+Static Function CadastroDeItemTabelaPreco(aBodyDA1,aCampoDA1,cMessage,jBody)
 
 	Local cNewMessage := cMessage
 
-	cNewMessage := U_FATP01FF(aBodyDA1,aCampoDA1)
+	cNewMessage := U_FATP01FF(aBodyDA1,aCampoDA1,jBody)
 
 Return cNewMessage

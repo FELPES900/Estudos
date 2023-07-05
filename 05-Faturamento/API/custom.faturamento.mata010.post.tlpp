@@ -71,7 +71,7 @@ Function U_PostProdutos()
 		jResponse['solution'] := 'Erro ao fazer o Parse do JSON'
 	Else
 
-		cMessage := CadastroProduto(aBodySB1,aCampoSB1,aBodyDA1,aCampoDA1)
+		cMessage := CadastroProduto(aBodySB1,aCampoSB1,aBodyDA1,aCampoDA1,jBody)
 
 		if (cMessage == cTudoOK)
 			oRest:setStatusCode(200)
@@ -128,11 +128,11 @@ Static Function NovoProduto()
 
 Return cValorProduto
 
-Static Function CadastroProduto(aBodySB1,aCampoSB1,aBodyDA1,aCampoDA1)
+Static Function CadastroProduto(aBodySB1,aCampoSB1,aBodyDA1,aCampoDA1,jBody)
 
 	Local cMessage := ""
 
-	cMessage := U_FAPD01FF(aBodySB1,aCampoSB1,aBodyDA1,aCampoDA1)
+	cMessage := U_FAPD01FF(aBodySB1,aCampoSB1,aBodyDA1,aCampoDA1,jBody)
 
 Return cMessage
 
