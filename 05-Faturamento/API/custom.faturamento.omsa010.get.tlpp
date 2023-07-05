@@ -56,15 +56,15 @@ Function U_GetPreco()
 
 		aAdd(aTabela, JsonObject():New())
 
-		aTabela[nLoop]["Tab. Ativa"] := AllTrim(cAlias->(DA0_ATIVO))
+		aTabela[nLoop]["Tab. Ativa"] := Ativo(AllTrim(cAlias->(DA0_ATIVO)))
 		aTabela[nLoop]["Cod. Tabela"] := AllTrim(cAlias->(DA0_CODTAB))
 		aTabela[nLoop]["Descricao"] := AllTrim(cAlias->(DA0_DESCRI))
-		aTabela[nLoop]["Data Inicial"] := AllTrim(cAlias->(DA0_DATDE))
-		aTabela[nLoop]["Data Final"] := AllTrim(cAlias->(DA0_DATATE))
+		aTabela[nLoop]["Data Inicial"] := SToD(AllTrim(cAlias->(DA0_DATDE)))
+		aTabela[nLoop]["Data Final"] := SToD(AllTrim(cAlias->(DA0_DATATE)))
 		aTabela[nLoop]["Cond.Pagto."] := AllTrim(cAlias->(DA0_CONDPG))
 		aTabela[nLoop]["Hora Inicial"] := AllTrim(cAlias->(DA0_HORADE))
 		aTabela[nLoop]["Hora Final"] := AllTrim(cAlias->(DA0_HORATE))
-		aTabela[nLoop]["Tipo horario"] := AllTrim(cAlias->(DA0_TPHORA))
+		aTabela[nLoop]["Tipo horario"] := TipoHorario(AllTrim(cAlias->(DA0_TPHORA)))
 
 	End
 
@@ -88,3 +88,15 @@ Function U_GetPreco()
 
 
 Return lRet
+
+Static Function Ativo(cAtivo)
+
+	IIF(cAtivo == "2",cAtivo := "Nao", cAtivo := "Sim")
+
+Return cAtivo
+
+Static Function TipoHorario(cTipo)
+
+	IIF(cTipo == "2",cTipo := "Nao", cTipo := "Sim")
+
+Return cTipo
