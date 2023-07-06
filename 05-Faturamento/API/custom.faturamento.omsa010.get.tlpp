@@ -13,25 +13,21 @@ mas sem trazer seus itens
 /*/@Get("faturamento/tabeladepreco/tipo/visualizar")
 Function U_GetPreco()
 
-	Local aTabela   := {}  as Array
-	Local cAlias    := ""  as Character
-	Local cQuery    := ""  as Character
-	Local cFinalQuery := "" as Character
-	Local jQuery    := Nil as Json
-	Local jResponse := Nil as Json
-	Local lRet      := .T. as Logical
-	Local nLoop := 0 as Numeric
-	Local oQuery    := Nil as Object
+	Local aTabela     := {}  as Array
+	Local cAlias      := ""  as Character
+	Local cFinalQuery := ""  as Character
+	Local cQuery      := ""  as Character
+	Local jQuery      := Nil as Json
+	Local jResponse   := Nil as Json
+	Local lRet        := .T. as Logical
+	Local nLoop       := 0   as Numeric
+	Local oQuery      := Nil as Object
 
 	//Cria uma nova instância do objeto
 	jResponse := JsonObject():New()
 
 	//Recupera oque foi passado em Query
 	jQuery := oRest:getQueryRequest()
-
-	if SELECT("SX2") == 0 //Para ser executado pelo usuario
-		PREPARE ENVIRONMENT EMPRESA "99" FILIAL "01"
-	endif
 
 	// Consulta que sera realizada
 	cQuery := " SELECT 	DA0_CODTAB,	DA0_DESCRI,	DA0_DATDE,	DA0_HORADE,	DA0_DATATE,	DA0_HORATE,	DA0_CONDPG,	DA0_TPHORA,	DA0_ATIVO FROM DA0990 WHERE D_E_L_E_T_ <> '*' "
@@ -82,11 +78,6 @@ Function U_GetPreco()
 	// Retorna um objeto Json
 	oRest:setResponse(jResponse)
 
-	if SELECT("SX2") > 0 // Finaliza operação pelo usuario
-		RESET ENVIRONMENT
-	endif
-
-
 Return lRet
 
 Static Function Ativo(cAtivo)
@@ -97,6 +88,6 @@ Return cAtivo
 
 Static Function TipoHorario(cTipo)
 
-	IIF(cTipo == "2",cTipo := "Nao", cTipo := "Sim")
+	IIF(cTipo == "2",cTipo := "Recorente", cTipo := "Unico")
 
 Return cTipo

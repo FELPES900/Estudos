@@ -1,0 +1,79 @@
+#INCLUDE "TOTVS.CH"
+#INCLUDE "TLPP-CORE.TH"
+#INCLUDE "TLPP-REST.TH"
+
+/*/{Protheus.doc} U_GetPedid
+Visualizar todos os pedidos de venda
+@type function
+@version 12.1.2210
+@author Felipe Fraga
+@since 06/07/2023
+@return variant, return_lRet
+/*/@Get("faturamento/pedidovenda/visualizar")
+Function U_GetPedid()
+
+	Local aPedido     := {}  as Array
+	Local aItem		  := {}  as Array
+	Local cAlias      := ""  as Character
+	Local cFinalQuery := ""  as Character
+	Local cQuery      := ""  as Character
+	Local jQuery      := Nil as Json
+	Local jResponse   := Nil as Json
+	Local lRet        := .T. as Logical
+	Local nLoop       := 0   as Numeric
+	Local oQuery      := Nil as Object
+
+	//Cria uma nova instância do objeto
+	jResponse := JsonObject():New()
+
+	//Recupera oque foi passado em Query
+	jQuery := oRest:getQueryRequest()
+
+	// Consulta que sera usada
+	cQuery := " SELECT  C5_FILIAL, C5_NUM, (CASE WHEN C5_TIPO = 'N' THEN 'Normal' WHEN C5_TIPO = 'C' THEN 'Compl.Preco/Quantidade' WHEN C5_TIPO = 'I' THEN 'Compl.ICMS' WHEN C5_TIPO = 'P' THEN 'Compl.IPI' WHEN C5_TIPO = 'D' THEN 'Dev.Compras' WHEN C5_TIPO = 'B' THEN 'Utiliza Fornecedor' "
+	cQuery += " END) AS C5_TIPO, C5_CLIENTE, C5_LOJACLI, C5_CLIENT, C5_LOJAENT, (CASE WHEN C5_TIPOCLI = 'F' THEN 'Cons.Final' WHEN C5_TIPOCLI = 'L' THEN 'Prod.Rural' WHEN C5_TIPOCLI = 'R' THEN 'Revendedor' WHEN C5_TIPOCLI = 'S' THEN 'Solidario' WHEN C5_TIPOCLI = 'X' THEN 'Exportacao/Importacao' "
+	cQuery += " END) AS C5_TIPOCLI, C5_CONDPAG, C5_EMISSAO, C5_MOEDA, (CASE WHEN C5_TIPLIB = '1' THEN 'Libera por Item' WHEN C5_TIPLIB = '2' THEN 'Libera por Pedido' END) AS C5_TIPLIB, C5_TXMOEDA, "
+	cQuery += " (CASE WHEN C5_TPCARGA = '1' THEN 'Utiliza' WHEN C5_TPCARGA = '2' THEN 'Nao utiliza'	END) AS C5_TPCARGA,	(CASE WHEN C5_GERAWMS = '1' THEN 'No pedido' WHEN C5_GERAWMS = '2' THEN 'Na Montagem da Carga' WHEN C5_GERAWMS = '3' THEN 'Na Utilizacao da Carga' "
+	cQuery += " END) AS C5_GERAWMS,	(CASE WHEN C5_SOLOPC = '1' THEN 'Nao' WHEN C5_SOLOPC = '2' THEN 'Sim' END) AS C5_SOLOPC, (CASE WHEN C5_TPCOMPL = '1' THEN 'Preço' WHEN C5_TPCOMPL = '2' THEN 'Quantidade'"
+	cQuery += " END) AS C5_TPCOMPL,	(CASE WHEN C5_SLENVT = '1' THEN 'Sim' WHEN C5_SLENVT = '2' THEN 'Nao' END) AS C5_SLENVT, (CASE WHEN C5_RET20G = 'S' THEN 'Sim' WHEN C5_RET20G = 'N' THEN 'Nao' "
+	cQuery += " END) AS C5_RET20G, (CASE WHEN C5_MSBLQL = '1' THEN 'Inativo' WHEN C5_MSBLQL = '2' THEN 'Ativo' END) AS C5_MSBLQL FROM SC5990 WHERE D_E_L_E_T_ <> '*' "
+
+	cQuery := ChangeQuery(cQuery)
+
+	// Construtor da carga
+	oQuery := FWPreparedStatement():New(cQuery)
+
+	// Atribuindo informação a consulta a partir do "?"
+	oQuery:SetString(1,cDescricao)
+
+	// Retorna a query com os parâmetros já tratados e substituídos
+	cFinalQuery := oQuery:GetFixQuery()
+
+	// Abre um alias com a query informada
+	cAlias := MPSysOpenQuery(cFinalQuery)
+
+	// Loop trazendo todos os pedidos e seus itens relacionando
+	while !(cAlias)->(Eof())
+
+		nLoop++
+
+		aAdd(aPedido, JsonObject():New())
+
+		// Adicionar os campos
+	End
+
+	if( jHeader <> Nil )
+		//Definindo o header de resposta
+		oRest:setKeyHeaderResponse('Connection','Keep-Alive')
+		oRest:setKeyHeaderResponse('accept-encoding','gzip,deflate')
+		oRest:setKeyHeaderResponse('accept','/')
+		oRest:setKeyHeaderResponse('User-Agent','Thunder Client (https://www.thunderclient.com)')
+	Endif
+
+	// Define o valor de uma chave do cabeçalho de resposta
+	oRest:setKeyHeaderResponse('Content-Type','application/json')
+
+	// Retorna um objeto Json
+	oRest:setResponse(jResponse)
+
+Return
