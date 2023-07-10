@@ -7,30 +7,31 @@ Class que trata os dados e retorna para a controller
 @author Felipe Fraga
 @since 10/07/2023
 /*/
-CLASS ServiceMATA410
+Class ServiceMATA410
 
 	Public Data lOkay     as Logical
 	Public Data oData     as Object
 	Public Data jResponse as Json
 
 	// Method Construtor
-	PUBLIC METHOD new() as Variadic
+	Public Method new() as Variadic
 
-	PUBLIC METHOD visualizarPedido() as Variadic
+	Public Method visualizarPedido() as Variadic
+	Public Method numeroPedido() as Variadic
 
-	PUBLIC METHOD JsonResponse() as Json
+	Public Method JsonResponse() as Json
 
-ENDCLASS
+EndClass
 
 /*/{Protheus.doc} ServiceMATA410::new
 Method Contrutor da Class
-@type method
+@type Method
 @version 12.1.2210
 @author Felipe Fraga
 @since 10/07/2023
 @return variant, return_Nil
 /*/
-METHOD new() CLASS ServiceMATA410
+Method new() Class ServiceMATA410
 
 	::lOkay     := .T.
 	::oData     := NIL
@@ -40,28 +41,43 @@ Return
 
 /*/{Protheus.doc} ServiceMATA410::visualizarPedido
 Visualizar todo os pedidos de venda
-@type method
+@type Method
 @version 12.1.2210
 @author Felipe Fraga
 @since 10/07/2023
 @return variant, return_Nil
 /*/
-METHOD visualizarPedido() CLASS ServiceMATA410
+Method visualizarPedido() Class ServiceMATA410
 
 	::oData := DataMATA410():New()
 	::lOkay := ::oData:visualizarPedido()
 
 Return
 
+/*/{Protheus.doc} ServiceMATA410::numeroPedido
+Mostra o pedido que voce especifica pela sua rota
+@type method
+@version 12.1.2210
+@author felip
+@since 10/07/2023
+@return variant, return_Nil
+/*/
+Method numeroPedido() Class ServiceMATA410
+
+	::oData := DataMATA410():New()
+	::lOkay := ::oData:numeroPedido()
+
+Return
+
 /*/{Protheus.doc} ServiceMATA410::JsonResponse
 Retorna um Json de resposta para o usuario
-@type method
+@type Method
 @version 12.1.2210
 @author felip
 @since 10/07/2023
 @return variant, return_Json
 /*/
-METHOD JsonResponse() CLASS ServiceMATA410
+Method JsonResponse() Class ServiceMATA410
 
 	::jResponse[ 'codigo' ]   := ::oData:mostraStatus()
 	::jResponse[ 'dados' ]    := ::oData:mostraDados()

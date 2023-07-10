@@ -2,12 +2,12 @@
 
 /*/{Protheus.doc} DataMATA410
 Class de dados de retorno para o service
-@type class
+@type Class
 @version 12.1.2210
 @author felip
 @since 10/07/2023
 /*/
-CLASS DataMATA410
+Class DataMATA410
 
 	Public Data lOkay     as Logical
 	Public Data nCodigo   as Numeric
@@ -15,36 +15,37 @@ CLASS DataMATA410
 	Public Data cMensagem as Character
 
 	// Method Construtor
-	PUBLIC METHOD new() as Variadic
+	Public Method new() constructor
+	Public Method mostraDados()      as Array
+	Public Method mostraMensagem()   as Character
+	Public Method mostraStatus()     as Numeric
+	Public Method visualizarPedido() as Logical
+	Public Method numeroPedido()	 as Logical
 
-	PUBLIC METHOD mostraDados()      as Array
-	PUBLIC METHOD mostraMensagem()   as Character
-	PUBLIC METHOD mostraStatus()     as Numeric
-	PUBLIC METHOD visualizarPedido() as Variant
-
-ENDCLASS
+EndClass
 
 /*/{Protheus.doc} DataMATA410::new
 Method Contrutor da Class
-@type method
+@type Method
 @version 12.1.2210
 @author Felipe Fraga
 @since 10/07/2023
 @return variant, return_Nil
 /*/
-METHOD new() CLASS DataMATA410
+Method new() Class DataMATA410
 	::lOkay     := .T.
 	::aDados    := {}
 	::cMensagem := ""
 	::nCodigo   := 0
 Return
 
-METHOD visualizarPedido() CLASS DataMATA410
+Method visualizarPedido() Class DataMATA410
 
 	Local cAlias      := ""  as Character
 	Local cFinalQuery := ""  as Character
 	Local cQuery      := ""  as Character
 	Local oQuery      := Nil as Object
+	Local nLoop 	  := 0   as Numeric
 
 	// Novo Alias
 	cAlias := GetNextAlias()
@@ -63,9 +64,6 @@ METHOD visualizarPedido() CLASS DataMATA410
 	// Construtor da carga
 	oQuery := FWPreparedStatement():New(cQuery)
 
-	// Atribuindo informação a consulta a partir do "?"
-	oQuery:SetString(1,cDescricao)
-
 	// Retorna a query com os parâmetros já tratados e substituídos
 	cFinalQuery := oQuery:GetFixQuery()
 
@@ -83,28 +81,28 @@ METHOD visualizarPedido() CLASS DataMATA410
 
 			nLoop++
 
-			aAdd(aDados, JsonObject():New())
+			aAdd(::aDados, JsonObject():New())
 
-			aDados[nLoop][ 'Filial' ]       :=	ALLTRIM((cAlias)->C5_FILIAL)
-			aDados[nLoop][ 'Numero' ]       :=	ALLTRIM((cAlias)->C5_NUM)
-			aDados[nLoop][ 'Tipo Pedido' ]  :=	ALLTRIM((cAlias)->C5_TIPO)
-			aDados[nLoop][ 'Cliente' ]      :=	ALLTRIM((cAlias)->C5_CLIENTE)
-			aDados[nLoop][ 'Loja' ]         :=	ALLTRIM((cAlias)->C5_LOJACLI)
-			aDados[nLoop][ 'Cli.Entrega' ]  :=	ALLTRIM((cAlias)->C5_CLIENT)
-			aDados[nLoop][ 'Loja Entrega' ] :=	ALLTRIM((cAlias)->C5_LOJAENT)
-			aDados[nLoop][ 'Tipo Cliente' ] :=	ALLTRIM((cAlias)->C5_TIPOCLI)
-			aDados[nLoop][ 'Cond. Pagto' ]  :=	ALLTRIM((cAlias)->C5_CONDPAG)
-			aDados[nLoop][ 'DT Emissao' ]   :=	ALLTRIM((cAlias)->C5_EMISSAO)
-			aDados[nLoop][ 'Moeda' ]        :=	ALLTRIM((cAlias)->C5_MOEDA)
-			aDados[nLoop][ 'Tp Liberação' ] :=	ALLTRIM((cAlias)->C5_TIPLIB)
-			aDados[nLoop][ 'Taxa Moeda' ]   :=	ALLTRIM((cAlias)->C5_TXMOEDA)
-			aDados[nLoop][ 'Carga' ]        :=	ALLTRIM((cAlias)->C5_TPCARGA)
-			aDados[nLoop][ 'Gera OS.WMS' ]  :=	ALLTRIM((cAlias)->C5_GERAWMS)
-			aDados[nLoop][ 'Opc Cliente' ]  :=	ALLTRIM((cAlias)->C5_SOLOPC)
-			aDados[nLoop][ 'Tipo Compl.' ]  :=	ALLTRIM((cAlias)->C5_TPCOMPL)
-			aDados[nLoop][ 'Sol.Env.Seg.' ] :=	ALLTRIM((cAlias)->C5_SLENVT)
-			aDados[nLoop][ 'Ret.20 Graus' ] :=	ALLTRIM((cAlias)->C5_RET20G)
-			aDados[nLoop][ 'Status' ]       :=	ALLTRIM((cAlias)->C5_MSBLQL)
+			::aDados[nLoop][ 'Filial' ]       :=	ALLTRIM((cAlias)->C5_FILIAL)
+			::aDados[nLoop][ 'Numero' ]       :=	ALLTRIM((cAlias)->C5_NUM)
+			::aDados[nLoop][ 'Tipo Pedido' ]  :=	ALLTRIM((cAlias)->C5_TIPO)
+			::aDados[nLoop][ 'Cliente' ]      :=	ALLTRIM((cAlias)->C5_CLIENTE)
+			::aDados[nLoop][ 'Loja' ]         :=	ALLTRIM((cAlias)->C5_LOJACLI)
+			::aDados[nLoop][ 'Cli.Entrega' ]  :=	ALLTRIM((cAlias)->C5_CLIENT)
+			::aDados[nLoop][ 'Loja Entrega' ] :=	ALLTRIM((cAlias)->C5_LOJAENT)
+			::aDados[nLoop][ 'Tipo Cliente' ] :=	ALLTRIM((cAlias)->C5_TIPOCLI)
+			::aDados[nLoop][ 'Cond. Pagto' ]  :=	ALLTRIM((cAlias)->C5_CONDPAG)
+			::aDados[nLoop][ 'DT Emissao' ]   :=	ALLTRIM((cAlias)->C5_EMISSAO)
+			::aDados[nLoop][ 'Moeda' ]        :=	((cAlias)->C5_MOEDA)
+			::aDados[nLoop][ 'Tp Liberação' ] :=	ALLTRIM((cAlias)->C5_TIPLIB)
+			::aDados[nLoop][ 'Taxa Moeda' ]   :=	((cAlias)->C5_TXMOEDA)
+			::aDados[nLoop][ 'Carga' ]        :=	ALLTRIM((cAlias)->C5_TPCARGA)
+			::aDados[nLoop][ 'Gera OS.WMS' ]  :=	ALLTRIM((cAlias)->C5_GERAWMS)
+			::aDados[nLoop][ 'Opc Cliente' ]  :=	ALLTRIM((cAlias)->C5_SOLOPC)
+			::aDados[nLoop][ 'Tipo Compl.' ]  :=	ALLTRIM((cAlias)->C5_TPCOMPL)
+			::aDados[nLoop][ 'Sol.Env.Seg.' ] :=	ALLTRIM((cAlias)->C5_SLENVT)
+			::aDados[nLoop][ 'Ret.20 Graus' ] :=	ALLTRIM((cAlias)->C5_RET20G)
+			::aDados[nLoop][ 'Status' ]       :=	ALLTRIM((cAlias)->C5_MSBLQL)
 			(cAlias)->(DbSkip())
 
 		End
@@ -116,35 +114,15 @@ METHOD visualizarPedido() CLASS DataMATA410
 
 Return ::lOkay
 
-/*/{Protheus.doc} DataMATA410::mostraMensagem
-Menssagem que sera apresentada
-@type method
-@version 12.1.2210
-@author Felipe Fraga
-@since 10/07/2023
-@return variant, return_Character
-/*/
-METHOD mostraMensagem() CLASS DataMATA410
+Method numeroPedido() Class DataMATA410
+Return
+
+// Metodos que serao usados para mostrar o retorno dos outros metodos acima
+Method mostraMensagem() Class DataMATA410
 Return ::cMensagem
 
-/*/{Protheus.doc} DataMATA410::mostraDados
-Retorna todos os pedidos encontrados
-@type method
-@version 12.1.2210
-@author Felipe Fraga
-@since 10/07/2023
-@return variant, return_Array
-/*/
-METHOD mostraDados() CLASS DataMATA410
+Method mostraDados() Class DataMATA410
 Return ::aDados
 
-/*/{Protheus.doc} funcaoDados::mostraStatus
-Retorno do codigo para o usuario
-@type method
-@version 12.1.2210
-@author Felipe Fraga
-@since 10/07/2023
-@return variant, return_Numeric
-/*/
-METHOD mostraStatus() CLASS funcaoDados
+Method mostraStatus() Class DataMATA410
 Return ::nCodigo

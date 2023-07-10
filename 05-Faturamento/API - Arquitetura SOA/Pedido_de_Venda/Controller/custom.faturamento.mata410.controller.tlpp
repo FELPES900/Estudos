@@ -8,7 +8,7 @@ Controlar todos os metodos de APIS REST que serao utilizados
 @author Felipe Fraga
 @since 10/07/2023
 /*/
-CLASS ControllerMATA410
+Class ControllerMATA410
 
 	Public Data oService  as Object
 	Public Data jResponse as Json
@@ -16,10 +16,13 @@ CLASS ControllerMATA410
 	Public Data jParam    as Json
 
 	// Method Construtor
-	PUBLIC METHOD new() as Variadic
+	Public Method new() as Variadic
 
 	@Get("/faturamento/tipo/visualizar")
-	PUBLIC METHOD visualizarPedido() as Variadic
+	Public Method visualizarPedido() as Variadic
+
+	@Get("/faturamento/tipo/visualizar/:numero")
+	Public Method numeroPedido() as Variadic
 
 ENDCLASS
 
@@ -31,13 +34,29 @@ Method Contrutor da Class
 @since 10/07/2023
 @return variant, return_Nil
 /*/
-METHOD new() CLASS ControllerMATA410
+Method new() Class ControllerMATA410
 Return
 
-METHOD visualizarPedido() CLASS ControllerMATA410
+Method visualizarPedido() Class ControllerMATA410
 
 	::oService := ServiceMATA410():New()
 	::oService:visualizarPedido()
+
+	::jResponse := ::oService:JsonResponse()
+
+	oRest:setStatusCode(::jResponse['codigo'])
+	oRest:setResponse(::jResponse:ToJson())
+	oRest:setKeyHeaderResponse("Content-Type","application/json")
+	oRest:setKeyHeaderResponse('accept-encoding','gzip,deflate')
+	oRest:setKeyHeaderResponse('accept','/')
+	oRest:setKeyHeaderResponse('User-Agent','Thunder Client (https://www.thunderclient.com)')
+
+Return
+
+Method numeroPedido() Class ControllerMATA410
+
+	::oService := ServiceMATA410():New()
+	::oService:numeroPedido()
 
 	::jResponse := ::oService:JsonResponse()
 
