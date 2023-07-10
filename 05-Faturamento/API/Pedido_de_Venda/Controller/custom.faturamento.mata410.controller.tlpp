@@ -1,3 +1,50 @@
-#INCLUDE "TOTVS.CH"
 #INCLUDE "TLPP-CORE.TH"
 #INCLUDE "TLPP-REST.TH"
+/*/{Protheus.doc} ControllerMATA410
+Controlar todos os metodos de APIS REST que serao utilizados
+@type class
+@version 12.1.2210
+@author Felipe Fraga
+@since 10/07/2023
+/*/
+CLASS ControllerMATA410
+
+	Public Data oService  as Object
+	Public Data jResponse as Json
+	Public Data jBody     as Json
+	Public Data jParam    as Json
+
+	// Method Construtor
+	PUBLIC METHOD new() as Variadic
+
+	@Get("/faturamento/tipo/visualizar")
+	PUBLIC METHOD visualizarPedido() as Variadic
+
+ENDCLASS
+
+/*/{Protheus.doc} ControllerMATA410::new
+Method Contrutor da Class
+@type method
+@version 12.1.2210
+@author Felipe Fraga
+@since 10/07/2023
+@return variant, return_Nil
+/*/
+METHOD new() CLASS ControllerMATA410
+Return
+
+METHOD visualizarPedido() CLASS ControllerMATA410
+
+	::oService := ServiceMATA410():New()
+	::oService:visualizarPedido()
+
+	::jResponse := ::oService:JsonResponse()
+
+	oRest:setStatusCode(::jResponse['codigo'])
+	oRest:setResponse(::jResponse:ToJson())
+	oRest:setKeyHeaderResponse("Content-Type","application/json")
+	oRest:setKeyHeaderResponse('accept-encoding','gzip,deflate')
+	oRest:setKeyHeaderResponse('accept','/')
+	oRest:setKeyHeaderResponse('User-Agent','Thunder Client (https://www.thunderclient.com)')
+
+Return

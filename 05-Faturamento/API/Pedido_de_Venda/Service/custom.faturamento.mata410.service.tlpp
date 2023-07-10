@@ -1,3 +1,63 @@
-#INCLUDE "TOTVS.CH"
 #INCLUDE "TLPP-CORE.TH"
-#INCLUDE "TLPP-REST.TH"
+
+CLASS ServiceMATA410
+
+	Public Data lOkay     as Logical
+	Public Data oData     as Object
+	Public Data jResponse as Json
+
+	// Method Construtor
+	PUBLIC METHOD new() as Variadic
+
+	PUBLIC METHOD visualizarPedido() as Variadic
+
+	PUBLIC METHOD JsonResponse() as Json
+
+ENDCLASS
+
+/*/{Protheus.doc} ServiceMATA410::new
+Method Contrutor da Class
+@type method
+@version 12.1.2210
+@author Felipe Fraga
+@since 10/07/2023
+@return variant, return_Nil
+/*/
+METHOD new() CLASS ServiceMATA410
+
+	::lOkay     := .T.
+	::oData     := NIL
+	::jResponse := JsonObject():New()
+
+Return
+
+/*/{Protheus.doc} ServiceMATA410::visualizarPedido
+Visualizar todo os pedidos de venda
+@type method
+@version 12.1.2210
+@author Felipe Fraga
+@since 10/07/2023
+@return variant, return_Nil
+/*/
+METHOD visualizarPedido() CLASS ServiceMATA410
+
+	::oData := DataMATA410():New()
+	::lOkay := ::oData:visualizarPedido()
+
+Return
+
+/*/{Protheus.doc} ServiceMATA410::JsonResponse
+Retorna um Json de resposta para o usuario
+@type method
+@version 12.1.2210
+@author felip
+@since 10/07/2023
+@return variant, return_Json
+/*/
+METHOD JsonResponse() CLASS ServiceMATA410
+
+	::jResponse[ 'codigo' ]   := ::oData:mostraStatus()
+	::jResponse[ 'dados' ]    := ::oData:mostraDados()
+	::jResponse[ 'mensagem' ] := ::oData:mostraMensagem()
+
+Return ::jResponse

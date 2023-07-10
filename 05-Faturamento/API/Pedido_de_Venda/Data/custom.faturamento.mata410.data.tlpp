@@ -1,3 +1,143 @@
-#INCLUDE "TOTVS.CH"
 #INCLUDE "TLPP-CORE.TH"
-#INCLUDE "TLPP-REST.TH"
+
+CLASS DataMATA410
+
+	Public Data lOkay     as Logical
+	Public Data nCodigo   as Numeric
+	Public Data aDados    as Array
+	Public Data cMensagem as Character
+
+	// Method Construtor
+	PUBLIC METHOD new() as Variadic
+
+	PUBLIC METHOD mostraDados()      as Array
+	PUBLIC METHOD mostraMensagem()   as Character
+	PUBLIC METHOD mostraStatus()     as Numeric
+	PUBLIC METHOD visualizarPedido() as Variant
+
+ENDCLASS
+
+/*/{Protheus.doc} DataMATA410::new
+Method Contrutor da Class
+@type method
+@version 12.1.2210
+@author Felipe Fraga
+@since 10/07/2023
+@return variant, return_Nil
+/*/
+METHOD new() CLASS DataMATA410
+	::lOkay     := .T.
+	::aDados    := {}
+	::cMensagem := ""
+	::nCodigo   := 0
+Return
+
+METHOD visualizarPedido() CLASS DataMATA410
+
+	Local cAlias      := ""  as Character
+	Local cFinalQuery := ""  as Character
+	Local cQuery      := ""  as Character
+	Local oQuery      := Nil as Object
+
+	// Novo Alias
+	cAlias := GetNextAlias()
+
+	// Consulta que sera usada
+	cQuery := " SELECT  C5_FILIAL, C5_NUM, (CASE WHEN C5_TIPO = 'N' THEN 'Normal' WHEN C5_TIPO = 'C' THEN 'Compl.Preco/Quantidade' WHEN C5_TIPO = 'I' THEN 'Compl.ICMS' WHEN C5_TIPO = 'P' THEN 'Compl.IPI' WHEN C5_TIPO = 'D' THEN 'Dev.Compras' WHEN C5_TIPO = 'B' THEN 'Utiliza Fornecedor' "
+	cQuery += " END) AS C5_TIPO, C5_CLIENTE, C5_LOJACLI, C5_CLIENT, C5_LOJAENT, (CASE WHEN C5_TIPOCLI = 'F' THEN 'Cons.Final' WHEN C5_TIPOCLI = 'L' THEN 'Prod.Rural' WHEN C5_TIPOCLI = 'R' THEN 'Revendedor' WHEN C5_TIPOCLI = 'S' THEN 'Solidario' WHEN C5_TIPOCLI = 'X' THEN 'Exportacao/Importacao' "
+	cQuery += " END) AS C5_TIPOCLI, C5_CONDPAG, C5_EMISSAO, C5_MOEDA, (CASE WHEN C5_TIPLIB = '1' THEN 'Libera por Item' WHEN C5_TIPLIB = '2' THEN 'Libera por Pedido' END) AS C5_TIPLIB, C5_TXMOEDA, "
+	cQuery += " (CASE WHEN C5_TPCARGA = '1' THEN 'Utiliza' WHEN C5_TPCARGA = '2' THEN 'Nao utiliza'	END) AS C5_TPCARGA,	(CASE WHEN C5_GERAWMS = '1' THEN 'No pedido' WHEN C5_GERAWMS = '2' THEN 'Na Montagem da Carga' WHEN C5_GERAWMS = '3' THEN 'Na Utilizacao da Carga' "
+	cQuery += " END) AS C5_GERAWMS,	(CASE WHEN C5_SOLOPC = '1' THEN 'Nao' WHEN C5_SOLOPC = '2' THEN 'Sim' END) AS C5_SOLOPC, (CASE WHEN C5_TPCOMPL = '1' THEN 'Preço' WHEN C5_TPCOMPL = '2' THEN 'Quantidade'"
+	cQuery += " END) AS C5_TPCOMPL,	(CASE WHEN C5_SLENVT = '1' THEN 'Sim' WHEN C5_SLENVT = '2' THEN 'Nao' END) AS C5_SLENVT, (CASE WHEN C5_RET20G = 'S' THEN 'Sim' WHEN C5_RET20G = 'N' THEN 'Nao' "
+	cQuery += " END) AS C5_RET20G, (CASE WHEN C5_MSBLQL = '1' THEN 'Inativo' WHEN C5_MSBLQL = '2' THEN 'Ativo' END) AS C5_MSBLQL FROM " + RETSQLNAME("SC5") + " WHERE D_E_L_E_T_ <> '*' "
+
+	cQuery := ChangeQuery(cQuery)
+
+	// Construtor da carga
+	oQuery := FWPreparedStatement():New(cQuery)
+
+	// Atribuindo informação a consulta a partir do "?"
+	oQuery:SetString(1,cDescricao)
+
+	// Retorna a query com os parâmetros já tratados e substituídos
+	cFinalQuery := oQuery:GetFixQuery()
+
+	// Abre um alias com a query informada
+	cAlias := MPSysOpenQuery(cFinalQuery)
+
+	If (cAlias)->(!Eof())
+
+		::lOkay     := .T.
+		::nCodigo   := 200
+		::cMensagem := "Dados encontrados com sucesso!"
+
+		// Loop trazendo todos os pedidos e seus itens relacionando
+		while !(cAlias)->(Eof())
+
+			nLoop++
+
+			aAdd(aDados, JsonObject():New())
+
+			aDados[nLoop][ 'Filial' ]       :=	ALLTRIM((cAlias)->C5_FILIAL)
+			aDados[nLoop][ 'Numero' ]       :=	ALLTRIM((cAlias)->C5_NUM)
+			aDados[nLoop][ 'Tipo Pedido' ]  :=	ALLTRIM((cAlias)->C5_TIPO)
+			aDados[nLoop][ 'Cliente' ]      :=	ALLTRIM((cAlias)->C5_CLIENTE)
+			aDados[nLoop][ 'Loja' ]         :=	ALLTRIM((cAlias)->C5_LOJACLI)
+			aDados[nLoop][ 'Cli.Entrega' ]  :=	ALLTRIM((cAlias)->C5_CLIENT)
+			aDados[nLoop][ 'Loja Entrega' ] :=	ALLTRIM((cAlias)->C5_LOJAENT)
+			aDados[nLoop][ 'Tipo Cliente' ] :=	ALLTRIM((cAlias)->C5_TIPOCLI)
+			aDados[nLoop][ 'Cond. Pagto' ]  :=	ALLTRIM((cAlias)->C5_CONDPAG)
+			aDados[nLoop][ 'DT Emissao' ]   :=	ALLTRIM((cAlias)->C5_EMISSAO)
+			aDados[nLoop][ 'Moeda' ]        :=	ALLTRIM((cAlias)->C5_MOEDA)
+			aDados[nLoop][ 'Tp Liberação' ] :=	ALLTRIM((cAlias)->C5_TIPLIB)
+			aDados[nLoop][ 'Taxa Moeda' ]   :=	ALLTRIM((cAlias)->C5_TXMOEDA)
+			aDados[nLoop][ 'Carga' ]        :=	ALLTRIM((cAlias)->C5_TPCARGA)
+			aDados[nLoop][ 'Gera OS.WMS' ]  :=	ALLTRIM((cAlias)->C5_GERAWMS)
+			aDados[nLoop][ 'Opc Cliente' ]  :=	ALLTRIM((cAlias)->C5_SOLOPC)
+			aDados[nLoop][ 'Tipo Compl.' ]  :=	ALLTRIM((cAlias)->C5_TPCOMPL)
+			aDados[nLoop][ 'Sol.Env.Seg.' ] :=	ALLTRIM((cAlias)->C5_SLENVT)
+			aDados[nLoop][ 'Ret.20 Graus' ] :=	ALLTRIM((cAlias)->C5_RET20G)
+			aDados[nLoop][ 'Status' ]       :=	ALLTRIM((cAlias)->C5_MSBLQL)
+			(cAlias)->(DbSkip())
+
+		End
+	else
+		::lOkay     := .F.
+		::cMensagem := "Nenhum dado encontrado!"
+	endif
+
+
+Return ::lOkay
+
+/*/{Protheus.doc} DataMATA410::mostraMensagem
+Menssagem que sera apresentada
+@type method
+@version 12.1.2210
+@author Felipe Fraga
+@since 10/07/2023
+@return variant, return_Character
+/*/
+METHOD mostraMensagem() CLASS DataMATA410
+Return ::cMensagem
+
+/*/{Protheus.doc} DataMATA410::mostraDados
+Retorna todos os pedidos encontrados
+@type method
+@version 12.1.2210
+@author Felipe Fraga
+@since 10/07/2023
+@return variant, return_Array
+/*/
+METHOD mostraDados() CLASS DataMATA410
+Return ::aDados
+
+/*/{Protheus.doc} funcaoDados::mostraStatus
+Retorno do codigo para o usuario
+@type method
+@version 12.1.2210
+@author Felipe Fraga
+@since 10/07/2023
+@return variant, return_Numeric
+/*/
+METHOD mostraStatus() CLASS funcaoDados
+Return ::nCodigo
