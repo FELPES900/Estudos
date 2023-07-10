@@ -1,0 +1,235 @@
+#INCLUDE "TLPP-CORE.TH"
+
+/*/{Protheus.doc} funcaoDados
+Classe para obter, incluir, alterar e deletar registros de Funções
+@type class
+@version 12.1.33
+@author Kesia, Vitor, Felipe, Filho do tavinho e Filho do Elso
+@since 7/6/2023
+/*/
+Class funcaoDados
+	Public Data lOkay     as Logical
+	Public Data nCodigo   as Numeric
+	Public Data aDados    as Array
+	Public Data cMensagem as Character
+
+	Public Method New()             as variant
+	Public Method incluirFuncao()   as variant
+	Public Method alteraFuncao()    as variant
+	Public Method visualizaFuncao() as variant
+	Public Method deletaFuncao()	as variant
+	Public Method codigoFuncao()    as variant
+	Public Method mostraDados()     as Array
+	Public Method mostraMensagem()  as Character
+	Public Method mostraStatus()    as Numeric
+
+EndClass
+
+/*
+	Metodo construtor da classe
+*/
+Method New() Class funcaoDados
+	::lOkay     := .T.
+	::nCodigo   := 200
+	::aDados    := {}
+	::cMensagem := ""
+Return
+
+/*
+	Inclusão dos dados da função
+*/
+Method incluirFuncao(jBody as Json) Class funcaoDados
+
+	Local aCampoSRJ  := {}  as Array
+	Local aSRJ       := {}  as Array
+	Local cTituloSRJ := ""  as Character
+	Local oModel     := Nil as Object
+
+	aSRJ := FWSX3Util():GetAllFields( "SRJ" , .T. )
+
+	aCampoSRJ := jBody:GetNames()
+
+	if (aCampoSRJ[1] == "descricao" .And. Len(aCampoSRJ) == 1 .And. ((Len(jBody["descricao"])) >= 5))
+
+		oModel := FwLoadModel("GPEA030")
+
+		oModel:SetOperation(3)
+
+		oModel:Activate()
+
+		cTituloSRJ := Arrtokstr(aCampoSRJ)
+
+		oModel:SetValue("GPEA030_SRJ","RJ_DESC",jBody["descricao"])
+		oModel:SetValue("GPEA030_SRJ","RJ_FUNCAO",::codigoFuncao())
+
+		If oModel:VldData() .And. oModel:CommitData()
+			::lOkay     := .T.
+			::nCodigo   := 200
+			::cMensagem := "Cadastrado com sucesso a funcao"
+
+		Else
+			::lOkay     := .F.
+			::nCodigo   := 400
+			::cMensagem := "Erro ao fazer o cadastra da funcao"
+		EndIf
+
+	else
+		::lOkay     := .F.
+		::nCodigo   := 400
+		::cMensagem := "Por favor somente informar um campo. Campo a ser passado: 'descricao'. E o campo ter que conter no minimo 5 careacteres"
+	endif
+
+Return
+
+/*
+	Query para consulta de Funções para API
+*/
+Method visualizaFuncao(cAlias as Character) Class funcaoDados
+	Local nX := 0
+
+	oStatement := FWPreparedStatement():New()
+
+	_cQuery:="SELECT RJ_FUNCAO, RJ_DESC "
+	_cQuery+="FROM "+RETSQLNAME("SRJ")+" SRJ "
+	_cQuery+="WHERE D_E_L_E_T_ = ' ' "
+
+	oStatement:SetQuery(_cQuery)
+
+	cFinalQuery := oStatement:GetFixQuery()
+
+	cAlias  := MPSysOpenQuery(cFinalQuery)
+
+	If (cAlias)->(!Eof())
+		::lOkay     := .T.
+		::nCodigo   := 200
+		::cMensagem := "Dados encontrados com sucesso!"
+
+		While (cAlias)->(!Eof())
+			Aadd(::aDados,JsonObject():New())
+			nX++
+			::aDados[nX]['codigo']    := AllTrim((cAlias)->RJ_FUNCAO)
+			::aDados[nX]['descricao'] := AllTrim((cAlias)->RJ_DESC)
+			(cAlias)->(DbSkip())
+		EndDo
+
+	Else
+		::lOkay     := .F.
+		::nCodigo   := 404
+		::cMensagem := "Nenhum dado encontrado!"
+	EndIf
+
+Return ::lOkay
+
+/*
+	Grava as alterações feitas na função
+*/
+Method alteraFuncao(codigo,descricao) Class FuncaoDados
+	Local oModel 	:= Nil
+
+	DbSelectArea('SRJ')
+	SRJ->(dbSetOrder(1))
+	IF (SRJ->(dbSeek(xFilial("SRJ")+codigo['codigo'])))
+
+		oModel := FwLoadModel("GPEA030")
+		oModel:SetOperation(4)
+		oModel:Activate()
+
+		oModel:SetValue('GPEA030_SRJ','RJ_DESC' ,descricao)
+
+		If oModel:VldData()
+			oModel:CommitData()
+			::lOkay 	:= .T.
+			::cMensagem := "Função alterada com sucesso!"
+			::nCodigo 	:= 200
+		Else
+			::cMensagem := oModel:GetErrorMessage()
+			::lOkay 	:= .F.
+		EndIf
+
+		oModel:DeActivate()
+
+	Else
+		::lOkay 	:= .F.
+		::cMensagem := "Função não encontrada."
+		::nCodigo 	:= 404
+	Endif
+
+	SRJ->( dbCloseArea() )
+
+Return ::lOkay
+
+/*
+	efetua o delete da função
+*/
+Method deletaFuncao(codigo) class funcaoDados
+	Local oModel
+
+	DBSelectArea("SRJ")
+	SRJ->(DBSetOrder(1))
+	if SRJ->(MSSEEK(FwxFilial('SRJ')+codigo['codigo']))
+		oModel := FwLoadModel("GPEA030")
+		oModel:SetOperation(5)
+		oModel:ACTIVATE()
+
+		If oModel:VldData()
+			oModel:CommitData()
+			::lOkay     := .T.
+			::nCodigo   := 200
+			::cMensagem := "A deleção foi feita com sucesso"
+		else
+			::lOkay     := .F.
+			::nCodigo   := 428
+			::cMensagem := "Falha na deleção"
+		endif
+		oModel:DEACTIVATE()
+	else
+		::lOkay     := .F.
+		::nCodigo   := 404
+		::cMensagem := "Registro nao encontrado"
+	endif
+
+	SRJ->( dbCloseArea() )
+
+return ::lOkay
+
+/*
+	Define um novo codigo para a funcao
+*/
+Method codigoFuncao() Class funcaoDados
+
+	Local cAlias        := ""  as Character
+	Local cQuery        := ""  as Character
+	Local cCodigoFuncao := ""  as Character
+	Local oQuery        := Nil as Object
+
+	cAlias := GetNextAlias()
+
+	cQuery := "SELECT ISNULL(MAX(RJ_FUNCAO),'00000') RJ_FUNCAO FROM "+RETSQLNAME("SRJ")+" SRJ WHERE D_E_L_E_T_ <> '*'  "
+
+	oQuery := FWPreparedStatement():New(cQuery)
+
+	cQuery := oQuery:GetFixQuery()
+
+	cAlias := MPSysOpenQuery(cQuery)
+
+	cCodigoFuncao := SOMA1((cAlias)->RJ_FUNCAO)
+
+Return cCodigoFuncao
+
+/*
+	Mostra a mensagem de retorno
+*/
+Method mostraMensagem() Class funcaoDados
+Return ::cMensagem
+
+/*
+	Mostra o status do retorno
+*/
+Method mostraStatus() Class funcaoDados
+Return ::nCodigo
+
+/*
+	Mostra o dados do retorno
+*/
+Method mostraDados() Class funcaoDados
+Return ::aDados

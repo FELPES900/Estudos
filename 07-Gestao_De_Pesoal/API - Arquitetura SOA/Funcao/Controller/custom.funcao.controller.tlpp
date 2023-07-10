@@ -1,0 +1,120 @@
+#INCLUDE "TLPP-CORE.TH"
+#INCLUDE "TLPP-REST.TH"
+
+/*/{Protheus.doc} Funcao
+EndPoint para visualizar, incluir, alterar e deletar registros de Funções
+@type class
+@version 12.1.33
+@author Kesia, Vitor, Felipe, Filho do tavinho e Filho do Elso
+@since 7/6/2023
+/*/
+Class Funcao
+	Public Data jParam    as Json
+	Public Data oService  as Object
+	Public Data jResponse as Json
+	Public Data jBody     as Json
+
+	Public Method New() as variadic
+
+	@POST("/api/v1/incluiFuncao")
+	Public Method incluiFuncao()   as variadic
+
+	@GET("/api/v1/visualizaFuncao")
+	Public Method visualizaFuncao() as variadic
+
+	@PUT("/api/v1/alterafuncao/:codigo")
+	Public Method alteraFuncao()    as variadic
+
+	@DELETE("/api/v1/deletafuncao/:codigo")
+	Public Method deletaFuncao()    as variadic
+
+EndClass
+
+/*
+	Metodo construtor da classe
+*/
+Method New() class Funcao
+Return
+
+/*
+	Incluir dados da função
+*/
+Method incluiFuncao() Class Funcao
+
+	::jBody := JsonObject():New()
+
+	::jBody:fromJson( oRest:GetBodyRequest() )
+
+	::oService := FuncaoService():New()
+	::oService:funcaoIncluir(::jBody)
+
+	::jResponse := ::oService:montaJsonFuncao()
+
+	oRest:setStatusCode(::jResponse['codigo'])
+	oRest:setResponse(::jResponse:ToJson())
+	oRest:setKeyHeaderResponse('Connection','Keep-Alive')
+	oRest:setKeyHeaderResponse('accept-encoding','gzip,deflate')
+	oRest:setKeyHeaderResponse('accept','/')
+	oRest:setKeyHeaderResponse('User-Agent','Thunder Client (https://www.thunderclient.com)')
+
+Return
+
+/*
+	Visualizar dados de todas as Funções
+*/
+Method visualizaFuncao() Class Funcao
+	::jParam    := oRest:getPathParamsRequest()
+
+	::oService := FuncaoService():New()
+	::oService:funcaoVisualizar(::jParam)
+
+	::jResponse := ::oService:montaJsonFuncao()
+
+	oRest:setStatusCode(::jResponse['codigo'])
+	oRest:setResponse(::jResponse:ToJson())
+	oRest:setKeyHeaderResponse("Content-Type","application/json")
+	oRest:setKeyHeaderResponse('accept-encoding','gzip,deflate')
+	oRest:setKeyHeaderResponse('accept','/')
+	oRest:setKeyHeaderResponse('User-Agent','Thunder Client (https://www.thunderclient.com)')
+	
+Return
+
+/*
+	Alterar dados da função
+*/
+Method alteraFuncao() class Funcao
+	::jParam := oRest:getPathParamsRequest()
+
+	::oService := FuncaoService():New()
+	::oService:funcaoAlterar(::jParam)
+
+	::jResponse := ::oService:montaJsonFuncao()
+
+	oRest:setStatusCode(::jResponse['codigo'])
+	oRest:setResponse(::jResponse:ToJson())
+	oRest:setKeyHeaderResponse("Content-Type","application/json")
+	oRest:setKeyHeaderResponse('accept-encoding','gzip,deflate')
+	oRest:setKeyHeaderResponse('accept','/')
+	oRest:setKeyHeaderResponse('User-Agent','Thunder Client (https://www.thunderclient.com)')
+
+Return
+
+/*
+	Deletar dados da função
+*/
+Method deletaFuncao() class Funcao
+	::jParam    := oRest:getPathParamsRequest()
+
+	::oService  := FuncaoService():New()
+	::oService:funcaoDeletar(::jParam)
+
+	::jResponse := ::oService:montaJsonFuncao()
+
+	oRest:setStatusCode(::jResponse['codigo'])
+	oRest:setResponse(::jResponse:ToJson())
+	oRest:setKeyHeaderResponse("Content-Type","application/json")
+	oRest:setKeyHeaderResponse('accept-encoding','gzip,deflate')
+	oRest:setKeyHeaderResponse('accept','/')
+	oRest:setKeyHeaderResponse('User-Agent','Thunder Client (https://www.thunderclient.com)')
+
+return

@@ -1,0 +1,98 @@
+#INCLUDE "TLPP-CORE.TH"
+
+/*/{Protheus.doc} FuncaoService
+Classe para obter, incluir, alterar e deletar registros de Funções
+@type class
+@version 12.1.33
+@author Kesia, Vitor, Felipe, Filho do tavinho e Filho do Elso
+@since 7/6/2023
+/*/
+Class FuncaoService
+	Public Data lOkay     as Logical
+	Public Data oData     as Object
+	Public Data jResponse as Json
+	Protect Data cAlias   as Character
+
+	Public Method new()              as variant
+	Public Method funcaoIncluir()    as variant
+	Public Method funcaoVisualizar() as variant
+	Public Method funcaoAlterar()    as variant
+	Public Method funcaoDeletar()    as variant
+	Public Method trataDados()       as variant
+	Public Method montaJsonFuncao()  as Json
+EndClass
+
+/*
+	Metodo construtor da classe
+*/
+Method New() Class FuncaoService
+	::lOkay     := .T.
+	::oData     := NIL
+	::jResponse := JsonObject():New()
+	::cAlias    := GetNextAlias()
+Return
+
+/*
+	Busca a função para incluir
+*/
+Method funcaoIncluir(jBody as Json) Class FuncaoService
+
+	::oData := FuncaoDados():new()
+	::lOkay := ::oData:incluirfuncao(jBody)
+
+Return
+
+/*
+	Busca a função para a exibir
+*/
+Method funcaoVisualizar(jParam as Json) Class FuncaoService
+
+	::oData := FuncaoDados():new()
+	::lOkay := ::oData:visualizaFuncao(::cAlias)
+
+Return
+
+/*
+	Busca a função para a alteração
+*/
+Method funcaoAlterar(codigo) Class FuncaoService
+
+	Local cJson     := oRest:getBodyRequest()
+	Local jResponse := JsonObject():New()
+
+	jResponse:FromJson(cJson)
+
+	::oData := FuncaoDados():New()
+	::lOkay := ::oData:alteraFuncao(codigo,::trataDados(jResponse:GetJsonObject('descricao'),'RJ_DESC'))
+Return
+
+/*
+	Busca a função para deletar
+*/
+Method funcaoDeletar(codigo) class FuncaoService
+	::oData := FuncaoDados():New()
+	::lOkay := ::oData:deletaFuncao(codigo)
+return
+
+/*
+	Faz a tratativa dos dados para alteração
+*/
+Method trataDados(xDados,cCampo) Class FuncaoService
+	Local xRet
+
+	xRet := SubStr(FWCutOff(DecodeUTF8(xDados,	"cp1252"), .T.),1, GetSX3Cache(cCampo, 	"X3_TAMANHO"))
+
+return xRet
+
+/*
+	Monta o json da resposta
+*/
+Method montaJsonFuncao() Class FuncaoService
+	::jResponse := JsonObject():new()
+
+	::jResponse[ 'status' ]   := ::lOkay
+	::jResponse[ 'codigo' ]   := ::oData:mostraStatus()
+	::jResponse[ 'mensagem' ] := ::oData:mostraMensagem()
+	::jResponse[ 'dados' ] 	  := ::oData:mostraDados()
+
+Return ::jResponse
