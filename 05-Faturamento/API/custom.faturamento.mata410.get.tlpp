@@ -12,9 +12,9 @@ Visualizar todos os pedidos de venda
 /*/@Get("faturamento/pedidovenda/visualizar")
 Function U_GetPedid()
 
+	Local aItem       := {}  as Array
 	Local aPedido     := {}  as Array
-	Local aItem		  := {}  as Array
-	Local cAlias      := ""  as Character
+	Local cAliaSC5    := ""  as Character
 	Local cFinalQuery := ""  as Character
 	Local cQuery      := ""  as Character
 	Local jQuery      := Nil as Json
@@ -50,16 +50,36 @@ Function U_GetPedid()
 	cFinalQuery := oQuery:GetFixQuery()
 
 	// Abre um alias com a query informada
-	cAlias := MPSysOpenQuery(cFinalQuery)
+	cAliaSC5 := MPSysOpenQuery(cFinalQuery)
 
 	// Loop trazendo todos os pedidos e seus itens relacionando
-	while !(cAlias)->(Eof())
+	while !(cAliaSC5)->(Eof())
 
 		nLoop++
 
 		aAdd(aPedido, JsonObject():New())
 
-		// Adicionar os campos
+		aPedido[nLoop][ 'Filial' ]       := ALLTRIM((cAliaSC5)->C5_FILIAL )
+		aPedido[nLoop][ 'Numero' ]       := ALLTRIM((cAliaSC5)->C5_NUM    )
+		aPedido[nLoop][ 'Tipo Pedido' ]  := ALLTRIM((cAliaSC5)->C5_TIPO   )
+		aPedido[nLoop][ 'Cliente' ]      := ALLTRIM((cAliaSC5)->C5_CLIENTE)
+		aPedido[nLoop][ 'Loja' ]         := ALLTRIM((cAliaSC5)->C5_LOJACLI)
+		aPedido[nLoop][ 'Cli.Entrega' ]  := ALLTRIM((cAliaSC5)->C5_CLIENT )
+		aPedido[nLoop][ 'Loja Entrega' ] := ALLTRIM((cAliaSC5)->C5_LOJAENT)
+		aPedido[nLoop][ 'Tipo Cliente' ] := ALLTRIM((cAliaSC5)->C5_TIPOCLI)
+		aPedido[nLoop][ 'Cond. Pagto' ]  := ALLTRIM((cAliaSC5)->C5_CONDPAG)
+		aPedido[nLoop][ 'DT Emissao' ]   := ALLTRIM((cAliaSC5)->C5_EMISSAO)
+		aPedido[nLoop][ 'Moeda' ]        := ALLTRIM((cAliaSC5)->C5_MOEDA  )
+		aPedido[nLoop][ 'Tp Liberação' ] := ALLTRIM((cAliaSC5)->C5_TIPLIB )
+		aPedido[nLoop][ 'Taxa Moeda' ]   := ALLTRIM((cAliaSC5)->C5_TXMOEDA)
+		aPedido[nLoop][ 'Carga' ]        := ALLTRIM((cAliaSC5)->C5_TPCARGA)
+		aPedido[nLoop][ 'Gera OS.WMS' ]  := ALLTRIM((cAliaSC5)->C5_GERAWMS)
+		aPedido[nLoop][ 'Opc Cliente' ]  := ALLTRIM((cAliaSC5)->C5_SOLOPC )
+		aPedido[nLoop][ 'Tipo Compl.' ]  := ALLTRIM((cAliaSC5)->C5_TPCOMPL)
+		aPedido[nLoop][ 'Sol.Env.Seg.' ] := ALLTRIM((cAliaSC5)->C5_SLENVT )
+		aPedido[nLoop][ 'Ret.20 Graus' ] := ALLTRIM((cAliaSC5)->C5_RET20G )
+		aPedido[nLoop][ 'Status' ]       := ALLTRIM((cAliaSC5)->C5_MSBLQL )
+		aPedido[nLoop][ 'Item' ]       := JsonObject():New()
 	End
 
 	if( jHeader <> Nil )
