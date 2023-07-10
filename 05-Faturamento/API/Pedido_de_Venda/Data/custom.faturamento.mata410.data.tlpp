@@ -1,5 +1,12 @@
 #INCLUDE "TLPP-CORE.TH"
 
+/*/{Protheus.doc} DataMATA410
+Class de dados de retorno para o service
+@type class
+@version 12.1.2210
+@author felip
+@since 10/07/2023
+/*/
 CLASS DataMATA410
 
 	Public Data lOkay     as Logical
