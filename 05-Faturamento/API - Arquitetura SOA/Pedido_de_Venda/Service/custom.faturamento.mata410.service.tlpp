@@ -17,7 +17,7 @@ Class ServiceMATA410
 	Public Method new() as Variadic
 
 	Public Method visualizarPedido() as Variadic
-	Public Method numeroPedido() as Variadic
+	Public Method numeroPedidoUnico() as Variadic
 
 	Public Method JsonResponse() as Json
 
@@ -62,10 +62,10 @@ Mostra o pedido que voce especifica pela sua rota
 @since 10/07/2023
 @return variant, return_Nil
 /*/
-Method numeroPedido() Class ServiceMATA410
+Method numeroPedidoUnico() Class ServiceMATA410
 
 	::oData := DataMATA410():New()
-	::lOkay := ::oData:numeroPedido()
+	::lOkay := ::oData:numeroPedidoUnico()
 
 Return
 

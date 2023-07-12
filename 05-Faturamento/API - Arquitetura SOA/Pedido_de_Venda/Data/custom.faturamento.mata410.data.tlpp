@@ -9,18 +9,18 @@ Class de dados de retorno para o service
 /*/
 Class DataMATA410
 
-	Public Data lOkay     as Logical
-	Public Data nCodigo   as Numeric
 	Public Data aDados    as Array
 	Public Data cMensagem as Character
+	Public Data lOkay     as Logical
+	Public Data nCodigo   as Numeric
 
 	// Method Construtor
+	Public Method mostraDados()       as Array
+	Public Method mostraMensagem()    as Character
+	Public Method mostraStatus()      as Numeric
 	Public Method new() constructor
-	Public Method mostraDados()      as Array
-	Public Method mostraMensagem()   as Character
-	Public Method mostraStatus()     as Numeric
-	Public Method visualizarPedido() as Logical
-	Public Method numeroPedido()	 as Logical
+	Public Method numeroPedidoUnico() as Logical
+	Public Method visualizarPedido()  as Logical
 
 EndClass
 
@@ -109,20 +109,44 @@ Method visualizarPedido() Class DataMATA410
 	else
 		::lOkay     := .F.
 		::cMensagem := "Nenhum dado encontrado!"
+		::nCodigo   := 204
 	endif
 
 
 Return ::lOkay
 
-Method numeroPedido() Class DataMATA410
+Method numeroPedidoUnico() Class DataMATA410
 Return
 
-// Metodos que serao usados para mostrar o retorno dos outros metodos acima
+/*/{Protheus.doc} DataMATA410::mostraMensagem
+Mostra menssagem de sucesso ou de erro da resposta Json
+@type method
+@version 12.1.2210
+@author felip
+@since 11/07/2023
+@return variant, return_Character
+/*/
 Method mostraMensagem() Class DataMATA410
 Return ::cMensagem
 
+/*/{Protheus.doc} DataMATA410::mostraDados
+Retorna todos os dados de retorno
+@type method
+@version 12.1.2210
+@author felip
+@since 11/07/2023
+@return variant, return_Array
+/*/
 Method mostraDados() Class DataMATA410
 Return ::aDados
 
+/*/{Protheus.doc} DataMATA410::mostraStatus
+Mostra o codigo de retorno
+@type method
+@version 12.1.2210
+@author felip
+@since 11/07/2023
+@return variant, return_Numeric
+/*/
 Method mostraStatus() Class DataMATA410
 Return ::nCodigo

@@ -22,7 +22,7 @@ Class ControllerMATA410
 	Public Method visualizarPedido() as Variadic
 
 	@Get("/faturamento/tipo/visualizar/:numero")
-	Public Method numeroPedido() as Variadic
+	Public Method numeroPedidoUnico() as Variadic
 
 ENDCLASS
 
@@ -53,10 +53,10 @@ Method visualizarPedido() Class ControllerMATA410
 
 Return
 
-Method numeroPedido() Class ControllerMATA410
+Method numeroPedidoUnico() Class ControllerMATA410
 
 	::oService := ServiceMATA410():New()
-	::oService:numeroPedido()
+	::oService:numeroPedidoUnico()
 
 	::jResponse := ::oService:JsonResponse()
 
