@@ -1,0 +1,35 @@
+#INCLUDE "TLPP-CORE.TH"
+
+Class ServiceCNTA300
+
+	Public Data jResponse as Json
+	Public Data lRet      as Logical
+	Public Data oData     as Object
+
+	Public Method new() as Variant
+	Public Method alterarContrato() as Variant
+	Public Method JsonResponse() as Json
+
+EndClass
+
+Method new() Class ServiceCNTA300
+	self:lRet     := .T.
+	self:oData     := NIL
+	self:jResponse := JsonObject():New()
+Return
+
+Method alterarContrato() Class ServiceCNTA300
+
+	self:oData := DataCNTA300():New()
+	self:lRet := self:oData:alterarContrato()
+
+Return
+
+Method JsonResponse() Class ServiceCNTA300
+
+	self:jResponse := JsonObject():new()
+
+	self:jResponse[ 'codigo' ]   := self:oData:mostraStatus()
+	self:jResponse[ 'mensagem' ] := self:oData:mostraMensagem()
+
+Return self:jResponse

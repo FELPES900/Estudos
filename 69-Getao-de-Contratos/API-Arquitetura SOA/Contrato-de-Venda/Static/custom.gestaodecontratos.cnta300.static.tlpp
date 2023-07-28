@@ -1,0 +1,91 @@
+#INCLUDE "TLPP-CORE.TH"
+#INCLUDE "TOTVS.CH"
+
+Class StaticCNTA300
+
+	Static Method contratoExiste()   as Variant
+	Static Method contratoReajuste() as Variant
+	Static Method existePagamento()  as Variant
+	Static Method indiceExiste()     as Variant
+	Static Method unidadeVigencia()  as Variant
+	Static Method contratoCaucao() as Variant
+	Static Method comportamento() as Variant
+
+EndClass
+
+
+Method contratoExiste(cCodigo) Class StaticCNTA300
+
+	Local lRet := .T. as Logical
+
+	// Selecionando a tabela de tipo de contrato
+	DBSelectArea("CN1")
+
+	// Usando o indice um da tabela
+	CN1->(DBSetOrder(1))
+
+	IIF(CN1->(MsSeek(FwxFilial("CN1") + cCodigo)),lRet := .T.,lRet := .F.)
+
+Return lRet
+
+Method unidadeVigencia(cTipo) Class StaticCNTA300
+
+	Local cTipoUnidade := ""
+
+	IIF(cTipo $ "Anos", cTipoUnidade := "3",)
+	IIF(cTipo $ "Dias", cTipoUnidade := "1",)
+	IIF(cTipo $ "Indeterminada", cTipoUnidade := "4",)
+	IIF(cTipo $ "Meses", cTipoUnidade := "2",)
+
+Return cTipoUnidade
+
+Method existePagamento(cPagamento) Class StaticCNTA300
+
+	Local lRet := .T.
+
+	DBSelectArea("SE4")
+
+	SE4->(DBSetOrder(1))
+
+	IIF(SE4->(MsSeek(FwxFilial("SE4") + cPagamento)),lRet := .T.,lRet := .F.)
+
+Return lRet
+
+Method contratoReajuste(cReajuste) Class StaticCNTA300
+
+	Local cTipoReajuste := "" as Character
+
+	IIF(cReajuste $ "Sim", cTipoReajuste := "1",)
+	IIF(cReajuste $ "Nao", cTipoReajuste := "2",)
+
+Return cTipoReajuste
+
+Method indiceExiste(cIndice) Class StaticCNTA300
+
+	Local lRet := .T.
+
+	DBSelectArea("CN6")
+
+	Cn6->(DBSetOrder(1))
+
+	IIF(CN6->(MsSeek(FwxFilial("CN6") + cIndice)),lRet := .T.,lRet := .F.)
+
+Return lRet
+
+Method contratoCaucao(cCausao) Class StaticCNTA300
+
+	Local cTipoCausao := "" as Character
+
+	IIF(cCausao $ "Sim",cTipoCausao := "1",)
+	IIF(cCausao $ "Nao",cTipoCausao := "2",)
+
+Return cTipoCausao
+
+Method comportamento(cComportamento) Class StaticCNTA300
+
+	Local cTipoComportamento := "" as Character
+
+	IIF(cComportamento $ "Manual"  ,cTipoComportamento := "1",)
+	IIF(cComportamento $ "Retencao",cTipoComportamento := "2",)
+
+Return cComportamento

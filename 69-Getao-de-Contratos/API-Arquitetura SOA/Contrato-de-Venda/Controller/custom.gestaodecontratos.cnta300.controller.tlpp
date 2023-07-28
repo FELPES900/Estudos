@@ -1,0 +1,34 @@
+#INCLUDE "TLPP-CORE.TH"
+#INCLUDE "TLPP-REST.TH"
+
+Class ControllerCNTA300
+
+	Public Data oService as Object
+	Public Data jResponse as Json
+
+	// Methodo construtor
+	Public Method new() as Variant
+
+	@Put("/gestaodecontrato/venda/alterar/:codigo")
+	Public Method alterarContrato() as Variant
+
+EndClass
+
+Method new() Class ControllerCNTA300
+Return
+
+Method alterarContrato() Class ControllerCNTA300
+
+	self:oService := ServiceCNTA300():New()
+	self:oService:alterarContrato()
+
+	self:jResponse := self:oService:JsonResponse()
+
+	oRest:setStatusCode(self:jResponse['codigo'])
+	oRest:setResponse(self:jResponse:ToJson())
+	oRest:setKeyHeaderResponse("Content-Type","application/json")
+	oRest:setKeyHeaderResponse('accept-encoding','gzip,deflate')
+	oRest:setKeyHeaderResponse('accept','/')
+	oRest:setKeyHeaderResponse('User-Agent','Thunder Client (https://www.thunderclient.com)')
+
+Return

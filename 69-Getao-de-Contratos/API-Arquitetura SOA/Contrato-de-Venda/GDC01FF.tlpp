@@ -1,0 +1,132 @@
+#INCLUDE "TOTVS.CH"
+#INCLUDE"TBICONN.CH"
+#INCLUDE "TLPP-CORE.TH"
+#INCLUDE "FWMVCDEF.CH"
+
+/*/{Protheus.doc} U_alteraContrato
+Fazendos as alterações em um contrato
+@type function
+@version 12.1.2210
+@author Felipe Fraga
+@since 17/07/2023
+@return variant, return_Nil
+/*/
+Function U_GDC01FF(cRest,cCodigo)
+
+	Local aBodyCliente    := {}  as Array
+	Local aBodyContrato   := {}  as Array
+	Local aBodyPlanilha   := {}  as Array
+	Local aBodyVendedores := {}  as Array
+	Local jBody           := Nil as Json
+	Local nA              := 0   as Numeric
+	Local nB			  := 0   as Numeric
+	Local nC			  := 0   as Numeric
+	Local nD			  := 0	 as Numeric
+	Local oMdlCN9         := Nil as Object
+	Local oMdlCNA         := Nil as Object
+	Local oMdlCNB         := Nil as Object
+	Local oMdlCNC         := Nil as Object
+	Local oMdlCNU         := Nil as Object
+	Local oModel          := Nil as Object
+	// Local cCodigoPlanilha := ""  as Character
+
+	if SELECT("SX2") == 0 //Para ser executado pelo usuario
+		PREPARE ENVIRONMENT EMPRESA "99" FILIAL "01"
+	endif
+
+	// Cria um Object Json
+	jBody := JsonObject():New()
+
+	// Permite popular o JsonObject
+	jBody:fromJson(cRest)
+
+	// Cria um array dos campos
+	aBodyContrato   := jBody:GetJsonObject("contrato")[1]:GetNames()
+	aBodyCliente    := jBody:GetJsonObject("cliente")
+	aBodyVendedores := jBody:GetJsonObject("vendedores")
+	aBodyPlanilha   := jBody:GetJsonObject("planilha")
+
+	DBSelectArea("CN9")
+	DBSelectArea("CNA")
+	DBSelectArea("CNB")
+	CNB->(DbSetOrder(4))
+	CNA->(DbSetOrder(5))
+	CN9->(DbSetOrder(1))
+
+	if(CN9->(DbSeek(FWxFilial("CN9") + cCodigo["codigo"])))
+		// Setando a model de contrato
+		oModel := FWLoadModel("CNTA300")
+
+		// // Setando o tipo de operacao
+		oModel:SetOperation(4)
+
+		// // Ativando a model
+		oModel:Activate()
+
+		oMdlCN9 := oModel:GetModel("CN9MASTER")
+		oMdlCNC := oModel:GetModel("CNCDETAIL")
+		oMdlCNU := oModel:GetModel("CNUDETAIL")
+		oMdlCNA := oModel:GetModel("CNADETAIL")
+		oMdlCNB := oModel:GetModel("CNBDETAIL")
+
+		if(ValType(jBody["contrato"]) <> "U")
+			for nA := 1 to Len(aBodyContrato)
+				if (oMdlCN9:CanSetValue(aBodyContrato[nA]))
+					// oMdlCN9:SetValue(aBodyContrato[nA],jBody["contrato"][1][aBodyContrato[nA]])
+				endif
+			next
+		endif
+		if(ValType(jBody["cliente"]) <> "U")
+			for nA := 1 to Len(aBodyCliente)
+				if (oMdlCNC:CanSetValue(aBodyCliente[nA]:GetNames()[1]) .And. Len(aBodyCliente[nA]:GetNames()) == 1)
+					// oMdlCNC:SetValue(aBodyCliente[nA]:GetNames()[1],jBody["cliente"][nA][aBodyCliente[nA]:GetNames()[1]])
+				endif
+			next
+		endif
+		if(ValType(jBody["vendedores"]) <> "U")
+			for nA := 1 to Len(aBodyVendedores)
+				if (oMdlCNU:CanSetValue(aBodyVendedores[nA]:GetNames()[1]) .And. Len(aBodyVendedores[nA]:GetNames()) == 1)
+					// oMdlCNU:SetValue(aBodyVendedores[nA]:GetNames()[1],jBody["vendedores"][nA][aBodyVendedores[nA]:GetNames()[1]])
+				endif
+			next
+		endif
+		if(ValType(jBody["planilha"]) <> "U")
+			for nA := 1 to Len(aBodyPlanilha)
+				if CNA->(MsSeek(FWxFilial("CNA") + cCodigo["codigo"] + jBody["planilha"][nA]["CNA_NUMERO"]))
+					for nB := 1 to Len(aBodyPlanilha[nA]:GetNames())
+						if(aBodyPlanilha[nA]:GetNames()[nB] <> "itens")
+							if(oMdlCNA:CanSetValue(aBodyPlanilha[nA]:GetNames()[nB]))
+								// oMdlCNA:SetValue(aBodyPlanilha[nA]:GetNames()[nB],jBody["planilha"][nA][aBodyPlanilha[nA]:GetNames()[nB]])
+							endif
+							IIF(aBodyPlanilha[nA]:GetNames()[nB] == "CNA_NUMERO",cCodigoPlanilha := jBody["planilha"][nA][aBodyPlanilha[nA]:GetNames()[nB]] ,)
+						else
+							for nC := 1 to Len(aBodyPlanilha[nA][aBodyPlanilha[nA]:GetNames()[nB]])
+								if CNB->(MsSeek(FWxFilial("CNB") + cCodigo["codigo"] + cCodigoPlanilha + jBody["planilha"][nA][aBodyPlanilha[nA]:GetNames()[nB]][nC]["CNB_PRODUT"]))
+									for nD := 1 to Len(aBodyPlanilha[nA][aBodyPlanilha[nA]:GetNames()[nB]][nC]:GetNames())
+										if(oMdlCNB:CanSetValue(aBodyPlanilha[nA][aBodyPlanilha[nA]:GetNames()[nB]][nC]:GetNames()[nD]))
+											oMdlCNB:SetValue(aBodyPlanilha[nA][aBodyPlanilha[nA]:GetNames()[nB]][nC]:GetNames()[nD],;
+												jBody["planilha"][nA][aBodyPlanilha[nA]:GetNames()[nB]][nC][aBodyPlanilha[nA][aBodyPlanilha[nA]:GetNames()[nB]][nC]:GetNames()[nD]])
+										endif
+									next
+								else
+									for nD := 1 to Len(aBodyPlanilha[nA][aBodyPlanilha[nA]:GetNames()[nB]][nC]:GetNames())
+										oMdlCNB:SetValue(aBodyPlanilha[nA][aBodyPlanilha[nA]:GetNames()[nB]][nC]:GetNames()[nD],;
+											jBody["planilha"][nA][aBodyPlanilha[nA]:GetNames()[nB]][nC][aBodyPlanilha[nA][aBodyPlanilha[nA]:GetNames()[nB]][nC]:GetNames()[nD]])
+									next
+									oMdlCNB:AddLine()
+								endif
+							next
+						endif
+					next
+				else
+				endif
+			next
+		endif
+
+	endif
+
+	if SELECT("SX2") > 0
+		RESET ENVIRONMENT
+	endif
+
+Return

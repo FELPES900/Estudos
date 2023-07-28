@@ -1,0 +1,71 @@
+#INCLUDE "TLPP-CORE.TH"
+#INCLUDE "FWMVCDEF.CH"
+
+Class DataCNTA300
+
+	Public Data lRet     as Logical
+	Public Data nCodigo   as Numeric
+	Public Data aDados    as Array
+	Public Data cMensagem as Character
+
+	Public Method alterarContrato()         as Variant
+	Public Method mostraDados()             as Array
+	Public Method mostraMensagem()          as Character
+	Public Method mostraStatus()            as Numeric
+	Public Method new()                     as Variant
+
+EndClass
+
+Method new() Class DataCNTA300
+	self:lRet     := .T.
+	self:aDados    := {}
+	self:cMensagem := ""
+	self:nCodigo   := 0
+Return
+
+Method alterarContrato() Class DataCNTA300
+
+	if(oRest:GetBodyRequest() <> "")
+		StartJob("U_GDC01FF",getenvserver(),.F.,oRest:GetBodyRequest(),oRest:getPathParamsRequest())
+		self:cMensagem := "Json enviado com sucesso. Por favor aguarde 1 minuto para depois visualizar se o pedido foi alterado com sucesso"
+		self:nCodigo := 200
+	else
+		self:cMensagem := "Nao foi passado nenhum Json para fazer oque deseja"
+		self:nCodigo := 404
+	endif
+
+
+Return self:lRet
+
+/*/{Protheus.doc} DataCNTA300self:mostraMensagem
+Mostra menssagem de sucesso ou de erro da resposta Json
+@type method
+@version 12.1.2210
+@author Felipe Fraga
+@since 11/07/2023
+@return variant, return_Character
+/*/
+Method mostraMensagem() Class DataCNTA300
+Return self:cMensagem
+
+/*/{Protheus.doc} DataCNTA300self:mostraDados
+Retorna todos os dados de retorno
+@type method
+@version 12.1.2210
+@author Felipe Fraga
+@since 11/07/2023
+@return variant, return_Array
+/*/
+Method mostraDados() Class DataCNTA300
+Return self:aDados
+
+/*/{Protheus.doc} DataCNTA300self:mostraStatus
+Mostra o codigo de retorno
+@type method
+@version 12.1.2210
+@author Felipe Fraga
+@since 11/07/2023
+@return variant, return_Numeric
+/*/
+Method mostraStatus() Class DataCNTA300
+Return self:nCodigo

@@ -58,7 +58,10 @@
 				"]"
 			],
 			"label": "xxx"
+		},
+		{
+			"label": "U_FFS001"
 		}
 	],
-	"lastProgramExecuted": "xxx"
+	"lastProgramExecuted": "U_FFS001"
 }
