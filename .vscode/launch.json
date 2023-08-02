@@ -61,7 +61,19 @@
 		},
 		{
 			"label": "U_FFS001"
+		},
+		{
+			"label": "u_KVGet"
+		},
+		{
+			"label": "U_FilPut"
+		},
+		{
+			"label": "U_ChatLogin"
+		},
+		{
+			"label": "U_FFS001FF"
 		}
 	],
-	"lastProgramExecuted": "U_FFS001"
+	"lastProgramExecuted": "U_FFS001FF"
 }
