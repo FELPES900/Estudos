@@ -38,6 +38,28 @@ Static Function ModelDef()
 	// Pedido de Compra
 	oModel:AddGrid("SC7MASTER", "CABID", oStruSC7 ,/*bLinePre*/, /*blinepost*/, /*bPre*/, /*bPost*/, {|oModel| loadGridSC7(oModel)})
 
+	//Adiciona um campo a estrutura.
+	oStruSC7:AddField( 'C7_EMISSAO' , 'C7_EMISSAO' , 'C7_EMISSAO' , 'D' , 8 )
+	oStruSC7:AddField( 'C7_FORNECE' , 'C7_FORNECE' , 'C7_FORNECE' , 'C' , 6 )
+	oStruSC7:AddField( 'C7_LOJA'    , 'C7_LOJA'    , 'C7_LOJA'    , 'C' , 2 )
+	oStruSC7:AddField(;
+		"C7_XFORNE",;                                                           // [01]  C   Titulo do campo //"Cod. Revisão"
+	"C7_XFORNE",;                                                               // [02]  C   ToolTip do campo //"Cod. Revisão"
+	"C7_XFORNE",;                                                               // [03]  C   Id do Field
+	"C",;                                                                       // [04]  C   Tipo do campo
+	40,;                                                                        // [05]  N   Tamanho do campo
+	0,;                                                                         // [06]  N   Decimal do campo
+	Nil,;                                                                       // [07]  B   Code-block de validação do campo
+	Nil,;                                                                       // [08]  B   Code-block de validação When do campo
+	{},;                                                                        // [09]  A   Lista de valores permitido do campo
+	.F.,;                                                                       // [10]  L   Indica se o campo tem preenchimento obrigatório
+	{|oModel| Posicione("SA2",1,FWxFilial("SA2");
+		+ SC7->C7_FORNECE;
+		+ SC7->C7_LOJA,"A2_NOME")},;        // [11]  B   Code-block de inicializacao do campo
+	.F.,;                                                                       // [12]  L   Indica se trata-se de um campo chave
+	.F.,;                                                                       // [13]  L   Indica se o campo pode receber valor em uma operação de update.
+	.T.)                                                                        // [14]  L   Indica se o campo é virtual
+
 	// Documentos amarrado com Pedido
 	oModel:AddGrid("SD1DETAIL", "SC7MASTER", oStruSD1)
 
@@ -89,25 +111,88 @@ Static Function ViewDef()
 	oView:AddGrid( "VIEW_SE2", oStruSE2, "SE2DETAIL")
 
 	For nX := 1 to Len(aSC7)
-		IIF(aSC7[nX] $ "C7_ITEM|C7_PRODUTO|C7_UM|C7_QUANT|C7_PRECO|C7_TOTAL|C7_LOJA|C7_COND|C7_NUM",,oStruSC7:RemoveField(aSC7[nX]))
+		IIF(aSC7[nX] $ "C7_ITEM|C7_PRODUTO|C7_FORNECE|C7_UM|C7_XFORNE|C7_QUANT|C7_PRECO|C7_TOTAL|C7_EMISSAO|C7_LOJA|C7_COND|C7_NUM",,oStruSC7:RemoveField(aSC7[nX]))
 	Next
 
-	oStruTRB1:AddField(;
-		"Data Envio",;                                                                                   // [01]  C   Titulo do campo //"Tip. Doc."
-	"Data Envio",;                                                                                   // [02]  C   ToolTip do campo //"Tip. Doc."
-	"DATAINF",;                                                                                  // [03]  C   Id do Field
-	"D",;                                                                                       // [04]  C   Tipo do campo
-	08,;                                                                                        // [05]  N   Tamanho do campo
-	0,;                                                                                         // [06]  N   Decimal do campo
-	Nil,;                                                                                       // [07]  B   Code-block de validação do campo
-	Nil,;                                                                                       // [08]  B   Code-block de validação When do campo
-	{},;                                                                                        // [09]  A   Lista de valores permitido do campo
-	.F.,;                                                                                       // [10]  L   Indica se o campo tem preenchimento obrigatório
-	Nil,;                                                                                       // [11]  B   Code-block de inicializacao do campo
-	.F.,;                                                                                       // [12]  L   Indica se trata-se de um campo chave
-	.F.,;                                                                                       // [13]  L   Indica se o campo pode receber valor em uma operação de update.
-	.F.)
+	oStruSC7:AddField(;
+		"C7_FORNECE",;        // [01]  C   Nome do Campo
+	"6",;                      // [02]  C   Ordem
+	"Fornecedor  ",;            // [03]  C   Titulo do campo //"Tip. Doc."
+	"Fornecedor  ",;            // [04]  C   Descricao do campo //"Tip. Doc."
+	Nil,;                     // [05]  A   Array com Help
+	"C",;                     // [06]  C   Tipo do campo
+	"",;                      // [07]  C   Picture
+	Nil,;                     // [08]  B   Bloco de PictTre Var
+	Nil,;                     // [09]  C   Consulta F3
+	.F.,;                     // [10]  L   Indica se o campo é alteravel
+	Nil,;                     // [11]  C   Pasta do campo
+	Nil,;                	  // [12]  C   Agrupamento do campo
+	Nil,;                     // [13]  A   Lista de valores permitido do campo (Combo)
+	Nil,;                     // [14]  N   Tamanho maximo da maior opção do combo
+	Nil,;                     // [15]  C   Inicializador de Browse
+	Nil,;                     // [16]  L   Indica se o campo é virtual
+	Nil,;                     // [17]  C   Picture Variavel
+	Nil)                      // [18]  L   Indica pulo de linha após o campo
 
+	oStruSC7:AddField(;
+		"C7_XFORNE",;        // [01]  C   Nome do Campo
+	"7",;                      // [02]  C   Ordem
+	"Nome Forne  ",;            // [03]  C   Titulo do campo //"Tip. Doc."
+	"Nome Forne  ",;            // [04]  C   Descricao do campo //"Tip. Doc."
+	Nil,;                     // [05]  A   Array com Help
+	"C",;                     // [06]  C   Tipo do campo
+	"",;                      // [07]  C   Picture
+	Nil,;                     // [08]  B   Bloco de PictTre Var
+	Nil,;                     // [09]  C   Consulta F3
+	.F.,;                     // [10]  L   Indica se o campo é alteravel
+	Nil,;                     // [11]  C   Pasta do campo
+	Nil,;                	  // [12]  C   Agrupamento do campo
+	Nil,;                     // [13]  A   Lista de valores permitido do campo (Combo)
+	Nil,;                     // [14]  N   Tamanho maximo da maior opção do combo
+	Nil,;                     // [15]  C   Inicializador de Browse
+	.T.,;                     // [16]  L   Indica se o campo é virtual
+	Nil,;                     // [17]  C   Picture Variavel
+	Nil)                      // [18]  L   Indica pulo de linha após o campo
+
+	oStruSC7:AddField(;
+		"C7_LOJA",;        // [01]  C   Nome do Campo
+	"8",;                      // [02]  C   Ordem
+	"Loja  ",;          // [03]  C   Titulo do campo //"Tip. Doc."
+	"Loja  ",;          // [04]  C   Descricao do campo //"Tip. Doc."
+	Nil,;                     // [05]  A   Array com Help
+	"C",;                     // [06]  C   Tipo do campo
+	"",;                      // [07]  C   Picture
+	Nil,;                     // [08]  B   Bloco de PictTre Var
+	Nil,;                     // [09]  C   Consulta F3
+	.F.,;                     // [10]  L   Indica se o campo é alteravel
+	Nil,;                     // [11]  C   Pasta do campo
+	Nil,;                	  // [12]  C   Agrupamento do campo
+	Nil,;                     // [13]  A   Lista de valores permitido do campo (Combo)
+	Nil,;                     // [14]  N   Tamanho maximo da maior opção do combo
+	Nil,;                     // [15]  C   Inicializador de Browse
+	Nil,;                     // [16]  L   Indica se o campo é virtual
+	Nil,;                     // [17]  C   Picture Variavel
+	Nil)                      // [18]  L   Indica pulo de linha após o campo
+
+	oStruSC7:AddField(;
+		"C7_EMISSAO",;        // [01]  C   Nome do Campo
+	"9",;                      // [02]  C   Ordem
+	"Dt. Emissao  ",;          // [03]  C   Titulo do campo //"Tip. Doc."
+	"Dt. Emissao  ",;          // [04]  C   Descricao do campo //"Tip. Doc."
+	Nil,;                     // [05]  A   Array com Help
+	"C",;                     // [06]  C   Tipo do campo
+	"",;                      // [07]  C   Picture
+	Nil,;                     // [08]  B   Bloco de PictTre Var
+	Nil,;                     // [09]  C   Consulta F3
+	.F.,;                     // [10]  L   Indica se o campo é alteravel
+	Nil,;                     // [11]  C   Pasta do campo
+	Nil,;                	  // [12]  C   Agrupamento do campo
+	Nil,;                     // [13]  A   Lista de valores permitido do campo (Combo)
+	Nil,;                     // [14]  N   Tamanho maximo da maior opção do combo
+	Nil,;                     // [15]  C   Inicializador de Browse
+	Nil,;                     // [16]  L   Indica se o campo é virtual
+	Nil,;                     // [17]  C   Picture Variavel
+	Nil)                      // [18]  L   Indica pulo de linha após o campo
 
 	oView:CreateFolder('ABAS')
 	oView:AddSheet('ABAS', 'ABA_SC7', 'Pedido_de_Compra')
