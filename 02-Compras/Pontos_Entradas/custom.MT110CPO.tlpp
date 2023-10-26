@@ -1,0 +1,55 @@
+#INCLUDE "TOTVS.CH"
+
+User Function CPFFS002(nQuant,nValor,nTotGeral,cProduto)
+
+	Local cAlias := GetNextAlias()
+	Local cQuery := ""
+
+	if (nQuant > 0 .Or. nValor > 0)
+
+		cAlias := GetNextAlias()
+		cQuery := " SELECT Z1_LIMITE FROM SZ1990 WHERE Z1_PRODUTO = " + "?" + " "
+
+		cQuery := ChangeQuery(cQuery)
+		oQueryZZ1 := FWPreparedStatement():New(cQuery)
+
+		oQuery:SetString(1, cProduto)
+
+		cQuery := oQueryZZ1:GetFixQuery()
+
+		cAlias := MPSYSOpenQuery(cQuery)
+
+		if( cAlias->Z1_LIMITE > 0 )
+			If(nQuant > 0 .And. nValor > 0)
+				nTotGeral := nTotGeral + (nQuant * nValor)
+			Elseif(nQuant > 0 .Or. nValor = 0)
+				nTotGeral := nTotGeral + nQuant
+			Elseif(nQuant = 0 .Or. nValor > 0)
+				nTotGeral := nTotGeral + nValor
+			endif
+		Else
+			FWAlertInfo("Nao foi possivel atribuir o valor pois o Limite do do produto ja foi zerado ou o valor colocado foi acima do que o produto pode conter","LIMITE ZERADO // VALOR ACIMA DO LIMITE")
+		endif
+	endif
+
+Return (nTotGeral)
+
+User Function CPFFS003(nQuant,nValor,nTotItem,cProduto)
+
+	If(nQuant > 0 .And. nValor > 0)
+		nTotItem := nQuant * nValor
+	Elseif(nQuant > 0 .Or. nValor = 0)
+		nTotItem := nQuant
+	Elseif(nQuant = 0 .Or. nValor > 0)
+		nTotItem := nValor
+	endif
+
+Return (nTotItem)
+
+// U_CPFFS003(M->C1_QUANT,M->C1_VUNIT,M->C1_TOTITEM)
+
+User Function CPFFS004()
+
+
+
+Return

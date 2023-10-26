@@ -18,61 +18,13 @@
 			"label": "xxx"
 		},
 		{
-			"label": "U_CRMA02FF"
-		},
-		{
-			"label": "APSDU"
-		},
-		{
-			"label": "U_adir"
-		},
-		{
-			"label": "u_CALCULA"
-		},
-		{
-			"label": "u_GENA01AA"
-		},
-		{
-			"label": "u_MT410TOK"
-		},
-		{
-			"label": "u_teste1"
-		},
-		{
 			"label": "SIGACFG"
 		},
 		{
 			"label": "SIGAMDI"
 		},
 		{
-			"label": "U_ITEM"
-		},
-		{
-			"label": "U_OMSA01FF"
-		},
-		{
-			"label": "U_OMSA03FF"
-		},
-		{
-			"args": [
-				"]"
-			],
-			"label": "xxx"
-		},
-		{
-			"label": "U_FFS001"
-		},
-		{
-			"label": "u_KVGet"
-		},
-		{
-			"label": "U_FilPut"
-		},
-		{
-			"label": "U_ChatLogin"
-		},
-		{
-			"label": "U_FFS001FF"
+			"label": "SIGACOM"
 		}
 	],
 	"lastProgramExecuted": "SIGAMDI"
