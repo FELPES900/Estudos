@@ -1,0 +1,107 @@
+#INCLUDE "TOTVS.CH"
+#INCLUDE "TLPP-CORE.TH"
+#INCLUDE "TLPP-REST.TH"
+#INCLUDE "FWMVCDEF.CH"
+#INCLUDE "TBICONN.CH"
+
+Static cKey := "b44de0df9003385ea2431e35befff44fa0a3d51a"
+
+/*/{Protheus.doc} U_JWTTOKEN
+Criaçãpo de token usando JWT para segurança
+@type function
+@version 12.23.10
+@author Felipe Fraga
+@since 10/01/2024
+@return variant, return
+/*/@POST("jwt/token")
+Function U_JWTTOKEN()
+
+    Local oPayload := JsonObject():New() as Json
+    Local oJwt := JsonObject():new() as Json
+    Local jResponse := JsonObject():New()
+
+    if SELECT("SX2") == 0 //Para ser executado pelo usuario
+      PREPARE ENVIRONMENT EMPRESA "99" FILIAL "01"
+    endif
+
+    oPayload["iss"] := '000000'                                         // Usuario que fez o envio
+    // oPayload["exp"] := FwTimeStamp(4, Date() , IncTime(time(),0,0,0) )  // Tempo que a token espira -- Agora tambem pode ser falado quanto tempo pode ser expirado a token
+    oPayload["exp"] := FwTimeStamp(4, Date()+1 , Time() )  // Tempo que a token espira -- Agora tambem pode ser falado quanto tempo pode ser expirado a token
+    oPayload["iat"] := FwTimeStamp(4, Date() , Time() )                 // Dia que a token foi criada 
+    oPayload["sub"] := "test"                                           // Sujeito
+
+    oJwt := Jwt():New(cKey, 'SHA512')
+
+    cToken := oJwt:Sign(oPayload)
+
+    jResponse["TOKEN_CRIADA"] := cToken
+
+    oRest:setResponse(jResponse)
+
+    if SELECT("SX2") > 0
+	  	RESET ENVIRONMENT
+  	endif
+
+Return
+
+/*/{Protheus.doc} U_JWTVALID
+Validação da token que foi gerada
+@type function
+@version  12.23.10
+@author Felipe Fraga
+@since 10/01/2024
+@return variant, return
+/*/@Get("jwt/valida/token")
+Function U_JWTVALID()
+
+    local cTime                           as Character
+    local cTimeStamp                      as Character
+    local dDate                           as date
+    Local jArray    := JsonOBject():New() as Json
+    Local jHeader   := Nil                as Json
+    Local jResponse := JsonObject():New() as Json
+    local nDate                           as numeric
+    local nHour                           as numeric
+    local nMin                            as numeric
+    local nTime                           as numeric
+    Local oJwt      := JsonObject():New() as Json
+    Local oPay      := JsonOBject():New() as Json
+
+    //É usado o SX6 para verificar o horário de verão
+    RpcSetEnv("99","01")
+
+    oJwt := Jwt():New(cKey, 'SHA512')
+
+    jHeader := oRest:getHeaderRequest()
+
+    If oJwt:Verify(Right(jHeader['Authorization'],LEN(jHeader['Authorization']) - RAT(" ", jHeader['Authorization'])), @oPay)
+        jArray:FromJson(oPay:toJson())
+
+        cTimeStamp := jArray['exp']
+
+        nDate := Val(cTimeStamp) / 60 / 60 / 24
+        nTime := nDate - Int(nDate)
+        nDate := Int(nDate)
+        nHour := nTime * 24
+        nMin := (nHour - Int(nHour)) * 60
+        nHour := Int(nHour) -4 //TIMEZONE, pode verificar esse cálculo de outra forma...
+        nMin := Int(nMin)
+
+        dDate := CtoD("01/01/1970") + nDate
+        cTime := StrZero(nHour, 2) + ":" + StrZero(nMin, 2) + ":" + StrZero(nMin, 2)
+
+        ConOut(dDate, cTime)
+        if cTime > TIME() .And. dDate >= Date()
+            jResponse['STATUS'] := "Sucesso"
+            jResponse['MESSAGE'] := "Token Valida"
+        else
+            jResponse['STATUS'] := "ERROR"
+            jResponse['MESSAGE'] := "Token Expirada"
+        endif
+    EndIf
+
+    oRest:setResponse(jResponse)
+
+    RpcClearEnv()
+
+Return
