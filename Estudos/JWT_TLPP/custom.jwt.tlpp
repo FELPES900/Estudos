@@ -16,27 +16,53 @@ Criaçãpo de token usando JWT para segurança
 /*/@POST("jwt/token")
 Function U_JWTTOKEN()
 
-    Local oPayload := JsonObject():New() as Json
-    Local oJwt := JsonObject():new() as Json
-    Local jResponse := JsonObject():New()
+    Local aAllusers := FWSFALLUSERS()     as Array
+    Local aBody     := {}                 as Array
+    Local aParam    := {}                 as Array
+    Local jResponse := JsonObject():New() as Json
+    Local lOk       := .F.                as Logical
+    Local nX        := 0                  as Numeric
+    Local oJson     := JsonOBject():New() as Json
+    Local oJwt      := JsonObject():New() as Json
+    Local oPayload  := JsonObject():New() as Json
 
     if SELECT("SX2") == 0 //Para ser executado pelo usuario
       PREPARE ENVIRONMENT EMPRESA "99" FILIAL "01"
     endif
 
-    oPayload["iss"] := '000000'                                         // Usuario que fez o envio
-    // oPayload["exp"] := FwTimeStamp(4, Date() , IncTime(time(),0,0,0) )  // Tempo que a token espira -- Agora tambem pode ser falado quanto tempo pode ser expirado a token
-    oPayload["exp"] := FwTimeStamp(4, Date()+1 , Time() )  // Tempo que a token espira -- Agora tambem pode ser falado quanto tempo pode ser expirado a token
-    oPayload["iat"] := FwTimeStamp(4, Date() , Time() )                 // Dia que a token foi criada 
-    oPayload["sub"] := "test"                                           // Sujeito
+    oJson:FromJson(oRest:GetBobyRequest())
+    aBody := oJson:GetNames()
 
-    oJwt := Jwt():New(cKey, 'SHA512')
+    For nX := 1 to Len(aAllusers)
+        if oJson[aBody[1]] = aAllusers[nX][3]
+            lOk := .T.
+            aParam := aAllusers[nX][2]
+            aParam := oJson[aBody[2]]
+        else
+            lOk := .F.
+        endif
+    Next
 
-    cToken := oJwt:Sign(oPayload)
+    if (lOk .And. PswSeek(aParam[1]) .And. PswName(aParam[2]))
 
-    jResponse["TOKEN_CRIADA"] := cToken
+        oPayload["user"] := aParam[1] // Usuario que esta fazendo Login 
+        oPayload["pass"] := aParam[2]      // Senha do Usuario
+        oPayload["exp"] := FwTimeStamp(4, Date() , IncTime(time(),0,0,0) )  // Tempo que a token espira -- Agora tambem pode ser falado quanto tempo pode ser expirado a token
+        oPayload["iat"] := FwTimeStamp(4, Date() , Time() )                 // Dia que a token foi criada 
+        oPayload["sub"] := "test"                                           // Sujeito
 
-    oRest:setResponse(jResponse)
+        oJwt := Jwt():New(cKey, 'SHA512')
+
+        cToken := oJwt:Sign(oPayload)
+
+        jResponse["Menssage"] := "Sucessos"
+        jResponse["TOKEN_CRIADA"] := cToken
+
+        oRest:setResponse(jResponse)
+    Else
+        jResponse["Menssage"] := "Usuario Invalido ou Senha invaldida"
+        oRest:setResponse(jResponse)
+    endif
 
     if SELECT("SX2") > 0
 	  	RESET ENVIRONMENT
@@ -54,16 +80,10 @@ Validação da token que foi gerada
 /*/@Get("jwt/valida/token")
 Function U_JWTVALID()
 
-    local cTime                           as Character
-    local cTimeStamp                      as Character
-    local dDate                           as date
+    local aTimeStamp                      as Array
     Local jArray    := JsonOBject():New() as Json
     Local jHeader   := Nil                as Json
     Local jResponse := JsonObject():New() as Json
-    local nDate                           as numeric
-    local nHour                           as numeric
-    local nMin                            as numeric
-    local nTime                           as numeric
     Local oJwt      := JsonObject():New() as Json
     Local oPay      := JsonOBject():New() as Json
 
@@ -77,18 +97,7 @@ Function U_JWTVALID()
     If oJwt:Verify(Right(jHeader['Authorization'],LEN(jHeader['Authorization']) - RAT(" ", jHeader['Authorization'])), @oPay)
         jArray:FromJson(oPay:toJson())
 
-        cTimeStamp := jArray['exp']
-
-        nDate := Val(cTimeStamp) / 60 / 60 / 24
-        nTime := nDate - Int(nDate)
-        nDate := Int(nDate)
-        nHour := nTime * 24
-        nMin := (nHour - Int(nHour)) * 60
-        nHour := Int(nHour) -4 //TIMEZONE, pode verificar esse cálculo de outra forma...
-        nMin := Int(nMin)
-
-        dDate := CtoD("01/01/1970") + nDate
-        cTime := StrZero(nHour, 2) + ":" + StrZero(nMin, 2) + ":" + StrZero(nMin, 2)
+        aTimeStamp := oJwt:ValidTok(jArray['exp'])
 
         ConOut(dDate, cTime)
         if cTime > TIME() .And. dDate >= Date()
@@ -105,3 +114,9 @@ Function U_JWTVALID()
     RpcClearEnv()
 
 Return
+
+/*
+UsrExist(RetCodUsr()) -- Retorna se o usuario existe
+
+IIF(PswSeek(RetCodUsr()) .And. PswName(""),.T.,.F.) -- Valida se o usuario que está fazendo o login está correto
+*/
