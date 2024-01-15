@@ -66,6 +66,11 @@ Method Verify(cToken, oPay) class Jwt
     cTokenValid := cHeader+"."+cPayload+"."+cSign
     lValid := cToken == cTokenValid
 
+    If lValid
+        cPay := Decode64(cPayload)
+        oPay:FromJson(cPay)
+    EndIf  
+
 Return lValid
 
 Method ValidTok(cData) class Jwt
@@ -87,9 +92,25 @@ Method ValidTok(cData) class Jwt
     dDate := CtoD("01/01/1970") + nDate
     cTime := StrZero(nHour, 2) + ":" + StrZero(nMin, 2) + ":" + StrZero(nMin, 2)
 
-Return (dDate,cTime)
+Return ({dDate,cTime})
 
 // Ainda em andamento
-Method ValidUsu() class Jwt
+Method ValidUsu(aBody,oJson) class Jwt
 
-Return
+    Local nX := 0 as Numeric
+    Local aAllusers := FWSFALLUSERS()     as Array
+    Local aParam := {} as Array
+
+    For nX := 1 to Len(aAllusers)
+        if oJson[aBody[1]] = aAllusers[nX][3]
+            lOk := .T.
+            aAdd(aParam,aAllusers[nX][2])
+            aAdd(aParam,oJson[aBody[2]])
+        else
+            lOk := .F.
+        endif
+    Next
+
+    IIF(PswSeek(aParam[1]) .And. PswName(aParam[2]),lOk := .T.,lOK := .F.)
+
+Return lOk

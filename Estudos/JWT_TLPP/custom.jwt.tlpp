@@ -16,12 +16,8 @@ Criaçãpo de token usando JWT para segurança
 /*/@POST("jwt/token")
 Function U_JWTTOKEN()
 
-    Local aAllusers := FWSFALLUSERS()     as Array
     Local aBody     := {}                 as Array
-    Local aParam    := {}                 as Array
     Local jResponse := JsonObject():New() as Json
-    Local lOk       := .F.                as Logical
-    Local nX        := 0                  as Numeric
     Local oJson     := JsonOBject():New() as Json
     Local oJwt      := JsonObject():New() as Json
     Local oPayload  := JsonObject():New() as Json
@@ -29,37 +25,29 @@ Function U_JWTTOKEN()
     if SELECT("SX2") == 0 //Para ser executado pelo usuario
       PREPARE ENVIRONMENT EMPRESA "99" FILIAL "01"
     endif
-
-    oJson:FromJson(oRest:GetBobyRequest())
+    
+    oJwt := Jwt():New(cKey, 'SHA512')
+    
+    oJson:FromJson(oRest:GetBodyRequest())
     aBody := oJson:GetNames()
 
-    For nX := 1 to Len(aAllusers)
-        if oJson[aBody[1]] = aAllusers[nX][3]
-            lOk := .T.
-            aParam := aAllusers[nX][2]
-            aParam := oJson[aBody[2]]
-        else
-            lOk := .F.
-        endif
-    Next
-
-    if (lOk .And. PswSeek(aParam[1]) .And. PswName(aParam[2]))
+    if (oJwt:ValidUsu(aBody,oJson))
 
         oPayload["user"] := aParam[1] // Usuario que esta fazendo Login 
         oPayload["pass"] := aParam[2]      // Senha do Usuario
-        oPayload["exp"] := FwTimeStamp(4, Date() , IncTime(time(),0,0,0) )  // Tempo que a token espira -- Agora tambem pode ser falado quanto tempo pode ser expirado a token
+        oPayload["exp"] := FwTimeStamp(4, Date()+1 , IncTime(time(),0,0,0) )  // Tempo que a token espira -- Agora tambem pode ser falado quanto tempo pode ser expirado a token
         oPayload["iat"] := FwTimeStamp(4, Date() , Time() )                 // Dia que a token foi criada 
         oPayload["sub"] := "test"                                           // Sujeito
-
-        oJwt := Jwt():New(cKey, 'SHA512')
 
         cToken := oJwt:Sign(oPayload)
 
         jResponse["Menssage"] := "Sucessos"
         jResponse["TOKEN_CRIADA"] := cToken
 
+        oRest:setStatusCode(200)
         oRest:setResponse(jResponse)
     Else
+        oRest:setStatusCode(401)
         jResponse["Menssage"] := "Usuario Invalido ou Senha invaldida"
         oRest:setResponse(jResponse)
     endif
@@ -99,15 +87,28 @@ Function U_JWTVALID()
 
         aTimeStamp := oJwt:ValidTok(jArray['exp'])
 
-        ConOut(dDate, cTime)
-        if cTime > TIME() .And. dDate >= Date()
+        if (aTimeStamp[1] >= Date() .And. aTimeStamp[2] > TIME()) .Or. (aTimeStamp[1] >= Date() .And. aTimeStamp[2] < TIME())
+            oRest:setStatusCode(200)
             jResponse['STATUS'] := "Sucesso"
             jResponse['MESSAGE'] := "Token Valida"
         else
+            oRest:setStatusCode(401)
             jResponse['STATUS'] := "ERROR"
             jResponse['MESSAGE'] := "Token Expirada"
         endif
+    else
+        oRest:setStatusCode(401)
+        jResponse["STATUS"] := "ERROR"
+        jResponse["MESSAGE"] := "Token Invalida"
     EndIf
+
+    if( jHeader <> Nil )
+		//Definindo o header de resposta
+		oRest:setKeyHeaderResponse('Connection','Keep-Alive')
+		oRest:setKeyHeaderResponse('accept-encoding','gzip,deflate')
+		oRest:setKeyHeaderResponse('accept','/')
+		oRest:setKeyHeaderResponse('User-Agent','Thunder Client (https://www.thunderclient.com)')
+	Endif
 
     oRest:setResponse(jResponse)
 
