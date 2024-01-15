@@ -33,8 +33,8 @@ Function U_JWTTOKEN()
 
     if (oJwt:ValidUsu(aBody,oJson))
 
-        oPayload["user"] := aParam[1] // Usuario que esta fazendo Login 
-        oPayload["pass"] := aParam[2]      // Senha do Usuario
+        oPayload["user"] := oJson[aBody[2]] // Usuario que esta fazendo Login 
+        oPayload["pass"] := oJson[aBody[2]]      // Senha do Usuario
         oPayload["exp"] := FwTimeStamp(4, Date()+1 , IncTime(time(),0,0,0) )  // Tempo que a token espira -- Agora tambem pode ser falado quanto tempo pode ser expirado a token
         oPayload["iat"] := FwTimeStamp(4, Date() , Time() )                 // Dia que a token foi criada 
         oPayload["sub"] := "test"                                           // Sujeito
