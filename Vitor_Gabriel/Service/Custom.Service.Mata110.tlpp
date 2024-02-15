@@ -1,0 +1,48 @@
+#INCLUDE 'TOTVS.CH'
+#INCLUDE 'TLPP-CORE.TH'
+#INCLUDE 'TLPP-REST.TH'
+
+/*/{Protheus.doc} ControllerMATA110
+Controlodaroa de Solitações de Compras
+@type class
+@version 12.23.10
+@author Felipe Fraga
+@since 15/02/2024
+/*/
+Class ControllerMATA110
+    Public Data oService as Objcet
+    Public Data jQueryParams as Json
+    Public Data jQueryRequest as Json
+
+    Public Method New() Constructor
+    @Get("shoppping/resquestview/:id")
+    Public Method RequestView()
+    @Get("shopping/requestviews")
+    Public Method RequestViews()
+    @Put("shopping/creatingrequest")
+    Public Method CreatingRequest()
+EndClass
+
+/*/{Protheus.doc} ControllerMATA110::New
+Metodo contrutor da Class
+@type method
+@version 12.23.10
+@author Felipe Fraga
+@since 15/02/2024
+@return variant, return
+/*/
+Method New() Class ControllerMATA110
+    self:jQueryParams := oRest:getPathParamsRequest()
+    self:jQueryRequest := oRest:GetQueryRequest()
+Return
+
+/*/{Protheus.doc} ControllerMATA110s::RequestView
+Visualização de um pedido passado por rota
+@type method
+@version 12.23.10
+@author Felipe Fraga
+@since 15/02/2024
+@return variant, return
+/*/
+Method RequestView() Class ControllerMATA110s
+Return
