@@ -1,48 +1,50 @@
-#INCLUDE 'TOTVS.CH'
-#INCLUDE 'TLPP-CORE.TH'
-#INCLUDE 'TLPP-REST.TH'
+#INCLUDE "TLPP-CORE.TH"
 
-/*/{Protheus.doc} ControllerMATA110
-Controlodaroa de Solitações de Compras
-@type class
-@version 12.23.10
-@author Felipe Fraga
-@since 15/02/2024
-/*/
-Class ControllerMATA110
-    Public Data oService as Objcet
-    Public Data jQueryParams as Json
-    Public Data jQueryRequest as Json
-
+Class ServiceMATA110 From FWAdapterBaseV2
     Public Method New() Constructor
-    @Get("shoppping/resquestview/:id")
-    Public Method RequestView()
-    @Get("shopping/requestviews")
-    Public Method RequestViews()
-    @Put("shopping/creatingrequest")
-    Public Method CreatingRequest()
+    Public Method GetSolicitacao()
+    Public Method GetSolicitacoes()
 EndClass
 
-/*/{Protheus.doc} ControllerMATA110::New
-Metodo contrutor da Class
-@type method
-@version 12.23.10
-@author Felipe Fraga
-@since 15/02/2024
-@return variant, return
-/*/
-Method New() Class ControllerMATA110
-    self:jQueryParams := oRest:getPathParamsRequest()
-    self:jQueryRequest := oRest:GetQueryRequest()
+Method New() Class ServiceMATA110
+    _Super:New("Get")
 Return
 
-/*/{Protheus.doc} ControllerMATA110s::RequestView
-Visualização de um pedido passado por rota
-@type method
-@version 12.23.10
-@author Felipe Fraga
-@since 15/02/2024
-@return variant, return
-/*/
-Method RequestView() Class ControllerMATA110s
+Method GetSolicitacao() Class ServiceMATA110
 Return
+
+Method GetSolicitacoes() Class ServiceMATA110
+    Local jReponse := JsonObject():New()
+
+	If !(Empty(queryRequest['page']))
+		self:setPage(Val(queryRequest['page']))
+	EndIf
+	If !(Empty(queryRequest['pagesize']))
+		self:setPageSize(Val(queryRequest['pagesize']))
+	EndIf
+	If !(Empty(queryRequest['order']))
+		self:setOrderQuery(queryRequest['order'])
+	EndIf
+
+	U_RequestsFieldMapping(Self)
+	self:SetQuery(u_apiSolicitacoesQuery())
+	self:SetWhere(u_apiSolicitacoesWhere(queryRequest))
+	self:SetOrder(u_apiSolicitacoesOrder(queryRequest['order']))
+
+	If self:Execute(.T.)
+		self:FillGetResponse()
+	EndIf
+
+    If self:lOk
+    	jReponse['result']   := .T.
+		jReponse['code']     := ::GetCode()
+		jReponse['response'] := JsonObject():New()
+		jReponse['response']:FromJson(EncodeUTF8(FwNoAccent(::getJSONResponse())))
+    else        
+		jReponse['result']  := .F.
+		jReponse['code']    := ::GetCode()
+		jReponse['message'] := EncodeUTF8(FwNoAccent(::GetMessage()))
+    Endif
+
+    self:DeActivate()
+Return jReponse

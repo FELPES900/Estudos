@@ -1,0 +1,41 @@
+#INCLUDE 'TOTVS.CH'
+#INCLUDE 'TLPP-CORE.TH'
+#INCLUDE 'TLPP-REST.TH'
+
+@Get("shopping/requestview/:id")
+Function U_RequestView()
+    Local oService := Nil as Object
+    Local jResponse := Nil as Json
+
+    oService := ServiceMATA110():New()
+    jResponse := oService:GetSolicitacao(oRest:getPathParamsRequest(),oRest:getQueryRequest())
+
+	oRest:setStatusCode(jResponse['code'])
+	oRest:setResponse(jResponse:ToJson())
+    oRest:setKeyHeaderResponse("Content-Type","application/json")
+	oRest:setKeyHeaderResponse('accept-encoding','gzip,deflate')
+	oRest:setKeyHeaderResponse('accept','/')
+	oRest:setKeyHeaderResponse('User-Agent','Thunder Client (https://www.thunderclient.com)')
+Return
+
+@Get("shopping/requestviews")
+Function U_RequestViews()
+    Local oService := Nil as Object
+    Local jResponse := Nil as Json
+
+    oService := ServiceMATA110():New()
+    jResponse := oService:GetSolicitacoes(oRest:getPathParamsRequest(),oRest:getQueryRequest())
+
+	oRest:setStatusCode(jResponse['code'])
+	oRest:setResponse(jResponse:ToJson())
+    oRest:setKeyHeaderResponse("Content-Type","application/json")
+	oRest:setKeyHeaderResponse('accept-encoding','gzip,deflate')
+	oRest:setKeyHeaderResponse('accept','/')
+	oRest:setKeyHeaderResponse('User-Agent','Thunder Client (https://www.thunderclient.com)')
+Return
+
+@Put("shopping/creatingrequest")
+Function U_CreatingRequest()
+    Local oService := Nil as Object
+    Local jResponse := Nil as Json
+Return
