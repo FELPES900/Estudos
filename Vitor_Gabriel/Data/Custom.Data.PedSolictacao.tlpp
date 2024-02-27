@@ -31,3 +31,10 @@ Function U_WhereOfProducts(jParamRequest as Json) as Character
     cWhere := " SC1.D_E_L_E_T_ = '' AND C1_FILIAL = '" +xFilial("SC1")+ "' "
     cWhere += " AND C1_NUM = '" +jParamRequest['c1_num']+ "' "
 Return cWhere
+
+Function U_OrderOfProducts(jQueryReqeuest as Json)
+    Local cOrder := "" as Character
+    Default jQueryReqeuest['order'] := ""
+
+    cOrder := IIF(Empty(jQueryReqeuest['order']),"C1_FILIAL,C1_NUM,C1_EMISSAO",Upper(jQueryReqeuest['order']))
+Return cOrder

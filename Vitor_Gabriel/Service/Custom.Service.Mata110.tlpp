@@ -26,7 +26,7 @@ Method GetSolicitacao(jParamRequest as Json, as jQueryReqeuest as Json) Class Se
 	U_RequestProductMapping(self)
 	self:SetQuery(U_ProductQuery())
 	self:SetWhere(U_WhereOfProducts(jParamRequest))
-	self:SetOrder(U_OrderOfRequests(jQueryReqeuest))
+	self:SetOrder(U_OrderOfProducts(jQueryReqeuest))
 Return
 
 Method GetSolicitacoes(jQueryReqeuest as Json) Class ServiceMATA110
