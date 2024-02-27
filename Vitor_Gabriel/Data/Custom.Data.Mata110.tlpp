@@ -17,3 +17,61 @@ Function U_RequestsFieldMapping(oSelf as Object)
         Endif
     Next
 Return oSelf
+
+Function U_RequestsConsultation() as Character
+    Local cQuery
+    
+    cQuery := " SELECT"
+    cQuery += "     #QueryFields#"
+    cQuery += " FROM ("
+    cQuery += "     SELECT"
+    cQuery += "         C1_FILIAL,C1_NUM,C1_CC,"
+    cQuery += "         C1_CONTA,C1_ITEMCTA,C1_CLVL,"
+    cQuery += "         C1_OBS,C1_DATPRF,C1_FORNECE,"
+    cQuery += "         C1_LOJA,C1_EMISSAO,COUNT(C1_QUANT) C1_QUANT,"
+    cQuery += "         SUM(C1_PRECO) C1_PRECO, SUM(C1_TOTAL) C1_TOTAL,"
+    cQuery += "         CR_NUM,CR_USER,CR_STATUS,CR_DATALIB
+    cQuery += "     FROM " + RetSqlName('SC1') + " SC1 "
+    cQuery += "     LEFT JOIN " + RetSqlName('SCR') + " SCR ON"
+    cQuery += "         SCR.D_E_L_E_T_ = ''"
+    cQuery += "         AND C1_FILIAL = CR_FILIAL"
+    cQuery += "         AND C1_NUM = CR_NUM"
+    cQuery += "         AND CR_TIPO = 'SC'"
+    cQuery += "     WHERE"
+    cQuery += "         #QueryWhere#"
+    cQuery += "     GROUP BY"
+    cQuery += "         C1_FILIAL,C1_NUM,C1_CC,"
+    cQuery += "         C1_CONTA,C1_ITEMCTA,C1_CLVL,"
+    cQuery += "         C1_OBS,C1_DATPRF,C1_FORNECE,"
+    cQuery += "         C1_LOJA,C1_EMISSAO,CR_NUM,"
+    cQuery += "         CR_USER,CR_STATUS,CR_DATALIB"
+    cQuery += ") AS TBL "
+Return cQuery
+
+Function U_WhereOfRequest(jQueryRequest as Json) as Character
+    Local cWhere := "" as Character
+    Default jQueryRequest['emiissaoate'] := ""
+    Default jQueryRequest['emiissaode']  := ""
+    Default jQueryRequest['userid']      := ""
+
+    cWhere := " SC1.D_E_L_E_T_ = '' AND C1_FILIAL = '" +xFilial("SC1")+ "' "
+
+    if !Empty(jQueryRequest['userid'])
+        cWhere += " AND CR_USER = '" +jQueryRequest['userid']+ "' "
+    endif
+    
+    if !Empty(jQueryRequest['emiissaoate']) .AND. !Empty(jQueryRequest['emiissaoate'])
+        cWhere += " AND SC7.C7_EMISSSAO BETWEEN '" +jQueryRequest['emiissaode']+ "' AND '" +jQueryRequest['emiissaoate']+ "' "
+    elseif !Empty(jQueryRequest['emiissaode'])
+        cWhere += " AND SC7.C7_EMISSSAO >= '" +jQueryRequest['emiissaode']+ "' "
+    elseif !Empty(jQueryRequest['emiissaoate'])
+        cWhere += " AND SC7.C7_EMISSAO <= '" +jQueryRequest['emiissaoate']+ "' "
+    endif
+Return cWhere
+
+Function U_OrderOfRequests()
+    Local cOrder := "" as Character
+    Default jQueryReqeuest['order'] := ""
+
+    cOrder := IIF(Empty(jQueryReqeuest['order']),"C1_FILIAL,C1_NUM,C1_EMISSAO",Upper(jQueryReqeuest['order']))
+Return cOrder

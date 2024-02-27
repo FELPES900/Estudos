@@ -24,7 +24,7 @@ Function U_RequestViews()
     Local jResponse := Nil as Json
 
     oService := ServiceMATA110():New()
-    jResponse := oService:GetSolicitacoes(oRest:getPathParamsRequest(),oRest:getQueryRequest())
+    jResponse := oService:GetSolicitacoes(oRest:getQueryRequest())
 
 	oRest:setStatusCode(jResponse['code'])
 	oRest:setResponse(jResponse:ToJson())

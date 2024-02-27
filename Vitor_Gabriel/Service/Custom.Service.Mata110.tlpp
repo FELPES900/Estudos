@@ -13,23 +13,23 @@ Return
 Method GetSolicitacao() Class ServiceMATA110
 Return
 
-Method GetSolicitacoes() Class ServiceMATA110
+Method GetSolicitacoes(jQueryReqeuest as Json) Class ServiceMATA110
     Local jReponse := JsonObject():New()
 
-	If !(Empty(queryRequest['page']))
-		self:setPage(Val(queryRequest['page']))
+	If !(Empty(jQueryReqeuest['page']))
+		self:setPage(Val(jQueryReqeuest['page']))
 	EndIf
-	If !(Empty(queryRequest['pagesize']))
-		self:setPageSize(Val(queryRequest['pagesize']))
+	If !(Empty(jQueryReqeuest['pagesize']))
+		self:setPageSize(Val(jQueryReqeuest['pagesize']))
 	EndIf
-	If !(Empty(queryRequest['order']))
-		self:setOrderQuery(queryRequest['order'])
+	If !(Empty(jQueryReqeuest['order']))
+		self:setOrderQuery(jQueryReqeuest['order'])
 	EndIf
 
 	U_RequestsFieldMapping(Self)
-	self:SetQuery(u_apiSolicitacoesQuery())
-	self:SetWhere(u_apiSolicitacoesWhere(queryRequest))
-	self:SetOrder(u_apiSolicitacoesOrder(queryRequest['order']))
+	self:SetQuery(U_RequestsConsultation())
+	self:SetWhere(U_WhereOfRequest(jQueryReqeuest))
+	self:SetOrder(U_OrderOfRequests(jQueryReqeuest))
 
 	If self:Execute(.T.)
 		self:FillGetResponse()
