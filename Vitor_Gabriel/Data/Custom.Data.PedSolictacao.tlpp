@@ -1,0 +1,33 @@
+#INCLUDE "TLPP-CORE.TH"
+
+#DEFINE CAMPOS_SOLICITACAO  "C1_ITEM,C1_PRODUTO,C1_QUANT,C1_PRECO,C1_TOTAL"
+
+Function U_RequestProductMapping(oSelf as Object)
+   Local nI      := 0 as Numeric
+   Local aFields := {} as Array
+
+	aFields := StrToKarr2(CAMPOS_SOLICITACAO,",")
+	For nI := 1 To Len(fields)
+        if GetSx3Cache(fields[nI], "X3_TIPO") == "D"
+	    	oSelf:AddMapFields(GetSx3Cache(fields[nI] ,"X3_TITULO"), fields[nI],.T.,.T.,{fields[nI],  "C" , GetSx3Cache(fields[nI] ,"X3_TAMANHO"),GetSx3Cache(fields[nI] ,"X3_DECIMAL")})
+	    else
+        	oSelf:AddMapFields(GetSx3Cache(fields[nI] ,"X3_TITULO"), fields[nI],.T.,.T.,{fields[nI], GetSx3Cache(fields[nI] ,"X3_TIPO"), GetSx3Cache(fields[nI] ,"X3_TAMANHO"), GetSx3Cache(fields[nI] ,"X3_DECIMAL")})
+        Endif
+    Next
+Return oSelf
+
+Function U_ProductQuery() as Character
+    Local cQuery
+
+	cQuery := " SELECT #QueryFields#"
+	cQuery += " FROM " + RetSqlName('SC1') + " SC1 "
+	cQuery += " WHERE #QueryWhere#"
+Return cQuery
+
+Function U_WhereOfProducts(jParamRequest as Json) as Character
+    Local cWhere := ""
+    Default jParamRequest['c1_num'] := ""
+
+    cWhere := " SC1.D_E_L_E_T_ = '' AND C1_FILIAL = '" +xFilial("SC1")+ "' "
+    cWhere += " AND C1_NUM = '" +jParamRequest['c1_num']+ "' "
+Return cWhere

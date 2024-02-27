@@ -10,7 +10,23 @@ Method New() Class ServiceMATA110
     _Super:New("Get")
 Return
 
-Method GetSolicitacao() Class ServiceMATA110
+Method GetSolicitacao(jParamRequest as Json, as jQueryReqeuest as Json) Class ServiceMATA110
+    Local jReponse := JsonObject():New()
+
+	If !(Empty(jQueryReqeuest['page']))
+		self:setPage(Val(jQueryReqeuest['page']))
+	EndIf
+	If !(Empty(jQueryReqeuest['pagesize']))
+		self:setPageSize(Val(jQueryReqeuest['pagesize']))
+	EndIf
+	If !(Empty(jQueryReqeuest['order']))
+		self:setOrderQuery(jQueryReqeuest['order'])
+	EndIf
+
+	U_RequestProductMapping(self)
+	self:SetQuery(U_ProductQuery())
+	self:SetWhere(U_WhereOfProducts(jParamRequest))
+	self:SetOrder(U_OrderOfRequests(jQueryReqeuest))
 Return
 
 Method GetSolicitacoes(jQueryReqeuest as Json) Class ServiceMATA110
