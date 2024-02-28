@@ -1,21 +1,5 @@
 #INCLUDE "TLPP-CORE.TH"
 
-#DEFINE CAMPOS_SOLICITACOES "C1_FILIAL,C1_NUM,C1_CC,C1_CONTA,C1_ITEMCTA,C1_CLVL,C1_OBS,C1_DATPRF,C1_FORNECE,C1_LOJA,C1_EMISSAO,C1_QUANT,C1_PRECO,C1_TOTAL,CR_NUM,CR_USER,CR_STATUS,CR_DATALIB"
-
-Function U_RequestsFieldMapping(oSelf as Object)
-   Local nI      := 0 as Numeric
-   Local aFields := {} as Array
-
-	aFields := StrToKarr2(CAMPOS_SOLICITACOES,",")
-	For nI := 1 To Len(fields)
-        if GetSx3Cache(fields[nI], "X3_TIPO") == "D"
-	    	oSelf:AddMapFields(GetSx3Cache(fields[nI] ,"X3_TITULO"), fields[nI],.T.,.T.,{fields[nI],  "C" , GetSx3Cache(fields[nI] ,"X3_TAMANHO"),GetSx3Cache(fields[nI] ,"X3_DECIMAL")})
-	    else
-        	oSelf:AddMapFields(GetSx3Cache(fields[nI] ,"X3_TITULO"), fields[nI],.T.,.T.,{fields[nI], GetSx3Cache(fields[nI] ,"X3_TIPO"), GetSx3Cache(fields[nI] ,"X3_TAMANHO"), GetSx3Cache(fields[nI] ,"X3_DECIMAL")})
-        Endif
-    Next
-Return oSelf
-
 Function U_RequestsConsultation() as Character
     Local cQuery
     
@@ -66,10 +50,3 @@ Function U_WhereOfRequest(jQueryRequest as Json) as Character
         cWhere += " AND SC7.C7_EMISSAO <= '" +jQueryRequest['emiissaoate']+ "' "
     endif
 Return cWhere
-
-Function U_OrderOfRequests()
-    Local cOrder := "" as Character
-    Default jQueryReqeuest['order'] := ""
-
-    cOrder := IIF(Empty(jQueryReqeuest['order']),"C1_FILIAL,C1_NUM,C1_EMISSAO",Upper(jQueryReqeuest['order']))
-Return cOrder

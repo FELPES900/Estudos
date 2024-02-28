@@ -2,7 +2,7 @@
 #INCLUDE 'TLPP-CORE.TH'
 #INCLUDE 'TLPP-REST.TH'
 
-@Get("shopping/requestview/:id")
+@Get("shopping/requestview/:c1_num")
 Function U_RequestView()
     Local oService := Nil as Object
     Local jResponse := Nil as Json
@@ -38,4 +38,30 @@ Return
 Function U_CreatingRequest()
     Local oService := Nil as Object
     Local jResponse := Nil as Json
+
+    oService := ServiceMATA110():New()
+    jResponse := oService:PutCriaSolic(oRest:getPathParamsRequest(),oRest:getQueryRequest())
+
+	oRest:setStatusCode(jResponse['code'])
+	oRest:setResponse(jResponse:ToJson())
+    oRest:setKeyHeaderResponse("Content-Type","application/json")
+	oRest:setKeyHeaderResponse('accept-encoding','gzip,deflate')
+	oRest:setKeyHeaderResponse('accept','/')
+	oRest:setKeyHeaderResponse('User-Agent','Thunder Client (https://www.thunderclient.com)')
+Return
+
+@Put("shopping/deletionrequest")
+Function U_DeletionRequest()
+    Local oService := Nil as Object
+    Local jResponse := Nil as Json
+
+    oService := ServiceMATA110():New()
+    jResponse := oService:PutDelSolic(oRest:getPathParamsRequest(),oRest:getQueryRequest())
+
+	oRest:setStatusCode(jResponse['code'])
+	oRest:setResponse(jResponse:ToJson())
+    oRest:setKeyHeaderResponse("Content-Type","application/json")
+	oRest:setKeyHeaderResponse('accept-encoding','gzip,deflate')
+	oRest:setKeyHeaderResponse('accept','/')
+	oRest:setKeyHeaderResponse('User-Agent','Thunder Client (https://www.thunderclient.com)')
 Return

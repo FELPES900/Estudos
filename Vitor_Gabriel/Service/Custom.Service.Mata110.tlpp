@@ -4,13 +4,15 @@ Class ServiceMATA110 From FWAdapterBaseV2
     Public Method New() Constructor
     Public Method GetSolicitacao()
     Public Method GetSolicitacoes()
+	Public Method PutCriaSolic()
+	Public Method PutDelSolic()
 EndClass
 
 Method New() Class ServiceMATA110
     _Super:New("Get")
 Return
 
-Method GetSolicitacao(jParamRequest as Json, as jQueryReqeuest as Json) Class ServiceMATA110
+Method GetSolicitacao(jParamRequest as Json,jQueryReqeuest as Json) Class ServiceMATA110
     Local jReponse := JsonObject():New()
 
 	If !(Empty(jQueryReqeuest['page']))
@@ -23,29 +25,10 @@ Method GetSolicitacao(jParamRequest as Json, as jQueryReqeuest as Json) Class Se
 		self:setOrderQuery(jQueryReqeuest['order'])
 	EndIf
 
-	U_RequestProductMapping(self)
+	StaticMATA110():FieldMapping(self,.F.)
 	self:SetQuery(U_ProductQuery())
 	self:SetWhere(U_WhereOfProducts(jParamRequest))
-	self:SetOrder(U_OrderOfProducts(jQueryReqeuest))
-Return
-
-Method GetSolicitacoes(jQueryReqeuest as Json) Class ServiceMATA110
-    Local jReponse := JsonObject():New()
-
-	If !(Empty(jQueryReqeuest['page']))
-		self:setPage(Val(jQueryReqeuest['page']))
-	EndIf
-	If !(Empty(jQueryReqeuest['pagesize']))
-		self:setPageSize(Val(jQueryReqeuest['pagesize']))
-	EndIf
-	If !(Empty(jQueryReqeuest['order']))
-		self:setOrderQuery(jQueryReqeuest['order'])
-	EndIf
-
-	U_RequestsFieldMapping(Self)
-	self:SetQuery(U_RequestsConsultation())
-	self:SetWhere(U_WhereOfRequest(jQueryReqeuest))
-	self:SetOrder(U_OrderOfRequests(jQueryReqeuest))
+	self:SetOrder(StaticMATA110():OrderingOfFields(jQueryReqeuest))
 
 	If self:Execute(.T.)
 		self:FillGetResponse()
@@ -63,4 +46,48 @@ Method GetSolicitacoes(jQueryReqeuest as Json) Class ServiceMATA110
     Endif
 
     self:DeActivate()
+Return jReponse
+
+Method GetSolicitacoes(jQueryReqeuest as Json) Class ServiceMATA110
+    Local jReponse := JsonObject():New()
+
+	If !(Empty(jQueryReqeuest['page']))
+		self:setPage(Val(jQueryReqeuest['page']))
+	EndIf
+	If !(Empty(jQueryReqeuest['pagesize']))
+		self:setPageSize(Val(jQueryReqeuest['pagesize']))
+	EndIf
+	If !(Empty(jQueryReqeuest['order']))
+		self:setOrderQuery(jQueryReqeuest['order'])
+	EndIf
+
+	StaticMATA110():FieldMapping(self,.T.)
+	self:SetQuery(U_RequestsConsultation())
+	self:SetWhere(U_WhereOfRequest(jQueryReqeuest))
+	self:SetOrder(StaticMATA110():OrderingOfFields(jQueryReqeuest))
+
+	If self:Execute(.T.)
+		self:FillGetResponse()
+	EndIf
+
+    If self:lOk
+    	jReponse['result']   := .T.
+		jReponse['code']     := ::GetCode()
+		jReponse['response'] := JsonObject():New()
+		jReponse['response']:FromJson(EncodeUTF8(FwNoAccent(::getJSONResponse())))
+    else        
+		jReponse['result']  := .F.
+		jReponse['code']    := ::GetCode()
+		jReponse['message'] := EncodeUTF8(FwNoAccent(::GetMessage()))
+    Endif
+
+    self:DeActivate()
+Return jReponse
+
+Method PutCriaSolic(jParamRequest as Json,jQueryReqeuest as Json) Class ServiceMATA110
+
+Return jReponse
+
+Method PutDelSolic(jParamRequest as Json,QueryReqeuest as Json) Class ServiceMATA110
+
 Return jReponse

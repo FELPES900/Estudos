@@ -7,7 +7,7 @@
 			"name": "Depuração do idioma TOTVS",
 			"program": "${command:AskForProgramName}",
 			"cwb": "${workspaceFolder}",
-			"smartclientBin": "D:/TOTVS/Protheus2310/Protheus/bin/smartclient/smartclient.exe",
+			"smartclientBin": "C:/ADVPL/SmartClient_Caieira_Prod/smartclient.exe",
 			"isMultiSession": true,
 			"enableTableSync": true,
 			"enableMultiThread": true

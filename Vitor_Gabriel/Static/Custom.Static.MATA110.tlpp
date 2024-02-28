@@ -1,0 +1,30 @@
+#INCLUDE "TLPP-CORE.TH"
+
+#DEFINE CAMPOS_SOLICITACOES "C1_FILIAL,C1_NUM,C1_CC,C1_CONTA,C1_ITEMCTA,C1_CLVL,C1_OBS,C1_DATPRF,C1_FORNECE,C1_LOJA,C1_EMISSAO,C1_QUANT,C1_PRECO,C1_TOTAL,CR_NUM,CR_USER,CR_STATUS,CR_DATALIB"
+#DEFINE CAMPOS_SOLICITACAO  "C1_ITEM,C1_PRODUTO,C1_DESCRI,C1_QUANT,C1_PRECO,C1_TOTAL,C1_ITEMCTA,C1_CONTA,C1_FORNECE,C1_CC"
+
+Class StaticMATA110
+    Static Method FieldMapping()
+    Static Method OrderingOfFields()
+Endclass
+
+Method FieldMapping(oSelf as Object, lCampo as Logical) Class StaticMATA110
+   Local nI      := 0 as Numeric
+   Local aFields := {} as Array
+
+	aFields := StrToKarr2(IIF(lCampo,CAMPOS_SOLICITACOES,CAMPOS_SOLICITACAO),",")
+	For nI := 1 to Len(aFields)
+		if GetSx3Cache(aFields[nI] ,"X3_TIPO") == "D"
+			oSelf:AddMapFields(aFields[nI], aFields[nI],.T.,.T.,{aFields[nI], "C", GetSx3Cache(aFields[nI] ,"X3_TAMANHO"), GetSx3Cache(aFields[nI] ,"X3_DECIMAL")})
+		else
+			oSelf:AddMapFields(aFields[nI], aFields[nI],.T.,.T.,{aFields[nI], GetSx3Cache(aFields[nI] ,"X3_TIPO"), GetSx3Cache(aFields[nI] ,"X3_TAMANHO"), GetSx3Cache(aFields[nI] ,"X3_DECIMAL")})
+		endif
+	Next
+Return oSelf
+
+Method OrderingOfFields(jQueryReqeuest as Json) Class StaticMATA110
+    Local cOrder := "" as Character
+    Default jQueryReqeuest['order'] := ""
+
+    cOrder := IIF(Empty(jQueryReqeuest['order']),"C1_FILIAL,C1_NUM,C1_EMISSAO",Upper(jQueryReqeuest['order']))
+Return
