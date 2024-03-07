@@ -1,0 +1,15 @@
+#INCLUDE "TLPP-CORE.TH"
+
+Function U_TEST0004()
+    local cX01 := 'teste'
+    local cX02 := 'teste02'
+    local cX03 := 'teste03'
+
+    U_TEST0003(cX01, p2=nome(),p8=cX03,p4=cX02)
+return
+
+Function U_TEST0003(p1, p2, p3, p4, p5, p6, p7, p8)
+Return .T.
+
+static function nome()
+return 'kayke'

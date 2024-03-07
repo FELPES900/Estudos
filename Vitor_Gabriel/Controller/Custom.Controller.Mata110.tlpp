@@ -50,13 +50,13 @@ Function U_CreatingRequest()
 	oRest:setKeyHeaderResponse('User-Agent','Thunder Client (https://www.thunderclient.com)')
 Return
 
-@Put("shopping/deletionrequest")
+@DELETE("shopping/deletionrequest")
 Function U_DeletionRequest()
     Local oService := Nil as Object
     Local jResponse := Nil as Json
 
     oService := ServiceMATA110():New()
-    jResponse := oService:PutDelSolic(oRest:getPathParamsRequest(),oRest:getQueryRequest())
+    jResponse := oService:PutDelSolic()
 
 	oRest:setStatusCode(jResponse['code'])
 	oRest:setResponse(jResponse:ToJson())

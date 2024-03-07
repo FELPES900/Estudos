@@ -84,8 +84,36 @@ Method GetSolicitacoes(jQueryReqeuest as Json) Class ServiceMATA110
     self:DeActivate()
 Return jReponse
 
-Method PutCriaSolic(jParamRequest as Json,jQueryReqeuest as Json) Class ServiceMATA110
+Method PutCriaSolic() Class ServiceMATA110
+	Local jBody := Nil as Json
+	Local jBodySolic := {} as Json
+	Local jBodyItems := {} as Json
+	Local jReponse := JsonObject():New()
 
+	jBody := JsonObject():New()
+
+	jBody:FromJson(oRest:GetBodyRequest())
+	
+	if (!Empty(jBody:GetNames()) .And. !Empty(jBody:GetJsonObject("ITEMS")))
+		jBodySolic := jBody:GetNames()
+		jBodyItems := jBody:GetJsonObject("ITEMS")
+
+		lOk := U_CriaSolicita(jBodySolic,jBodyItems)
+
+		if lOk
+			jReponse['result'] := .T.
+			jReponse['code'] := 202
+			jReponse['message'] := "Solicitacao incluida com sucesso"
+		else
+			jReponse['result'] := .F.
+			jReponse['code'] := 404
+			jReponse['message'] := "Nao foi possivel criar a soli, pois esta algo errado"
+		endif
+	else
+		jReponse['result']  := .F.
+		jReponse['code'] 	:= 500
+		jReponse['message'] := "Json invalido ou parametros passado faltando"
+	endif
 Return jReponse
 
 Method PutDelSolic(jParamRequest as Json,QueryReqeuest as Json) Class ServiceMATA110

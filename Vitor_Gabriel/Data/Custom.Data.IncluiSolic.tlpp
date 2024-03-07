@@ -1,0 +1,45 @@
+#INCLUDE "TLPP-CORE.TH"
+
+Function U_CriaSolicita(jBodySolic as Json,jBodyItems as Json) as Logical
+    Local aItensSolic  := {}  as Array
+    Local aSolicitacao := {}  as Array
+    Local cNumero      := ""  as Character
+    Local lOk          := .F. as Logical
+    Local nX           := 0   as Numeric
+    Local aLinha       := {}  as Array
+
+    DbSelectArea("SC1")
+    SC1->(DbSetOrder(1))
+    If (Empty(jBodySolic['C1_NUM']))
+        cNumero := GetSXSENum("SC1","C1_NUM")
+        ConfirmSX8()
+    else
+        cNuemro := jBodySolic['C1_NUM']
+    endif    
+    AaDD(aSolicitacao,{"C1_NUM"     , cNuemro   , Nil})
+    AaDD(aSolicitacao,{"C1_EMISASO" , jBodySolic, Nil})
+    AaDD(aSolicitacao,{"C1_FILENT"  , jBodySolic, Nil})
+    AaDD(aSolicitacao,{"C1_UNIDREQ" , jBodySolic, Nil})
+    AaDD(aSolicitacao,{"C1_CODCOMP" , jBodySolic, Nil})
+    AaDD(aSolicitacao,{"C1_SOLICIT" , jBodySolic, Nil})
+
+    DbSelectArea("SB1")
+    DbSetOrder(1)
+    For nX := 1 to Len(jBodyItems)
+        If SB1->(DbSeek(xFilial("SC1") + jBodyItems[nX]['C1_PRODUTO']))
+            aLinha := {}
+            AaDD(aLinha,{"C1_ITEM"   ,jBodyItems[nX]['C1_ITEM']     , Nil})
+            AaDD(aLinha,{"C1_PRODUTO",jBodyItems[nX]['C1_PRODUTO']  , Nil})
+            AaDD(aLinha,{"C1_QUANT"  ,jBodyItems[nX]['C1_QUANT']    , Nil})
+            AaDD(aLinha,{"C1_OBS"    ,jBodyItems[nX]['C1_OBS']      , Nil})
+            AaDD(aLinha,{"C1_FORNECE",jBodyItems[nX]['C1_FORNECE']  , Nil})
+            AaDD(aLinha,{"C1_LOJA"   ,jBodyItems[nX]['C1_LOJA']     , Nil})
+            AaDD(aLinha,{"C1_ITEMCTA",jBodyItems[nX]['C1_ITEMCTA']  , Nil})
+            AaDD(aLinha,{"C1_DATPRF" ,jBodyItems[nX]['C1_DATPRF']   , Nil})
+            AaDD(aLinha,{"C1_CONTA"  ,jBodyItems[nX]['C1_CONTA']    , Nil})
+            AaDD(aLinha,{"C1_CC"     ,jBodyItems[nX]['C1_CC']       , Nil})
+            AaDD(aLinha,{"C1_LOCAL"  ,jBodyItems[nX]['C1_LOCAL']    , Nil})
+            AaDD(aItensSolic,aLinha)
+        EndIf
+    Next
+Return lOk

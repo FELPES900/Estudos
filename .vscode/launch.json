@@ -28,7 +28,13 @@
 		},
 		{
 			"label": "U_xTimeStamp"
+		},
+		{
+			"label": "U_TEST0001"
+		},
+		{
+			"label": "U_TEST0004"
 		}
 	],
-	"lastProgramExecuted": "xxx"
+	"lastProgramExecuted": "U_TEST0004"
 }
