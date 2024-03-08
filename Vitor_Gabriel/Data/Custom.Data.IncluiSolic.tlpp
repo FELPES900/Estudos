@@ -1,10 +1,10 @@
 #INCLUDE "TLPP-CORE.TH"
 
-Function U_CriaSolicita(jBodySolic as Json,jBodyItems as Json) as Logical
+Function U_CriaSolicita(jBodySolic as Json,jBodyItems as Json) as Json
     Local aItensSolic  := {}  as Array
     Local aSolicitacao := {}  as Array
     Local cNumero      := ""  as Character
-    Local lOk          := .F. as Logical
+    Local jReponse     := JsonObject():New() as Json
     Local nX           := 0   as Numeric
     Local aLinha       := {}  as Array
 
@@ -16,7 +16,7 @@ Function U_CriaSolicita(jBodySolic as Json,jBodyItems as Json) as Logical
     else
         cNuemro := jBodySolic['C1_NUM']
     endif    
-    AaDD(aSolicitacao,{"C1_NUM"     , cNuemro   , Nil})
+    AaDD(aSolicitacao,{"C1_NUM"     , cNumero   , Nil})
     AaDD(aSolicitacao,{"C1_EMISASO" , jBodySolic, Nil})
     AaDD(aSolicitacao,{"C1_FILENT"  , jBodySolic, Nil})
     AaDD(aSolicitacao,{"C1_UNIDREQ" , jBodySolic, Nil})
@@ -42,4 +42,15 @@ Function U_CriaSolicita(jBodySolic as Json,jBodyItems as Json) as Logical
             AaDD(aItensSolic,aLinha)
         EndIf
     Next
-Return lOk
+    MSExecAuto({|a,b,c,d| MATA110(a,b,c,d)},aSolicitacao,aItensSolic,3,.F.)
+    If !MSExecAuto
+        ConOut("Sucesso! " + cNumero)
+        jReponse['titulo'] := "SUCESSO!"
+    else
+        SC5->(RollBackSX8())
+        cError := MostraErro("/dirdoc", "error.log")
+        Conout("Error: " + cError)
+        jReponse['titulo'] := "Falha!"
+        jReponse['msg'] := cError
+    Endif
+Return jReponse

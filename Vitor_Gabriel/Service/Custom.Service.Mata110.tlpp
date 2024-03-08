@@ -98,17 +98,7 @@ Method PutCriaSolic() Class ServiceMATA110
 		jBodySolic := jBody:GetNames()
 		jBodyItems := jBody:GetJsonObject("ITEMS")
 
-		lOk := U_CriaSolicita(jBodySolic,jBodyItems)
-
-		if lOk
-			jReponse['result'] := .T.
-			jReponse['code'] := 202
-			jReponse['message'] := "Solicitacao incluida com sucesso"
-		else
-			jReponse['result'] := .F.
-			jReponse['code'] := 404
-			jReponse['message'] := "Nao foi possivel criar a soli, pois esta algo errado"
-		endif
+		jReponse := U_CriaSolicita(jBodySolic,jBodyItems)
 	else
 		jReponse['result']  := .F.
 		jReponse['code'] 	:= 500
