@@ -77,3 +77,32 @@ II - Routes: Aqui ira ser mostrado como as rotas estarão funcionando, junto dis
         }
     }
     ```
+3. Inclusação de Solicitação
+
+    3.1. Envio de Json, com campos obrigatorios
+
+    ```JSON
+    {
+        "C1_NUM" : "",
+        "C1_EMISASO": "",
+        "C1_FILENT" : "",
+        "C1_UNIDREQ": "",
+        "C1_CODCOMP": "",
+        "C1_SOLICIT": "",
+        "ITEMS" : [
+            {
+                "C1_ITEM" : "",
+                "C1_PRODUTO" : "",
+                "C1_QUANT" : "",
+                "C1_OBS" : "",
+                "C1_FORNECE" : "",
+                "C1_LOJA" : "",
+                "C1_ITEMCTA" : "",
+                "C1_DATPRF" : "",
+                "C1_CONTA" : "",
+                "C1_CC" : "",
+                "C1_LOCAL" : ""
+            }
+        ]
+    }
+    ```
