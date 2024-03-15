@@ -1,53 +1,45 @@
 #INCLUDE "TLPP-CORE.TH"
 
-Function U_CriaSolicita(jBodySolic as Json,jBodyItems as Json) as Json
-    Local aItensSolic  := {}  as Array
-    Local aSolicitacao := {}  as Array
-    Local cNumero      := ""  as Character
+Function U_CriaSolicita(jBody as Json) as Json
+    Local aCampos      := jBody:GetNames()   as Array
+    Local aItensSolic  := {}                 as Array
+    Local aItem        := {}                 as Array
+    Local aLinha       := {}                 as Array
+    Local aSolicitacao := {}                 as Array
     Local jReponse     := JsonObject():New() as Json
-    Local nX           := 0   as Numeric
-    Local aLinha       := {}  as Array
+    Local nCamposItem  := 0                  as Numeric
+    Local nPosicCampo  := 1                  as Numeric
+    Local nX           := 0                  as Numeric
+    Local nY           := 1                  as Numeric
 
-    DbSelectArea("SC1")
-    SC1->(DbSetOrder(1))
-    If (Empty(jBodySolic['C1_NUM']))
-        cNumero := GetSXSENum("SC1","C1_NUM")
-        ConfirmSX8()
-    else
-        cNuemro := jBodySolic['C1_NUM']
-    endif    
-    AaDD(aSolicitacao,{"C1_NUM"     , cNumero   , Nil})
-    AaDD(aSolicitacao,{"C1_EMISASO" , jBodySolic, Nil})
-    AaDD(aSolicitacao,{"C1_FILENT"  , jBodySolic, Nil})
-    AaDD(aSolicitacao,{"C1_UNIDREQ" , jBodySolic, Nil})
-    AaDD(aSolicitacao,{"C1_CODCOMP" , jBodySolic, Nil})
-    AaDD(aSolicitacao,{"C1_SOLICIT" , jBodySolic, Nil})
-
-    DbSelectArea("SB1")
-    DbSetOrder(1)
-    For nX := 1 to Len(jBodyItems)
-        If SB1->(DbSeek(xFilial("SC1") + jBodyItems[nX]['C1_PRODUTO']))
-            aLinha := {}
-            AaDD(aLinha,{"C1_ITEM"   ,jBodyItems[nX]['C1_ITEM']     , Nil})
-            AaDD(aLinha,{"C1_PRODUTO",jBodyItems[nX]['C1_PRODUTO']  , Nil})
-            AaDD(aLinha,{"C1_QUANT"  ,jBodyItems[nX]['C1_QUANT']    , Nil})
-            AaDD(aLinha,{"C1_OBS"    ,jBodyItems[nX]['C1_OBS']      , Nil})
-            AaDD(aLinha,{"C1_FORNECE",jBodyItems[nX]['C1_FORNECE']  , Nil})
-            AaDD(aLinha,{"C1_LOJA"   ,jBodyItems[nX]['C1_LOJA']     , Nil})
-            AaDD(aLinha,{"C1_ITEMCTA",jBodyItems[nX]['C1_ITEMCTA']  , Nil})
-            AaDD(aLinha,{"C1_DATPRF" ,jBodyItems[nX]['C1_DATPRF']   , Nil})
-            AaDD(aLinha,{"C1_CONTA"  ,jBodyItems[nX]['C1_CONTA']    , Nil})
-            AaDD(aLinha,{"C1_CC"     ,jBodyItems[nX]['C1_CC']       , Nil})
-            AaDD(aLinha,{"C1_LOCAL"  ,jBodyItems[nX]['C1_LOCAL']    , Nil})
-            AaDD(aItensSolic,aLinha)
-        EndIf
-    Next
-    MSExecAuto({|a,b,c,d| MATA110(a,b,c,d)},aSolicitacao,aItensSolic,3,.F.)
+    While nX < Len(aCampos)
+        nX++  
+        If (aCampos[nX] != "ITEMS")
+            Aadd(aSolicitacao,{aCampos[nX], jBody[aCampos[nX]],Nil})
+        Endif
+        If (aCampos[nX] == "ITEMS")
+            aItensSolic := jBody[aCampos[nX]]
+        Endif    
+    End
+    While nY <= Len(aItensSolic)
+        nCamposItem := Len(aItensSolic[nY]:GetNames())
+        If (nPosicCampo != nCamposItem)
+            Aadd(aLinha,{aItensSolic[nY]:GetNames()[nPosicCampo],aItensSolic[nY][aItensSolic[nY]:GetNames()[nPosicCampo]],Nil})
+            nPosicCampo++
+        Endif
+        If (nPosicCampo == nCamposItem)
+            Aadd(aItem,aLinha)
+            nY++
+            nPosicCampo := 0
+        Endif
+    End
+    MSExecAuto({|a,b,c,d| MATA110(a,b,c,d)},aSolicitacao,aItem,3,.F.)
     If !MSExecAuto
         ConOut("Sucesso! " + cNumero)
+        jReponse['code'] := 200
         jReponse['titulo'] := "SUCESSO!"
     else
-        SC5->(RollBackSX8())
+        RollBackSX8()
         cError := MostraErro("/dirdoc", "error.log")
         Conout("Error: " + cError)
         jReponse['titulo'] := "Falha!"

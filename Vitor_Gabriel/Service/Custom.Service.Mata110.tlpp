@@ -86,8 +86,6 @@ Return jReponse
 
 Method PutCriaSolic() Class ServiceMATA110
 	Local jBody := Nil as Json
-	Local jBodySolic := {} as Json
-	Local jBodyItems := {} as Json
 	Local jReponse := JsonObject():New()
 
 	jBody := JsonObject():New()
@@ -95,10 +93,7 @@ Method PutCriaSolic() Class ServiceMATA110
 	jBody:FromJson(oRest:GetBodyRequest())
 	
 	if (!Empty(jBody:GetNames()) .And. !Empty(jBody:GetJsonObject("ITEMS")))
-		jBodySolic := jBody:GetNames()
-		jBodyItems := jBody:GetJsonObject("ITEMS")
-
-		jReponse := U_CriaSolicita(jBodySolic,jBodyItems)
+		jReponse := U_CriaSolicita(jBody)
 	else
 		jReponse['result']  := .F.
 		jReponse['code'] 	:= 500

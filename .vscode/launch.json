@@ -34,7 +34,10 @@
 		},
 		{
 			"label": "U_TEST0004"
+		},
+		{
+			"label": "U_IzapClient"
 		}
 	],
-	"lastProgramExecuted": "U_TEST0004"
+	"lastProgramExecuted": "xxx"
 }
