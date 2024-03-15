@@ -39,5 +39,6 @@
 			"label": "U_IzapClient"
 		}
 	],
-	"lastProgramExecuted": "xxx"
+	"lastProgramExecuted": "<cancel>",
+	"lastProgramArguments": []
 }

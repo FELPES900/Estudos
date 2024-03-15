@@ -1,4 +1,5 @@
 #INCLUDE "TLPP-CORE.TH"
+#INCLUDE "TOTVS.CH"
 
 Function U_CriaSolicita(jBody as Json) as Json
     Local aCampos      := jBody:GetNames()   as Array
@@ -8,7 +9,7 @@ Function U_CriaSolicita(jBody as Json) as Json
     Local aSolicitacao := {}                 as Array
     Local jReponse     := JsonObject():New() as Json
     Local nCamposItem  := 0                  as Numeric
-    Local nPosicCampo  := 1                  as Numeric
+    Local nPosicCampo  := 0                  as Numeric
     Local nX           := 0                  as Numeric
     Local nY           := 1                  as Numeric
 
@@ -24,17 +25,18 @@ Function U_CriaSolicita(jBody as Json) as Json
     While nY <= Len(aItensSolic)
         nCamposItem := Len(aItensSolic[nY]:GetNames())
         If (nPosicCampo != nCamposItem)
-            Aadd(aLinha,{aItensSolic[nY]:GetNames()[nPosicCampo],aItensSolic[nY][aItensSolic[nY]:GetNames()[nPosicCampo]],Nil})
             nPosicCampo++
+            Aadd(aLinha,{aItensSolic[nY]:GetNames()[nPosicCampo],aItensSolic[nY][aItensSolic[nY]:GetNames()[nPosicCampo]],Nil})
         Endif
         If (nPosicCampo == nCamposItem)
             Aadd(aItem,aLinha)
             nY++
-            nPosicCampo := 0
+            aLinha := {}
+            nPosicCampo := nCamposItem := 0
         Endif
     End
-    MSExecAuto({|a,b,c,d| MATA110(a,b,c,d)},aSolicitacao,aItem,3,.F.)
-    If !MSExecAuto
+    MSExecAuto({|a,b,c| MATA110(a,b,c)},aSolicitacao,aItem,3)
+    If !lMsErroAuto
         ConOut("Sucesso! " + cNumero)
         jReponse['code'] := 200
         jReponse['titulo'] := "SUCESSO!"
@@ -44,5 +46,6 @@ Function U_CriaSolicita(jBody as Json) as Json
         Conout("Error: " + cError)
         jReponse['titulo'] := "Falha!"
         jReponse['msg'] := cError
+        jReponse['code'] := 200
     Endif
 Return jReponse
